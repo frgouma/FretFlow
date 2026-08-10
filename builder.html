@@ -1,0 +1,3159 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FretFlow Builder V10E</title>
+
+<!-- =======================================================================
+     APP SOURCE: CSS
+     This exact readable CSS is copied into every generated FretFlow.html.
+     ======================================================================= -->
+<style id="fretflow-app-css">
+/* ==========================================================================
+   FRETFLOW APP CSS — COMPONENT INDEX
+
+   Views and renderers remain searchable by these names in builder.html and
+   every generated FretFlow.html:
+   - HomeView / HomeSystemTile / HomeGroupTile / HomeRecordTile
+   - ViewerView / RecordPage / PdfPage
+   - ChordLibraryRenderer / ChordDiagramRenderer
+   - TextComponent / TextGridComponent / SeparatorComponent
+   - FretboardComponent / RootMapComponent
+   - ChordGridComponent / ChordSectionComponent
+   - SimpleRiffComponent / RiffSectionComponent
+   - TabSectionComponent / TabMeasure
+   ========================================================================== */
+
+:root{--fretflow-app-background:radial-gradient(circle at 18% 12%,#ffeab955,transparent 34%),linear-gradient(135deg,#2c241d,#5b4632 45%,#28313a)}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:#1f2933;background:var(--fretflow-app-background)} .fretflow-app-surface{background:var(--fretflow-app-background);min-height:100%;padding:1px 0} .home{max-width:1040px;margin:0 auto;padding:44px 22px} .shell{border-radius:28px;padding:34px;background:linear-gradient(180deg,#fffaf0f5,#f6efe0ef);box-shadow:0 18px 55px #1a130c47;border:1px solid #ffffff88} .hero{text-align:center;margin-bottom:28px} .badge{display:inline-block;margin-bottom:14px;padding:6px 12px;border-radius:999px;background:#c47a2c22;border:1px solid #c47a2c55;color:#8f4f1b;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:background .15s ease,border-color .15s ease}.badge:hover{background:#c47a2c33;border-color:#c47a2c77} .hero p{margin:0 auto;max-width:640px;color:#5d5146;font-size:17px;line-height:1.45} .search{width:100%;max-width:660px;display:block;margin:0 auto 26px;padding:14px 17px;border:1px solid #5c483040;border-radius:16px;font-size:16px;background:#ffffffd1;outline:none} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:18px} .card{border:1px solid #5c483029;border-radius:22px;padding:22px;text-align:left;background:linear-gradient(180deg,#ffffffe0,#fff8ebeb);cursor:pointer;min-height:178px;box-shadow:0 12px 28px #261c1221;transition:.14s;position:relative;overflow:hidden} .card:after{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:#c47a2c} .card:nth-child(2):after{background:#637a4d} .card:nth-child(3):after{background:#536d8c} .card:nth-child(4):after{background:#8b5cf6} .card:hover{transform:translateY(-4px);box-shadow:0 18px 36px #261c1238} .nr{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:28px;padding:0 9px;border-radius:999px;background:#221812;color:#fff;font-size:12px;font-weight:700;margin-bottom:16px} .card h2{margin:0 0 10px;font-size:22px;color:#20170f} .card p{margin:0;line-height:1.4;color:#5d5146;font-size:14px} .hint{margin-top:22px;text-align:center;color:#6f6256;font-size:13px} .viewer{display:none;min-height:100vh;background:linear-gradient(135deg,#e6ddcf,#cfc5b8)} .topbar{position:sticky;top:0;z-index:5;height:58px;background:#20170ff5;color:white;display:flex;align-items:center;gap:12px;padding:0 16px;box-shadow:0 4px 18px #00000038} .back,.navbtn{border:1px solid #ffffff38;background:#ffffff14;color:white;border-radius:10px;padding:9px 12px;cursor:pointer} .navbtn:disabled{opacity:.35;cursor:not-allowed} .spacer{flex:1} .count{font-size:14px;color:#eee} #viewerTitle{font-size:clamp(15px,2.25vw,18px);line-height:1.12;min-width:0;} .frame-wrap{padding:26px;overflow-x:auto} .page{width:794px;height:1123px;min-height:1123px;margin:0 auto 32px;background:#fff;box-shadow:0 18px 48px #32261a47;position:relative;padding:32px 0 40px;overflow:hidden} .page-header{height:60px;margin:0 60px 0;overflow:hidden} .ptitle{font-size:23px;margin:0 0 2px;font-weight:700} .psub{font-size:12px;margin:0 0 6px} .page-subtitle{font-size:11px;margin:0;color:#555} .section{margin-left:42px;margin-bottom:0} h2{font-size:14px;margin:0 0 6px} .sep{height:1px;background:#444;margin:12px 60px} .board{display:grid;grid-template-columns:60px 520px 130px;grid-template-rows:17px repeat(6,16px);align-items:center;font-size:10px} .board.nocoach{grid-template-columns:60px 520px} .fl{grid-column:1;grid-row:1;text-align:right;padding-right:8px} .fr{grid-column:2;grid-row:1;display:grid;grid-template-columns:repeat(17,1fr);background:#f2f2f2;border:1px solid #444;border-bottom:0;height:17px;align-items:center;text-align:center;font-weight:700} .fr span,.sg>div{border-left:1px solid #b8b8b8;height:100%} .fr span{display:flex;align-items:center;justify-content:center} .fr span:first-child,.sg>div:nth-child(17n+1){border-left:0} .sl{grid-column:1;text-align:right;padding-right:8px;font-size:10px} .sg{grid-column:2;display:grid;grid-template-columns:repeat(17,1fr);height:16px;border-left:1px solid #444;border-right:1px solid #444;border-top:1px solid #b8b8b8;position:relative} .sg.last{border-bottom:1px solid #444} .note{width:13px;height:13px;border-radius:50%;border:1px solid #555;background:white;color:#111;font-size:8px;font-weight:700;text-align:center;position:absolute;top:50%;transform:translate(-50%,-50%);z-index:2;display:flex;align-items:center;justify-content:center;line-height:1} .root{background:#111;color:white;border-color:#111} .third{background:white;color:#111;border:2px solid #111} .ghost{opacity:.28} .arrow,.slash{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:15px;font-weight:700;color:#111;z-index:1} .coach{grid-column:3;grid-row:1/span 7;font-size:9.2px;line-height:1.25;padding-left:14px} .coach b{display:block;margin-bottom:3px} .practice{margin:0 60px;display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:10.5px;line-height:1.35} .box{border-top:1px solid #444;padding-top:10px} .box b{display:block;margin-bottom:5px;font-size:12px} .chord-grid{margin:0 60px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px} .chord{text-align:center} .chord-title{font-weight:700;margin-bottom:8px} .chord svg{width:105px;height:140px} .footer{position:absolute;left:60px;right:60px;bottom:36px;font-size:10px} .legend{margin-top:8px;display:flex;gap:28px;align-items:center;flex-wrap:wrap} .li{display:inline-flex;align-items:center;gap:8px} .ld{position:static;transform:none;display:inline-block} @media(max-width:850px){.home{padding:22px 14px}.shell{padding:24px 18px}h1{font-size:38px}.frame-wrap{padding:10px}} @page{size:A4 portrait;margin:0}
+
+.chord-grid{margin:0 60px;display:grid;grid-template-columns:repeat(5,112px);gap:14px;align-items:start}
+.chord{width:112px;text-align:center;background:#fff;padding:4px 4px 2px}
+.chord-title{font-weight:700;margin-bottom:5px;font-size:13px}
+.chord svg{width:96px;height:128px}
+.component-block{height:160px;overflow:hidden;position:relative;margin-bottom:0}
+.component-title{font-size:14px;font-weight:700;margin:0 60px 6px;color:#1f2933}
+.section .component-title{margin-left:0}
+.component-note{margin:0 60px 12px;font-size:10.5px;color:#333;line-height:1.35}
+.text-component{height:80px;margin:0 60px;overflow:hidden;font-size:11px;line-height:1.35;color:#333}
+.text-component-title{font-weight:700;font-size:13px;margin:0 0 5px;color:#1f2933}
+.text-component-body{margin:0}.text-component-line{margin:0 0 3px}.text-component-line-title{font-weight:700;color:#1f2933}
+
+
+.home-mode{margin-top:4px}
+.breadcrumb{display:none;align-items:center;gap:8px;margin:0 0 18px;color:#6f6256;font-size:13px}
+.crumb-btn{border:0;background:transparent;color:#8f4f1b;font-weight:700;cursor:pointer;padding:0}
+.home-back{border:1px solid #ffffff38;background:#20170f;color:white;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:700}
+.category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.category-card{border:1px solid #5c483029;border-radius:22px;padding:24px;text-align:left;background:linear-gradient(180deg,#ffffffe6,#fff8ebef);cursor:pointer;min-height:166px;box-shadow:0 12px 28px #261c1221;transition:.14s;position:relative;overflow:hidden}
+.category-card:after{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:#c47a2c}
+.category-card:nth-child(2):after{background:#536d8c}
+.category-card:nth-child(3):after{background:#637a4d}
+.category-card:hover{transform:translateY(-4px);box-shadow:0 18px 36px #261c1238}
+.category-card h2{margin:0 0 10px;font-size:24px;color:#20170f}
+.category-card p{margin:0 0 18px;line-height:1.4;color:#5d5146;font-size:14px}
+.category-card .count-badge{display:inline-flex;border-radius:999px;background:#221812;color:white;padding:6px 10px;font-size:12px;font-weight:700}
+.section-title-home{margin:6px 0 14px;font-size:15px;color:#6f6256;font-weight:700}
+
+
+.songchart{display:none}
+.songchart-title{font-size:14px;font-weight:700;margin:0 0 4px}
+.songchart-legend{font-size:10.5px;color:#555;margin:0 0 18px}
+.songsection{height:160px;margin:0 60px;position:relative;overflow:visible}
+.songsection-head{display:flex;align-items:flex-start;gap:10px;height:24px;margin:0 0 2px}
+.songsection-title{font-size:16px;font-weight:700;min-height:18px}
+.segno{font-family:"Segoe UI Symbol","Noto Music","DejaVu Sans",serif;font-size:22px;line-height:18px;color:#111}
+.segno.double{letter-spacing:2px;margin-right:2px}
+.chart-line{display:grid;grid-template-columns:repeat(4,minmax(118px,1fr));align-items:stretch;margin-left:20px;margin-bottom:18px;max-width:610px}
+.measure{min-height:44px;border-left:2px solid #111;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;padding:5px 10px;background:#fff}
+.measure:last-of-type{border-right:2px solid #111}
+.measure.two-chords{gap:18px;font-size:19px}
+.measure .subchord{display:inline-block;min-width:42px;text-align:center}.measure.segno-start::before{content:'𝄋';font-family:'Segoe UI Symbol','Noto Music','DejaVu Sans',serif;font-size:16px;margin-right:6px}
+.measure.end-double{border-right:2px solid #111;box-shadow:4px 0 0 -2px #111}
+.measure.end-repeat{border-right:2px solid #111}
+.measure.end-repeat::after{content:":||";font-size:18px;font-weight:600;margin-left:auto;padding-left:8px;color:#111;letter-spacing:-1px}
+.repeat-hooks{grid-column:1/-1;height:14px;display:flex;justify-content:flex-end;align-items:center;font-size:17px;font-weight:500;margin-top:-13px;margin-bottom:2px;max-width:610px}
+.repeat-hooks span{display:inline-block;width:34px;text-align:center;color:#111}
+.below-right{grid-column:1/-1;text-align:right;max-width:610px;font-size:12px;font-weight:700;color:#444;margin-top:-13px;margin-bottom:2px}
+.song-notes{margin:12px 0 0 20px;font-size:10.5px;line-height:1.45;color:#333}
+.song-notes li{margin-bottom:3px}
+
+
+:root{
+  --music-font:"Noto Music","Bravura Text","Segoe UI Symbol","DejaVu Sans",serif;
+}
+.music-symbol,.segno,.unicode-symbol,.unicode-example{
+  font-family:var(--music-font);
+}
+.unicode-playground{margin:0 60px 16px}
+.unicode-section-title{font-size:14px;font-weight:700;margin:0 0 12px}
+.font-test-grid{display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:20px}
+.font-panel{border-top:1px solid #444;padding-top:10px}
+.font-panel-title{font-size:12px;font-weight:700;margin-bottom:8px;color:#333}
+.symbol-row{display:grid;grid-template-columns:110px 1fr;align-items:center;border-top:1px solid #d0d0d0;min-height:42px}
+.symbol-row:last-child{border-bottom:1px solid #d0d0d0}
+.symbol-label{font-size:11px;font-weight:700;color:#555}
+.symbols{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.unicode-symbol{font-size:30px;line-height:1.2;min-width:28px;text-align:center}
+.unicode-symbol.large{font-size:36px}
+.example-list{margin-top:20px;border-top:1px solid #444;padding-top:10px}
+.unicode-example{font-size:26px;line-height:1.45;border-bottom:1px solid #d0d0d0;padding:7px 0}
+.font-default{font-family:Arial,Helvetica,sans-serif}
+.font-stack{font-family:var(--music-font)}
+.font-serif{font-family:serif}
+
+
+.measure-test{margin:0 60px 18px;border-top:1px solid #444;padding-top:12px}
+.measure-test-title{font-size:14px;font-weight:700;margin-bottom:5px}
+.measure-test-description{font-size:10.5px;color:#555;margin-bottom:14px}
+.measure-test-row{display:flex;align-items:flex-start;gap:0;margin-left:20px}
+.measure-box{width:168px;height:58px;min-height:58px;display:flex;align-items:center;justify-content:center;position:relative;font-size:20px;font-weight:700;background:#fff;padding:5px 18px}
+.measure-box.last{}
+.measure-box.start-repeat{}
+.measure-box.end-repeat{}
+.measure-chords{display:grid;width:100%;height:100%;align-items:center;justify-items:center}
+.measure-chords.one{grid-template-columns:1fr}
+.measure-chords.two{grid-template-columns:1fr 1fr}
+.measure-chords.four{grid-template-columns:repeat(4,1fr)}
+.measure-chords.many{grid-template-columns:repeat(auto-fit,minmax(32px,1fr))}
+.measure-chords span{display:flex;align-items:center;justify-content:center;width:100%;text-align:center}
+.measure-end-symbol,.measure-start-symbol{font-family:var(--music-font);font-size:36px;font-weight:400;line-height:1}
+.measure-start-symbol{position:absolute;left:-11px}
+.measure-end-symbol{position:absolute;right:-11px}
+.measure-below{position:absolute;right:-10px;bottom:-18px;font-size:12px;font-weight:700;color:#444}
+.measure-token{font-family:var(--music-font);font-weight:400;font-size:26px;line-height:1}
+.song-measure-row{height:62px;display:flex;align-items:flex-start;gap:0;margin-left:0;margin-bottom:2px}
+
+
+/* Responsive A4 viewer scaling. The .page stays fixed A4; only the wrapper scales on screen. */
+#pageMount{display:flex;justify-content:center;align-items:flex-start;width:100%;gap:24px;}
+#pageMount.single{flex-direction:row;}
+#pageMount.spread{flex-direction:row;}
+@media(max-width:560px){
+  .topbar{height:60px;gap:8px;padding:0 8px;}
+  .back{padding:7px 9px;font-size:13px;line-height:1.05;min-width:64px;}
+  .navbtn{width:42px;height:42px;padding:0;font-size:13px;}
+  .count{font-size:13px;line-height:1;white-space:nowrap;min-width:34px;text-align:center;}
+  #viewerTitle{font-size:clamp(14px,4.6vw,17px);line-height:1.1;max-width:calc(100vw - 245px);white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+}
+@media(max-width:420px){
+  .topbar{gap:6px;padding:0 6px;}
+  .back{min-width:58px;font-size:12px;padding:6px 8px;}
+  .navbtn{width:38px;height:38px;}
+  .count{font-size:12px;min-width:28px;}
+  #viewerTitle{font-size:clamp(13px,4.2vw,15px);max-width:calc(100vw - 212px);}
+}
+
+.page-shell{width:794px;height:1123px;margin:0 0 32px;position:relative;overflow:visible;}
+.page-shell .page{margin:0;transform-origin:top left;}
+@media print{
+  .home,.topbar{display:none!important;}
+  .viewer{display:block!important;background:#fff;}
+  .frame-wrap{padding:0;overflow:visible;}
+  #pageMount{display:block;}
+  .page-shell{width:auto!important;height:auto!important;min-height:0!important;margin:0!important;transform:none!important;}
+  .page{box-shadow:none;margin:0!important;break-after:page;page-break-after:always;}
+}
+
+
+/* Viewer toolbar final overrides */
+#viewerTitle{
+  font-size:clamp(13px,3.4vw,18px);
+  line-height:1.12;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.back,.navbtn{
+  height:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+@media(max-width:560px){
+  .topbar{gap:6px;padding:0 8px}
+  #viewerTitle{font-size:clamp(12px,3.5vw,16px)}
+  .back,.navbtn{height:34px}
+}
+@media(max-width:420px){
+  #viewerTitle{font-size:clamp(11px,3.4vw,14px)}
+  .back,.navbtn{height:32px}
+}
+
+
+
+/* TabMeasure pilot */
+.tabsection{height:170px;margin:0 60px;position:relative;overflow:visible}
+.tabsection-title{font-size:14px;font-weight:700;margin:0 0 4px;color:#1f2933}
+.tabsection-note{font-size:10.5px;color:#555;margin:0 0 10px;line-height:1.35}
+.tab-measure-row{height:94px;display:flex;align-items:flex-start;gap:0;margin-left:0;margin-bottom:4px}
+.tab-measure{width:168px;height:86px;position:relative;background:#fff;flex:0 0 auto}
+.tab-string{position:absolute;left:0;right:0;height:1px;background:#333}
+.tab-note{position:absolute;transform:translate(-50%,-50%);background:#fff;padding:0 2px;font-size:13px;font-weight:700;line-height:1;color:#111;z-index:4}
+.tab-note.ghost{font-weight:700}
+.tab-repeat-dot{position:absolute;right:5px;width:4px;height:4px;border-radius:50%;background:#111;z-index:5}
+.tab-grid-mark{position:absolute;top:16px;height:55px;width:1px;background:#00000012;z-index:1}
+.tab-grid-mark.beat{background:#00000024}
+
+
+/* Optional strumming pattern above a chord measure. Eight fixed slots = D/U pair per beat. */
+.measure-box.has-strum .measure-chords{padding-top:15px}
+.measure-strum{position:absolute;left:18px;right:18px;top:2px;height:18px;display:grid;grid-template-columns:repeat(8,1fr);align-items:center;justify-items:center;font-size:15px;font-weight:700;line-height:1;z-index:3}
+.measure-strum span{display:flex;align-items:center;justify-content:center;width:100%;height:18px}
+
+/* Simplified full-line riff renderer for rough handwritten tabs. */
+.riffsection{height:170px;margin:0 60px;position:relative;overflow:visible}
+.riffsection-title{font-size:14px;font-weight:700;margin:0 0 4px;color:#1f2933}
+.riffsection-note{font-size:10.5px;color:#555;margin:0 0 10px;line-height:1.35}
+.riff-label{position:absolute;top:-16px;transform:translateX(-50%);font-size:12px;font-weight:700;color:#222;white-space:nowrap}
+.riff-line.with-labels{margin-top:18px}
+.riff-line{width:610px;height:86px;position:relative;background:#fff}
+.riff-line::before,.riff-line::after{content:"";position:absolute;top:14px;width:4px;height:55px;background:#111;z-index:1}
+.riff-line::before{left:0}.riff-line::after{right:0}
+.riff-string{position:absolute;left:0;right:0;height:1px;background:#333}
+.riff-note{position:absolute;transform:translate(-50%,-50%);background:#fff;padding:0 2px;font-size:13px;font-weight:700;line-height:1;color:#111;z-index:2}
+.riff-note.ghost{font-weight:700}
+.riff-measure-bar{position:absolute;top:14px;height:55px;width:2px;background:#111;z-index:1}
+.riff-repeat{position:absolute;right:-15px;top:12px;height:58px;width:15px;border-right:4px solid #111;border-left:1px solid #111}
+.riff-repeat:before,.riff-repeat:after{content:"";position:absolute;left:-6px;width:4px;height:4px;border-radius:50%;background:#111}
+.riff-repeat:before{top:22px}.riff-repeat:after{top:34px}
+.tab-bar{position:absolute;top:16px;height:55px;width:1.8px;background:#111;z-index:3}
+.tab-bar.left{left:0}
+.tab-bar.right{right:0}
+.tab-bar.repeat-left{left:0;width:5px;background:linear-gradient(to right,#111 0 1.6px,transparent 1.6px 3px,#111 3px 5px)}
+.tab-bar.repeat-right{right:0;width:5px;background:linear-gradient(to right,#111 0 1.6px,transparent 1.6px 3px,#111 3px 5px)}
+
+
+/* PDF.js source pilot: remote PDF pages are rendered onto the existing A4 page. */
+.page.pdf-page{padding:0;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;}
+.pdf-page-canvas{display:block;background:#fff;}
+.pdf-footer-overlay{z-index:2;pointer-events:none;}
+.pdf-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:60px;text-align:center;font-size:16px;line-height:1.5;background:#fff;color:#444;z-index:2;}
+.pdf-status.error{color:#8b1e1e;}
+/* V6: component headings inherit the A4 page background. */
+.component-title{background:transparent!important}
+
+
+/* V7 landscape viewer: maximise usable screen area and float the controls above the score. */
+.viewer.viewer-landscape .topbar{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:30;
+  background:#20170fe8;
+  transition:transform .22s ease,opacity .22s ease;
+}
+.viewer.viewer-landscape .topbar.toolbar-hidden{
+  transform:translateY(-110%);
+  opacity:0;
+  pointer-events:none;
+}
+.viewer.viewer-landscape .frame-wrap{padding-top:0!important;padding-bottom:0!important;}
+.fullscreen-btn{min-width:40px;font-size:18px;line-height:1;}
+@media(orientation:landscape){
+  .viewer{min-height:100dvh;}
+  .viewer .frame-wrap{min-height:100dvh;}
+}
+
+
+/* V8: toolbar occupies layout space while visible and releases it when hidden. */
+.viewer.viewer-landscape{display:flex!important;flex-direction:column;min-height:100dvh;height:100dvh;overflow:hidden}
+.viewer.viewer-landscape .topbar{position:relative;flex:0 0 auto;max-height:58px;top:auto;left:auto;right:auto;overflow:hidden;transform:none;transition:max-height .22s ease,opacity .22s ease,padding .22s ease}
+.viewer.viewer-landscape .topbar.toolbar-hidden{max-height:0;height:0;padding-top:0;padding-bottom:0;opacity:0;pointer-events:none;transform:none}
+.viewer.viewer-landscape .frame-wrap{flex:1 1 auto;min-height:0;height:auto!important}
+.viewmode-btn{min-width:40px;font-size:18px;line-height:1}
+
+/* V8: fixed-width TabMeasure using the shared measure frame semantics. */
+.tabsection{height:auto;min-height:170px}
+.tab-measure-row{height:102px;display:flex;align-items:flex-start;gap:0;margin:0 0 5px}
+.tab-measure{width:168px;height:92px;position:relative;background:#fff;flex:0 0 168px}
+.tab-string{left:0;right:0}
+.tab-boundary{position:absolute;top:15px;height:61px;z-index:6}
+.tab-boundary.start{left:0}.tab-boundary.end{right:0}
+.tab-boundary.single{width:2px;background:#111}
+.tab-boundary.double{width:6px;background:linear-gradient(to right,#111 0 2px,transparent 2px 4px,#111 4px 6px)}
+.tab-boundary.final{width:7px;background:linear-gradient(to right,#111 0 2px,transparent 2px 4px,#111 4px 7px)}
+.tab-boundary.repeat{width:7px;background:linear-gradient(to right,#111 0 2px,transparent 2px 4px,#111 4px 7px)}
+.tab-boundary-dot{position:absolute;width:4px;height:4px;border-radius:50%;background:#111}
+.tab-boundary.start .tab-boundary-dot{left:9px}.tab-boundary.end .tab-boundary-dot{right:9px}
+.tab-technique{position:absolute;z-index:7;font-size:14px;font-weight:700;line-height:1;background:#fff;padding:0 1px}
+.tab-technique.legato{width:24px;height:10px;border-top:2px solid #111;border-radius:50% 50% 0 0;background:transparent}
+.tab-technique.slideUp,.tab-technique.slideDown{font-size:18px;top:auto}
+.tab-marker{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-family:var(--music-font);font-size:20px}
+.tab-below{position:absolute;right:0;bottom:-8px;font-size:12px;font-weight:700;color:#444}
+
+/* V8b: smooth viewer chrome and score resizing. */
+.viewer.viewer-landscape .topbar{
+  transition:max-height .28s ease,opacity .20s ease,padding .28s ease,box-shadow .20s ease;
+}
+.viewer.viewer-landscape .page-shell{
+  transition:width .30s cubic-bezier(.22,.61,.36,1),height .30s cubic-bezier(.22,.61,.36,1),min-height .30s cubic-bezier(.22,.61,.36,1);
+  will-change:width,height;
+}
+.viewer.viewer-landscape .page-shell>.page{
+  transition:transform .30s cubic-bezier(.22,.61,.36,1);
+  will-change:transform;
+}
+@media(prefers-reduced-motion:reduce){
+  .viewer.viewer-landscape .topbar,
+  .viewer.viewer-landscape .page-shell,
+  .viewer.viewer-landscape .page-shell>.page{transition:none!important}
+}
+
+
+/* V8d: metadata, tagfilter en compacte paginakop */
+.home-filters{display:grid;grid-template-columns:minmax(220px,1fr) minmax(150px,240px);gap:10px;align-items:center}
+.home-filters .search{margin:0}
+.tag-filter{width:100%;padding:13px 14px;border:1px solid #b9aa98;border-radius:10px;background:#fff;color:#221a14;font:inherit}
+.page-heading-copy{min-width:0}
+.page-intro{margin:5px 0 0;color:#61564d;font-size:12px;line-height:1.35;max-width:620px}
+.page-meta-right{display:flex;align-items:flex-end;flex-direction:column;gap:3px;text-align:right;margin-left:auto}
+.page-tags{font-size:10px;color:#75685d;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:650px){.home-filters{grid-template-columns:1fr}.page-tags{max-width:180px}}
+
+
+/* V8e shared page/component layout */
+.page{padding-top:32px}
+.page-header{height:auto;min-height:82px;margin:0 60px 18px;overflow:visible}
+.page-header .ptitle{margin:0 0 4px}
+.page-meta-line{font-size:11px;color:#555;line-height:1.3;margin:0 0 5px;text-align:left}
+.page-tags,.page-subtitle{display:inline}
+.page-intro{font-size:10.5px;color:#555;line-height:1.35;margin-top:3px}
+.music-component,.songsection,.tabsection,.riffsection,.chord-grid{margin-left:60px;margin-right:60px}
+.music-component,.songsection,.tabsection,.riffsection{margin-top:18px}
+.music-component-title,.songsection-title,.tabsection-title,.riffsection-title{font-size:14px;font-weight:700;margin:0 0 8px;color:#1f2933}
+.songsection-head{height:auto;min-height:22px;margin-bottom:8px}
+.chord-grid{margin-top:18px;margin-bottom:22px}
+.footer{left:60px;right:60px;bottom:30px}
+.simpleriff{height:132px;position:relative}
+.simple-riff-canvas{width:674px;height:92px;position:relative;overflow:visible}
+.simple-riff-string{position:absolute;left:0;right:0;height:1px;background:#222}
+.simple-riff-note{position:absolute;transform:translate(-50%,-50%);font-size:12px;background:#fff;padding:0 2px;line-height:14px;z-index:3}
+.simple-riff-technique{position:absolute;font-size:13px;font-weight:700;z-index:4}
+.simple-riff-bar{position:absolute;top:14px;height:59px;width:2px;background:#111}
+.simple-riff-bar.start{left:0}.simple-riff-bar.end{right:0}
+.simple-riff-bar.double:after,.simple-riff-bar.repeat:after{content:"";position:absolute;top:0;height:59px;width:2px;background:#111}
+.simple-riff-bar.start.double:after,.simple-riff-bar.start.repeat:after{left:5px}
+.simple-riff-bar.end.double:after,.simple-riff-bar.end.repeat:after{right:5px}
+.simple-riff-below{position:absolute;right:0;top:78px;font-size:10px}
+
+
+
+/* V8g — centralized unit layout and shared music canvas */
+:root{
+  --layout-unit:20px;
+  --page-inset:60px;
+  --component-title-units:2;
+  --component-gap-units:1;
+  --music-line-color:#222;
+  --music-line-width:1px;
+}
+.page{--layout-unit:20px}
+.music-component,.layout-component{
+  box-sizing:border-box;
+  position:relative;
+  width:calc(100% - (2 * var(--page-inset)));
+  height:var(--component-height,auto);
+  min-height:var(--component-height,0);
+  margin:0 var(--page-inset);
+  padding:0;
+  overflow:hidden;
+}
+.component-title,.music-component-title,.songsection-head,.tabsection-title,.riffsection-title{
+  box-sizing:border-box;
+  height:calc(var(--layout-unit) * var(--component-title-units));
+  min-height:calc(var(--layout-unit) * var(--component-title-units));
+  margin:0;
+  padding:0;
+  display:flex;
+  align-items:flex-start;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.25;
+  color:#1f2933;
+}
+.songsection,.tabsection,.simpleriff,.chordgrid-block,.text-component,.textgrid-block,.fretboard-block{margin-left:var(--page-inset);margin-right:var(--page-inset)}
+.songsection-head{gap:10px}.songsection-title{font:inherit}
+.song-measure-row,.tab-measure-row{display:flex;align-items:flex-start;gap:0;margin:0;padding:0}
+.song-measure-row{height:calc(var(--layout-unit) * 4)}
+.tab-measure-row{height:calc(var(--layout-unit) * 5)}
+.measure-box{flex:0 0 168px;width:168px;margin:0;padding-left:18px;padding-right:18px}
+.measure-start-symbol{left:0}.measure-end-symbol{right:0}
+.chord-grid,.practice{margin:0;width:100%}.chordgrid-block .chord-grid{padding:0}
+.text-component-content{
+  box-sizing:border-box;width:100%;
+  max-height:calc(var(--component-height) - (var(--layout-unit) * var(--component-title-units)) - (var(--layout-unit) * var(--component-gap-units)));
+  overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;
+  font-size:11px;line-height:1.35;color:#333;
+}
+.text-component-line{margin:0 0 3px}.text-component-line-title{font-weight:700}
+.tab-canvas{position:relative;overflow:visible;background:#fff}
+.simple-riff-canvas{width:674px;height:calc(var(--layout-unit) * 5)}
+.tab-measure{width:168px;height:92px;position:relative;background:#fff;flex:0 0 168px}
+.tab-string{position:absolute;left:0;right:0;height:var(--music-line-width);background:var(--music-line-color)}
+.tab-boundary{position:absolute;top:15px;height:61px;z-index:6}
+.tab-boundary.start{left:0}.tab-boundary.end{right:0}
+.tab-boundary.single{width:2px;background:#111}
+.tab-boundary.double{width:6px;background:linear-gradient(to right,#111 0 2px,transparent 2px 4px,#111 4px 6px)}
+.tab-boundary.final,.tab-boundary.repeat{width:7px;background:linear-gradient(to right,#111 0 2px,transparent 2px 4px,#111 4px 7px)}
+.tab-boundary-dot{position:absolute;width:4px;height:4px;border-radius:50%;background:#111}
+.tab-boundary.start .tab-boundary-dot{left:9px}.tab-boundary.end .tab-boundary-dot{right:9px}
+.tab-note{position:absolute;transform:translate(-50%,-50%);font-size:12px;background:#fff;padding:0 2px;line-height:14px;z-index:7}
+.tab-technique{position:absolute;z-index:8;font-size:14px;font-weight:700;line-height:1;background:#fff;padding:0 1px}
+.tab-technique.legato{width:24px;height:10px;border-top:2px solid #111;border-radius:50% 50% 0 0;background:transparent}
+.tab-below{position:absolute;right:0;bottom:-8px;font-size:10px}
+.show-layout-units .page{background-color:#fff;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--layout-unit) - 1px),rgba(143,79,27,.13) calc(var(--layout-unit) - 1px),rgba(143,79,27,.13) var(--layout-unit))}
+.show-layout-units .music-component,.show-layout-units .layout-component{outline:1px dashed rgba(143,79,27,.72);outline-offset:-1px}
+.show-layout-units .music-component::after,.show-layout-units .layout-component::after{content:attr(data-layout-units) "u";position:absolute;top:1px;right:3px;z-index:20;padding:1px 4px;border-radius:3px;background:#8f4f1be8;color:#fff;font:700 9px/1.3 Arial,sans-serif;pointer-events:none}
+
+
+/* V8H — shared music framing and title alignment */
+.songsection-head{position:relative;display:block;gap:0}
+.songsection-head .segno{position:absolute;left:0;top:0;transform:translateX(-24px)}
+.songsection-title,.chordgrid-block .component-title,.text-component .component-title,.tabsection-title,.music-component-title{
+  margin-left:0!important;padding-left:0!important;font-family:inherit;font-size:14px;font-weight:700;line-height:1.25;
+}
+.chord-measure-shared-frame{position:relative;overflow:visible}
+.chord-measure-shared-frame .tab-boundary{top:8px;height:56px}
+.chord-measure-shared-frame .tab-boundary-dot{transform:translateY(-2px)}
+.chord-below{right:6px;bottom:-10px;max-width:calc(100% - 12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.simpleriff .simple-riff-canvas{margin-bottom:0}
+.simpleriff{overflow:visible}
+
+
+/* V8I — final Text-component sizing and pagination */
+.text-component .component-title{
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  line-height:1.25!important;
+}
+.text-component-content{
+  height:calc(var(--component-height) - (var(--layout-unit) * var(--component-title-units)));
+  max-height:none;
+  padding:0;
+  margin:0;
+  overflow:hidden;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:11px;
+  line-height:1.35;
+}
+.text-component-line:last-child,.text-component-body:last-child{margin-bottom:0}
+
+/* V8I: maatannotaties boven TabSection */
+.tab-above{
+  position:absolute;
+  left:8px;
+  right:8px;
+  top:0;
+  display:grid;
+  align-items:center;
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+  line-height:1;
+  pointer-events:none;
+}
+.tab-above span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+
+/* V9C — consistent homepage spacing and missing-chord feedback */
+:root{--ui-gap:18px}
+.home-filters{margin-bottom:var(--ui-gap)}
+.breadcrumb{margin:var(--ui-gap) 0 var(--ui-gap)}
+.hint{margin-top:var(--ui-gap)}
+.chord-missing{min-height:128px;border:1px dashed #b88d63;border-radius:10px;padding:10px 6px;background:#fff8ed;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.chord-missing-message{font-size:11px;line-height:1.3;color:#8b4b1c;font-weight:700;max-width:96px}
+
+/* COMPONENT — ChordLibrary system page */
+.chord-library-page .chord-library-header{min-height:116px;margin-bottom:16px}
+.chord-library-header .page-meta-line{margin-bottom:12px}
+.chord-library-filter{display:flex;align-items:center;gap:10px;width:330px;font-size:11px;font-weight:700;color:#4e4339}
+.chord-library-filter select{flex:1;padding:7px 9px;border:1px solid #b9aa98;border-radius:7px;background:#fff;color:#221a14;font:inherit}
+.chord-library-grid{margin:0 60px;display:grid;grid-template-columns:repeat(5,112px);gap:12px 14px;align-items:start}
+.chord-library-grid .chord{width:112px;min-height:142px;padding:4px 4px 2px;background:#fff;text-align:center}
+.chord-library-empty{grid-column:1/-1;padding:28px;border:1px dashed #b9aa98;border-radius:10px;text-align:center;color:#6b5e52;background:#fffaf1}
+
+</style>
+
+<!-- =======================================================================
+     BUILDER UI: CSS
+     Builder-only rules are never copied into FretFlow.html.
+     ======================================================================= -->
+<style id="fretflow-builder-css">
+
+*{box-sizing:border-box}body{height:100vh;overflow:hidden;background:#e9e2d8}header{height:58px;background:#21170f;color:#fff;display:flex;align-items:center;gap:8px;padding:0 14px}header h1{font-size:17px}.spacer{flex:1}button,input,select,textarea{font:inherit}button{border:0;border-radius:7px;padding:8px 10px;background:#8f4f1b;color:#fff;font-weight:700;cursor:pointer}.layout{height:calc(100vh - 58px);display:grid;grid-template-columns:minmax(430px,1fr) minmax(430px,1fr);gap:12px;padding:12px}.panel{background:#fffaf1;border:1px solid #cdbfae;border-radius:12px;min-height:0;display:flex;flex-direction:column;overflow:hidden}.panel>h2{font-size:15px;margin:0;padding:11px 14px;background:#f0e5d6}.scroll{overflow-y:auto;padding:12px;min-height:0}.field{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.field label{font-size:12px;font-weight:700}.label-hint{font-weight:400;color:#6b5e52}.field input,.field select,.field textarea{padding:7px;border:1px solid #b9aa98;border-radius:6px}#editor .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.full{grid-column:1/-1}.toolbar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.block{border:1px solid #cbbdab;border-radius:9px;padding:9px;margin:9px 0;background:#fff}.block-head{display:flex;gap:7px;align-items:center}.small{padding:5px 7px;font-size:12px}.secondary{background:#5c5148}.danger{background:#9a3434}.note-row{display:grid;grid-template-columns:80px 70px 1fr 115px 34px;gap:5px;align-items:end;margin:5px 0}.note-row .field{margin-bottom:0}.note-row>button{height:34px;align-self:end;display:flex;align-items:center;justify-content:center}.subbox{border-left:4px solid #8f4f1b;padding:7px;margin:8px 0;background:#fffdf9}.preview{overflow:auto;background:#d7cec1;min-height:0;flex:1;padding:16px}.library-picker{display:grid;grid-template-columns:minmax(160px,1fr) minmax(220px,2fr);gap:8px;margin-bottom:10px}.library-picker input,.library-picker select{width:100%;padding:8px;border:1px solid #b9aa98;border-radius:6px;background:#fff}.line-actions{display:flex;gap:5px;flex-wrap:wrap}.line-actions button{background:#5c5148}.line-actions .danger{background:#9a3434}.hint{font-size:12px;color:#6b5e52}.status{font-size:12px;color:#6b5e52;margin:0 0 10px}.empty{padding:16px;border:1px dashed #b9aa98;border-radius:8px;background:#fffdf9}.back-row{margin-bottom:10px}.builder-record-preview{display:flex;flex-direction:column;align-items:center;gap:24px}.builder-record-preview .page-shell{flex:0 0 auto}.preview .page-shell{margin-bottom:0}.component-toolbar{position:sticky;z-index:4;background:#fffaf1;padding:8px 0}.component-toolbar.top{top:-12px;border-bottom:1px solid #d8cabc}.component-toolbar.bottom{bottom:-12px;border-top:1px solid #d8cabc}.chord-ref-list{display:flex;flex-direction:column;gap:5px;margin:7px 0}.chord-ref{display:flex;align-items:center;gap:5px;padding:5px 7px;border:1px solid #d8cabc;border-radius:6px;background:#fff}.chord-ref b{flex:1}.inline-add{display:grid;grid-template-columns:1fr auto;gap:6px}.insert-select{max-width:150px;padding:5px;border:1px solid #b9aa98;border-radius:6px;background:#fff}.chord-library-layout{display:grid;grid-template-columns:minmax(180px,240px) 1fr;gap:12px}.chord-library-list{display:flex;flex-direction:column;gap:8px}.chord-library-list input,.chord-library-list select{width:100%;padding:8px;border:1px solid #b9aa98;border-radius:6px}.string-editor{display:grid;grid-template-columns:90px 1fr 1fr;gap:7px;align-items:end;padding:6px 0;border-bottom:1px solid #eadfce}.string-editor:last-child{border-bottom:0}.chord-editor-preview{min-height:260px;background:#f5eee4;border:1px solid #d8cabc;border-radius:9px;padding:10px;display:flex;justify-content:center;align-items:flex-start}.warning{padding:7px 9px;border-radius:6px;background:#fff0c7;color:#6e4a00;font-size:12px;margin-top:6px}.success{padding:7px 9px;border-radius:6px;background:#e4f4e6;color:#205b2b;font-size:12px;margin-top:6px}.project-section{border-top:1px solid #d8cabc;margin-top:18px;padding-top:14px}.project-section h3{margin:0 0 6px;font-size:14px}.project-list{display:flex;flex-direction:column;gap:8px}.project-row{border:1px solid #d8cabc;border-radius:8px;padding:8px;background:#fff}.project-row-head{display:flex;align-items:center;gap:6px;margin-bottom:7px}.project-row-head b{flex:1}.project-row-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:7px}.project-row-grid .field{margin:0}.group-assignment{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;padding:8px;border:1px solid #d8cabc;border-radius:7px;background:#fff}.group-check{display:flex;align-items:center;gap:7px;font-size:12px}.group-check input{margin:0}.project-id{font-size:11px;color:#7b6d61;font-family:monospace}
+@media(max-width:720px){.chord-library-layout{grid-template-columns:1fr}}@media(max-width:1000px){body{height:auto;overflow:auto}.layout{height:auto;grid-template-columns:1fr}.panel{max-height:none}}
+.category-manager{display:flex;flex-direction:column;gap:8px}.category-row{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:7px;border:1px solid #d8cabc;border-radius:7px;background:#fff}.category-row input{width:100%;padding:7px;border:1px solid #b9aa98;border-radius:6px}.chord-picker{display:block;margin:7px 0}.chord-picker select{width:100%;padding:7px;border:1px solid #b9aa98;border-radius:6px;background:#fff}.selected-chords{display:flex;flex-direction:column;gap:5px}.selected-chord{display:grid;grid-template-columns:1fr auto auto auto;gap:5px;align-items:center;padding:5px 7px;border:1px solid #d8cabc;border-radius:6px;background:#fff}.mode-note{padding:8px 10px;border-radius:7px;background:#f0e5d6;color:#5c5148;font-size:12px;margin-bottom:10px}
+
+/* V10E — final phase-10 baseline */
+header h1{color:#fff;margin:0;font-size:17px}
+header button{white-space:nowrap}.dev-only{display:none!important}
+.dataset-switch{display:flex;align-items:center;gap:7px;margin:0 0 10px;font-size:12px;font-weight:700}.dataset-switch select{padding:5px 7px;border:1px solid #b9aa98;border-radius:6px;background:#fff}.dataset-switch[hidden]{display:none}
+#fretflow-app-shell-template{display:none}
+@media(max-width:900px){header{height:auto;min-height:58px;flex-wrap:wrap;padding:8px 12px}.layout{height:auto}}
+
+</style>
+</head>
+<body>
+<header>
+  <button class="secondary" id="openApp">Gitaarmap openen</button>
+  <input hidden type="file" id="standaloneFile" accept=".html,text/html">
+  <button id="buildApp">Gitaarmap opslaan</button>
+  <button class="secondary" id="newProject">Nieuwe gitaarmap</button>
+  <button class="secondary dev-only" id="toggleUnits" title="Interne ontwikkeloptie: toon of verberg de vaste layout-units in de live preview">Toon layout-units</button>
+  <span class="spacer"></span>
+  <h1>FretFlow Builder V10E</h1>
+</header>
+<div class="layout">
+  <section class="panel" data-builder-panel="LibraryEditor">
+    <h2>Bibliotheek en invoer</h2>
+    <div class="scroll">
+      <div id="status" class="status">Nog geen gitaarmap geopend.</div>
+      <div id="datasetSwitch" class="dataset-switch" hidden><label for="datasetKind">Dataset</label><select id="datasetKind"></select></div>
+      <div class="library-picker" id="recordPicker">
+        <input id="recordSearch" placeholder="Zoek op titel, artiest, tag of groep">
+        <select id="recordSelect"><option value="">Kies een tab…</option></select>
+      </div>
+      <div class="toolbar" id="libraryActions"></div>
+      <div id="editor"><div class="empty">Kies <b>Nieuwe gitaarmap</b> of open een bestaande gitaarmap, zoals <b>FretFlow.html</b>, om muziek toe te voegen.</div></div>
+    </div>
+  </section>
+  <section class="panel" data-builder-panel="SharedRendererPreview">
+    <h2>Live preview – gedeelde renderer</h2>
+    <div class="preview"><div id="preview"></div></div>
+  </section>
+</div>
+
+<!-- =======================================================================
+     APP SOURCE: SHELL TEMPLATE
+     This exact HomeView/ViewerView shell is copied into FretFlow.html; project data remains separate.
+     ======================================================================= -->
+<template id="fretflow-app-shell-template">
+<main class="home" data-view="HomeView" id="home"><div class="shell"><section class="hero"><a class="badge" href="https://github.com/frgouma/FretFlow" onclick="event.preventDefault();" aria-label="FretFlow GitHub repository">Digitale gitaarmap</a><h1>FretFlow</h1><p>Kies een oefenblad. De inhoud komt uit leesbare JSON; component-classes bepalen rendering en paginering.</p></section><div class="home-filters"><input autocomplete="off" class="search" id="search" placeholder="Zoek op titel, artiest of tag..."/><select aria-label="Filter op tag" class="tag-filter" id="tagFilter"><option value="">Alle tags</option></select></div><section class="grid" id="cards"></section><div class="hint" id="homeFooter">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
+<section class="viewer" data-view="ViewerView" id="viewer"><div class="topbar"><button class="back" id="back">← Terug</button><b id="viewerTitle"></b><span class="spacer"></span><button class="navbtn" id="prev">←</button><span class="count" id="count"></span><button class="navbtn" id="next">→</button><button aria-label="Wissel één pagina / spread" class="navbtn viewmode-btn" id="viewMode" title="Wissel één pagina / spread">▣</button><button aria-label="Volledig scherm" class="navbtn fullscreen-btn" id="fullscreen" title="Volledig scherm">⛶</button></div><div class="frame-wrap"><div id="pageMount"></div></div></section>
+</template>
+
+<!-- PDF preview dependency. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- =======================================================================
+     APP SOURCE: RUNTIME AND COMPONENTS
+     This exact readable source is copied into every generated FretFlow.html.
+     ======================================================================= -->
+<script id="fretflow-runtime">
+(function(global){
+"use strict";
+const FretFlow = global.FretFlow || (global.FretFlow = {});
+FretFlow.escape = s => String(s ?? "").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+FretFlow.slug = s => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+FretFlow.APP_CREDIT = "FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo";
+FretFlow.defaultChordCategories = () => [
+  {id:"open-chords", name:"Open akkoorden"},
+  {id:"power-chords", name:"Power chords"},
+  {id:"barre", name:"Barré"},
+  {id:"slash-chords", name:"Slash chords"},
+  {id:"custom", name:"Eigen"}
+];
+FretFlow.normalizeChordLibrary = function(libraryData = {}) {
+  const library = libraryData || {};
+  let categories = Array.isArray(library.chordCategories) ? library.chordCategories : [];
+  categories = categories.map((category, index) => {
+    if (typeof category === "string") return {id:FretFlow.slug(category) || `category-${index+1}`, name:category};
+    const name = String(category && (category.name || category.title || category.id) || `Categorie ${index+1}`).trim();
+    return {id:String(category && category.id || FretFlow.slug(name) || `category-${index+1}`), name};
+  });
+  if (!categories.length) categories = FretFlow.defaultChordCategories();
+
+  const categoryById = new Map(categories.map(category => [category.id, category]));
+  const categoryByName = new Map(categories.map(category => [category.name.toLowerCase(), category]));
+  const ensureCategory = value => {
+    const raw = String(value || "").trim();
+    if (categoryById.has(raw)) return raw;
+    const named = categoryByName.get(raw.toLowerCase());
+    if (named) return named.id;
+    if (raw) {
+      let id = FretFlow.slug(raw) || "custom";
+      let unique = id, suffix = 2;
+      while (categoryById.has(unique)) unique = `${id}-${suffix++}`;
+      const category = {id:unique, name:raw};
+      categories.push(category); categoryById.set(unique, category); categoryByName.set(raw.toLowerCase(), category);
+      return unique;
+    }
+    return categoryById.has("custom") ? "custom" : categories[0].id;
+  };
+  const inferCategory = code => /5$/.test(code)
+    ? ensureCategory("power-chords")
+    : code.includes("/")
+      ? ensureCategory("slash-chords")
+      : ensureCategory("open-chords");
+
+  const source = library.chords || [];
+  const rawEntries = Array.isArray(source)
+    ? source
+    : Object.entries(source).map(([code, diagram]) => ({code, diagram}));
+  const seen = new Set();
+  const chords = [];
+  rawEntries.forEach(raw => {
+    if (!raw) return;
+    const code = String(raw.code || raw.name || "").trim();
+    if (!code || seen.has(code)) return;
+    let diagram;
+    if (raw.diagram && typeof raw.diagram === "object") diagram = {...raw.diagram};
+    else {
+      diagram = {...raw};
+      delete diagram.code; delete diagram.category; delete diagram.diagram; delete diagram.name;
+    }
+    if (diagram.name === code) delete diagram.name;
+    diagram.startFret = Math.max(1, Number(diagram.startFret) || 1);
+    diagram.frets = (diagram.frets || []).slice(0,6);
+    while (diagram.frets.length < 6) diagram.frets.push("x");
+    diagram.fingers = (diagram.fingers || []).slice(0,6);
+    while (diagram.fingers.length < 6) diagram.fingers.push(null);
+    if (!(diagram.barres || []).length) delete diagram.barres;
+    chords.push({code, category:raw.category ? ensureCategory(raw.category) : inferCategory(code), diagram});
+    seen.add(code);
+  });
+  library.chordCategories = categories;
+  library.chords = chords;
+  return library;
+};
+FretFlow.chordMap = function(libraryData = {}) {
+  const library = FretFlow.normalizeChordLibrary(libraryData);
+  return new Map(library.chords.map(chord => [chord.code, chord]));
+};
+FretFlow.normalizeNativeData = function(data = {}) {
+  data.library = FretFlow.normalizeChordLibrary(data.library || {});
+  data.tabs = Array.isArray(data.tabs) ? data.tabs : [];
+  for (const tab of data.tabs) {
+    tab.sections = Array.isArray(tab.sections) ? tab.sections : [];
+    for (const section of tab.sections) {
+      if (section.type === "chordgrid") {
+        section.chords = (section.chords || []).filter(code => typeof code === "string" && code.trim());
+      }
+    }
+  }
+  return data;
+};
+/* =============================================================================
+   INTEGRATED PROJECT MODEL — one data object for one songbook
+   Project owns homepage groups + system-page metadata; records only reference ordinary group IDs.
+   ============================================================================= */
+FretFlow.defaultGroups = () => ([
+  {id:"songs",title:"Liedjes",description:"Volledige nummers en arrangementen."},
+  {id:"exercises",title:"Oefeningen",description:"Techniek, ritme en losse speelpatronen."},
+  {id:"cheatsheets",title:"Cheat sheets",description:"Akkoorden, shapes en muzikale naslag."},
+  {id:"developer",title:"Developer",description:"Technische test- en voorbeeldbladen."}
+]);
+FretFlow.defaultSystemPages = () => ({
+  chordLibrary:{
+    title:"Akkoordenbibliotheek",
+    description:"Bekijk alle akkoorddiagrammen per categorie."
+  }
+});
+FretFlow.emptyChordData = () => FretFlow.normalizeChordLibrary({
+  frets:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
+  strings:["Hoge E","B","G","D","A","Dikke E"],
+  rootsA:["0-5","0-17","1-10","2-14","3-7","4-12","5-5","5-17"],
+  rootsC:["0-8","1-13","2-5","2-17","3-10","4-15","5-8"],
+  chordCategories:FretFlow.defaultChordCategories(),
+  chords:[]
+});
+FretFlow.starterChords = () => ([
+  {code:"A",  category:"open-chords", diagram:{startFret:1,frets:["x",0,2,2,2,0],fingers:[null,null,3,2,1,null]}},
+  {code:"Am", category:"open-chords", diagram:{startFret:1,frets:["x",0,2,2,1,0],fingers:[null,null,3,2,1,null]}},
+  {code:"C",  category:"open-chords", diagram:{startFret:1,frets:["x",3,2,0,1,0],fingers:[null,3,2,null,1,null]}},
+  {code:"D",  category:"open-chords", diagram:{startFret:1,frets:["x","x",0,2,3,2],fingers:[null,null,null,2,3,1]}},
+  {code:"Dm", category:"open-chords", diagram:{startFret:1,frets:["x","x",0,2,3,1],fingers:[null,null,null,2,3,1]}},
+  {code:"E",  category:"open-chords", diagram:{startFret:1,frets:[0,2,2,1,0,0],fingers:[null,3,2,1,null,null]}},
+  {code:"Em", category:"open-chords", diagram:{startFret:1,frets:[0,2,2,0,0,0],fingers:[null,3,2,null,null,null]}},
+  {code:"F",  category:"barre", diagram:{startFret:1,frets:[1,3,3,2,1,1],fingers:[1,3,4,2,1,1],barres:[{fret:1,fromString:0,toString:5,finger:1}]}},
+  {code:"G",  category:"open-chords", diagram:{startFret:1,frets:[3,2,0,0,3,3],fingers:[2,1,null,null,3,4]}}
+]);
+FretFlow.starterChordData = () => {
+  const library = FretFlow.emptyChordData();
+  library.chords = FretFlow.starterChords();
+  return FretFlow.normalizeChordLibrary(library);
+};
+FretFlow.CURRENT_SCHEMA = "10B";
+FretFlow.BUILDER_VERSION = "10E";
+FretFlow.createEmptyProject = function() {
+  return {
+    schemaVersion:FretFlow.CURRENT_SCHEMA,
+    builderVersion:FretFlow.BUILDER_VERSION,
+    project:{
+      title:"FretFlow",
+      description:"",
+      groups:FretFlow.defaultGroups(),
+      systemPages:FretFlow.defaultSystemPages(),
+      homepage:{
+        badge:"Digitale gitaarmap",
+        title:"FretFlow",
+        intro:"Kies een oefenblad. Zoek op titel, artiest of tag."
+      }
+    },
+    chords:FretFlow.starterChordData(),
+    nativeTabs:[],
+    pdfTabs:[]
+  };
+};
+FretFlow.tagKey = value => String(value || "").trim().toLocaleLowerCase("nl");
+FretFlow.tagCanonicalMap = function(model = {}) {
+  const canonical = new Map([["native","native"],["pdf","pdf"]]);
+  for (const record of [...(model.nativeTabs || []), ...(model.pdfTabs || [])]) {
+    for (const raw of record.tags || []) {
+      const tag = String(raw || "").trim();
+      const key = FretFlow.tagKey(tag);
+      if (key && !canonical.has(key)) canonical.set(key, tag);
+    }
+  }
+  return canonical;
+};
+FretFlow.normalizeTags = function(tags = [], canonical = new Map(), systemTag = "") {
+  const result = [];
+  const seen = new Set();
+  for (const raw of [...tags, ...(systemTag ? [systemTag] : [])]) {
+    const tag = String(raw || "").trim();
+    const key = FretFlow.tagKey(tag);
+    if (!key || seen.has(key)) continue;
+    if (!canonical.has(key)) canonical.set(key, key === "native" || key === "pdf" ? key : tag);
+    result.push(canonical.get(key));
+    seen.add(key);
+  }
+  return result;
+};
+FretFlow.canonicalizeProjectTags = function(model = {}) {
+  const canonical = FretFlow.tagCanonicalMap(model);
+  for (const tab of model.nativeTabs || []) tab.tags = FretFlow.normalizeTags(tab.tags || [], canonical, "native");
+  for (const tab of model.pdfTabs || []) tab.tags = FretFlow.normalizeTags(tab.tags || [], canonical, "pdf");
+  return model;
+};
+FretFlow.normalizeGroups = function(rawGroups = []) {
+  const source = Array.isArray(rawGroups)
+    ? rawGroups
+    : Object.entries(rawGroups || {}).map(([id,value]) => ({id,...(value || {})}));
+  const result = [];
+  const used = new Set();
+  source.forEach((raw,index) => {
+    const title = String(raw?.title || raw?.name || raw?.id || `Groep ${index+1}`).trim() || `Groep ${index+1}`;
+    let base = FretFlow.slug(raw?.id || title) || `groep-${index+1}`;
+    let id = base, n = 2;
+    while (used.has(id)) id = `${base}-${n++}`;
+    used.add(id);
+    result.push({id,title,description:String(raw?.description || "")});
+  });
+  return result;
+};
+FretFlow.normalizeRecordGroups = function(record = {}, knownGroups = []) {
+  const groups = Array.isArray(record.groups) ? record.groups : [];
+  record.groups = [...new Set(groups.map(value => String(value || "").trim()).filter(Boolean))];
+  return record;
+};
+FretFlow.normalizeSystemPages = function(rawSystemPages = {}) {
+  const base = FretFlow.defaultSystemPages();
+  const rawChord = rawSystemPages?.chordLibrary || {};
+  return {
+    chordLibrary:{
+      title:String(rawChord.title || base.chordLibrary.title),
+      description:String(rawChord.description || base.chordLibrary.description)
+    }
+  };
+};
+FretFlow.normalizeProjectModel = function(input = {}) {
+  const base = FretFlow.createEmptyProject();
+  const data = JSON.parse(JSON.stringify(input || {}));
+  const rawProject = data.project || {};
+  const rawHomepage = rawProject.homepage || {};
+  data.schemaVersion = FretFlow.CURRENT_SCHEMA;
+  data.builderVersion = FretFlow.BUILDER_VERSION;
+  data.project = {...base.project, ...rawProject};
+
+  data.project.groups = FretFlow.normalizeGroups(rawProject.groups || base.project.groups);
+  data.project.systemPages = FretFlow.normalizeSystemPages(rawProject.systemPages || {});
+  data.project.homepage = {...base.project.homepage, ...rawHomepage};
+  data.chords = FretFlow.normalizeChordLibrary({...FretFlow.emptyChordData(), ...(data.chords || {})});
+  data.nativeTabs = Array.isArray(data.nativeTabs) ? data.nativeTabs : [];
+  data.pdfTabs = Array.isArray(data.pdfTabs) ? data.pdfTabs : [];
+
+  for (const record of data.nativeTabs) FretFlow.normalizeRecordGroups(record,data.project.groups);
+  for (const record of data.pdfTabs) {
+    FretFlow.normalizeRecordGroups(record,data.project.groups);
+    record.footer = record.footer || "";
+  }
+
+  // Keep referenced groups valid when opening a development build with an incomplete group list.
+  const existingIds = new Set(data.project.groups.map(group => group.id));
+  for (const record of [...data.nativeTabs,...data.pdfTabs]) {
+    for (const id of record.groups || []) if (id && !existingIds.has(id)) {
+      data.project.groups.push({id,title:id,description:""});
+      existingIds.add(id);
+    }
+  }
+
+  FretFlow.canonicalizeProjectTags(data);
+  const nativeLike = FretFlow.normalizeNativeData({library:data.chords, tabs:data.nativeTabs});
+  data.chords = nativeLike.library;
+  data.nativeTabs = nativeLike.tabs;
+  FretFlow.canonicalizeProjectTags(data);
+  return data;
+};
+
+/* =============================================================================
+   DATA COMPOSITION AND STANDALONE EXPORT
+   ============================================================================= */
+FretFlow.composeProjectData = function(projectModel = {}) {
+  const model = FretFlow.normalizeProjectModel(projectModel);
+  const nativeData = {
+    schemaVersion:model.schemaVersion,
+    app:{title:model.project.title, subtitle:model.project.description || ""},
+    project:model.project,
+    library:model.chords,
+    tabs:model.nativeTabs
+  };
+  const appData = FretFlow.normalizeNativeData(nativeData);
+  const pdfData = {records:model.pdfTabs};
+  const pdfTabs = model.pdfTabs.map(record => ({
+    id:record.id,
+    nr:record.nr || "",
+    title:record.title || "PDF",
+    artist:record.artist || "",
+    groups:record.groups || [],
+    tags:record.tags || [],
+    description:record.description || "",
+    source:{type:"pdf", embeddedId:record.embeddedId || record.id, pageCount:record.pageCount || 1},
+    sections:[], footer:record.footer || "", legend:[]
+  }));
+  appData.tabs = [...(appData.tabs || []), ...pdfTabs];
+  return {appData, pdfData};
+};
+
+FretFlow.initApp = function(){
+/* =============================================================================
+   VIEW: ViewerView
+   ============================================================================= */
+class Viewer {
+  constructor(app) {
+    this.app = app;
+    this.activeTab = null;
+    this.pages = [];
+    this.pageIndex = 0;
+    this.mode = "single";
+    this.viewPreference = "spread";
+    this.touchStart = null;
+    this.isAnimating = false;
+    this.toolbarTimer = null;
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    document.getElementById("back").onclick = () => this.close();
+    document.getElementById("prev").onclick = () => this.move(-1);
+    document.getElementById("next").onclick = () => this.move(1);
+    const fullscreenButton = document.getElementById("fullscreen");
+    if (fullscreenButton) fullscreenButton.onclick = () => this.toggleFullscreen();
+    const viewModeButton = document.getElementById("viewMode");
+    if (viewModeButton) viewModeButton.onclick = () => this.toggleViewMode();
+
+    document.addEventListener("keydown", e => {
+      if (!this.activeTab) return;
+      if (e.key === "ArrowLeft") this.move(-1);
+      if (e.key === "ArrowRight") this.move(1);
+    });
+
+    const wrap = document.querySelector(".frame-wrap");
+    wrap.addEventListener("touchstart", e => {
+      const touch = e.changedTouches[0];
+      this.touchStart = {x: touch.clientX, y: touch.clientY, time: performance.now()};
+    }, {passive:true});
+    wrap.addEventListener("touchend", e => {
+      if (!this.touchStart) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - this.touchStart.x;
+      const dy = touch.clientY - this.touchStart.y;
+      const duration = performance.now() - this.touchStart.time;
+      const distance = Math.hypot(dx, dy);
+      const horizontalSwipe = Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.25;
+      const tap = distance < 14 && duration < 500;
+      this.touchStart = null;
+
+      if (horizontalSwipe) {
+        // Swipen is paginanavigatie: laat een verborgen toolbar verborgen.
+        this.move(dx < 0 ? 1 : -1);
+      } else if (tap) {
+        // Alleen een bewuste tik vraagt om de bediening.
+        this.showToolbar();
+      }
+    }, {passive:true});
+    wrap.addEventListener("touchcancel", () => { this.touchStart = null; }, {passive:true});
+
+    window.addEventListener("resize", () => this.handleViewportChange());
+    window.addEventListener("orientationchange", () => setTimeout(() => this.handleViewportChange(), 150));
+    document.addEventListener("fullscreenchange", () => this.updateFullscreenButton());
+
+    const viewer = document.getElementById("viewer");
+    ["pointermove", "pointerdown"].forEach(name => viewer?.addEventListener(name, e => {
+      // Touch wordt hierboven als tap of swipe afgehandeld.
+      if (e.pointerType === "mouse" || e.pointerType === "pen") this.showToolbar();
+    }, {passive:true}));
+  }
+
+  handleViewportChange() {
+    if (!this.activeTab) return;
+    const previousMode = this.mode;
+    this.updateMode();
+    this.updateViewerChrome();
+    if (this.mode !== previousMode) this.render();
+    else this.scalePages();
+  }
+
+  open(tab) {
+    this.activeTab = tab;
+    this.pages = this.app.paginate(tab);
+    this.pageIndex = 0;
+
+    document.getElementById("home").style.display = "none";
+    document.getElementById("viewer").style.display = "block";
+    this.updateViewerChrome();
+    this.showToolbar();
+    document.getElementById("viewerTitle").textContent = `${tab.nr} · ${tab.title}`;
+    location.hash = tab.id;
+
+    this.render();
+    scrollTo(0, 0);
+  }
+
+  refresh() {
+    if (!this.activeTab) return;
+    this.pages = this.app.paginate(this.activeTab);
+    this.pageIndex = 0;
+    this.render();
+    this.showToolbar();
+  }
+
+  close() {
+    document.getElementById("viewer").style.display = "none";
+    document.getElementById("home").style.display = "block";
+    document.getElementById("pageMount").innerHTML = "";
+    this.activeTab = null;
+    this.pages = [];
+    this.pageIndex = 0;
+    this.isAnimating = false;
+    clearTimeout(this.toolbarTimer);
+    document.querySelector(".topbar")?.classList.remove("toolbar-hidden");
+    document.getElementById("viewer")?.classList.remove("viewer-landscape");
+    history.pushState("", document.title, location.pathname + location.search);
+  }
+
+  move(delta) {
+    if (!this.activeTab || this.isAnimating) return;
+    this.updateMode();
+    const step = this.mode === "spread" ? 2 : 1;
+    const next = this.pageIndex + (delta * step);
+    if (next < 0 || next >= this.pages.length) return;
+    this.goToPage(next, delta);
+  }
+
+  async goToPage(nextIndex, direction) {
+    const mount = document.getElementById("pageMount");
+    this.isAnimating = true;
+
+    if (this.shouldAnimate(mount)) {
+      await this.animatePage(mount, direction, "exit");
+    }
+
+    this.pageIndex = nextIndex;
+    this.render();
+    scrollTo(0, 0);
+
+    const newMount = document.getElementById("pageMount");
+    if (this.shouldAnimate(newMount)) {
+      await this.animatePage(newMount, direction, "enter");
+    }
+
+    this.isAnimating = false;
+  }
+
+  shouldAnimate(element) {
+    const reduce = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return element && element.animate && !reduce;
+  }
+
+  animatePage(element, direction, phase) {
+    const distance = 34 * (direction >= 0 ? 1 : -1);
+    const frames = phase === "exit"
+      ? [
+          { opacity: 1, transform: "translateX(0)" },
+          { opacity: 0, transform: `translateX(${-distance}px)` }
+        ]
+      : [
+          { opacity: 0, transform: `translateX(${distance}px)` },
+          { opacity: 1, transform: "translateX(0)" }
+        ];
+
+    return element.animate(frames, {
+      duration: 190,
+      easing: "ease-out"
+    }).finished.catch(() => {});
+  }
+
+  updateViewerChrome() {
+    const viewer = document.getElementById("viewer");
+    if (!viewer) return;
+    const landscape = window.innerWidth > window.innerHeight;
+    viewer.classList.toggle("viewer-landscape", landscape);
+    if (landscape) this.showToolbar();
+    else {
+      clearTimeout(this.toolbarTimer);
+      document.querySelector(".topbar")?.classList.remove("toolbar-hidden");
+    }
+  }
+
+  showToolbar() {
+    if (!this.activeTab) return;
+    const bar = document.querySelector(".topbar");
+    if (!bar) return;
+    bar.classList.remove("toolbar-hidden");
+    clearTimeout(this.toolbarTimer);
+    requestAnimationFrame(() => this.scalePages());
+    if (window.innerWidth > window.innerHeight) {
+      this.toolbarTimer = setTimeout(() => {
+        bar.classList.add("toolbar-hidden");
+        // Recalculate immediately: CSS transitions animate the score smoothly
+        // into the height released by the disappearing toolbar.
+        requestAnimationFrame(() => this.scalePages());
+      }, 2600);
+    }
+  }
+
+  toggleViewMode() {
+    this.viewPreference = this.viewPreference === "spread" ? "single" : "spread";
+    if (this.viewPreference === "spread" && this.pageIndex % 2 === 1) this.pageIndex -= 1;
+    this.render();
+    this.showToolbar();
+  }
+
+  updateViewModeButton() {
+    const button = document.getElementById("viewMode");
+    if (!button) return;
+    const spread = this.viewPreference === "spread";
+    button.textContent = spread ? "▣" : "□";
+    button.title = spread ? "Toon één pagina" : "Toon spread";
+    button.setAttribute("aria-label", button.title);
+    button.disabled = this.pages.length < 2;
+  }
+
+  async toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (err) {
+      console.warn("Fullscreen niet beschikbaar", err);
+    }
+    this.updateFullscreenButton();
+    this.showToolbar();
+  }
+
+  updateFullscreenButton() {
+    const button = document.getElementById("fullscreen");
+    if (!button) return;
+    const active = Boolean(document.fullscreenElement);
+    button.textContent = active ? "⛶" : "⛶";
+    button.title = active ? "Verlaat volledig scherm" : "Volledig scherm";
+    button.setAttribute("aria-label", button.title);
+  }
+
+  spreadMargins() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    // Spread view should feel compact on tablet-sized CSS viewports,
+    // but still keep a pleasant canvas margin on large desktop windows.
+    if (w < 1400 || h < 900) return { side: 4, vertical: 0, gap: 6 };
+    if (w < 1900 || h < 1100) return { side: 6, vertical: 0, gap: 8 };
+    return { side: 12, vertical: 0, gap: 12 };
+  }
+
+  updateMode() {
+    const landscape = window.innerWidth > window.innerHeight;
+    const pageWidth = 794;
+    const pageHeight = 1123;
+    const margins = this.spreadMargins();
+    const topbar = document.querySelector(".topbar");
+    const availableWidth = window.innerWidth - (margins.side * 2);
+    const topbarVisible = topbar && !topbar.classList.contains("toolbar-hidden");
+    const availableHeight = window.innerHeight - (topbarVisible ? topbar.offsetHeight : 0) - (margins.vertical * 2);
+    const spreadScale = Math.min(1, availableWidth / ((pageWidth * 2) + margins.gap), availableHeight / pageHeight);
+    const MIN_SPREAD_SCALE = 0.42;
+
+    const spreadAllowed = this.viewPreference === "spread" && landscape && this.pages.length > 1 && spreadScale >= MIN_SPREAD_SCALE;
+    this.mode = spreadAllowed ? "spread" : "single";
+    if (this.mode === "spread" && this.pageIndex % 2 === 1) {
+      this.pageIndex -= 1;
+    }
+  }
+
+  visiblePageIndexes() {
+    if (this.mode !== "spread") return [this.pageIndex];
+    return [this.pageIndex, this.pageIndex + 1].filter(i => i < this.pages.length);
+  }
+
+  render() {
+    this.updateMode();
+    const mount = document.getElementById("pageMount");
+    mount.innerHTML = "";
+    mount.className = this.mode;
+
+    this.visiblePageIndexes().forEach(i => {
+      const page = this.app.renderPage(this.activeTab, this.pages[i], i, this.pages.length);
+      mount.appendChild(this.pageShell(page));
+    });
+
+    this.updateControls();
+    this.scalePages();
+  }
+
+  pageShell(page) {
+    const shell = document.createElement("div");
+    shell.className = "page-shell";
+    shell.appendChild(page);
+    return shell;
+  }
+
+  updateControls() {
+    const visible = this.visiblePageIndexes();
+    const label = visible.length === 2
+      ? `${visible[0] + 1}-${visible[1] + 1} / ${this.pages.length}`
+      : `${visible[0] + 1} / ${this.pages.length}`;
+    document.getElementById("count").textContent = label;
+    document.getElementById("prev").disabled = this.pageIndex === 0;
+    document.getElementById("next").disabled = this.mode === "spread"
+      ? this.pageIndex + 2 >= this.pages.length
+      : this.pageIndex === this.pages.length - 1;
+    this.updateViewModeButton();
+  }
+
+  singlePageSideMargin() {
+    const w = window.innerWidth;
+    if (w < 520) return -18;   // small phones: subtle crop/zoom into the page
+    if (w < 900) return 0;     // tablets/large phones: white page fills the viewport width
+    return 32;                 // desktop: keep a canvas margin around the A4 sheet
+  }
+
+  scalePages() {
+    this.updateMode();
+    const wrap = document.querySelector(".frame-wrap");
+    const mount = document.getElementById("pageMount");
+    const shells = document.querySelectorAll(".page-shell");
+    if (!wrap || !mount || !shells.length) return;
+
+    mount.className = this.mode;
+
+    const pageWidth = 794;
+    const pageHeight = 1123;
+    const spreadMargins = this.spreadMargins();
+    const gap = this.mode === "spread" && shells.length > 1 ? spreadMargins.gap : 0;
+    const topbar = document.querySelector(".topbar");
+    const topbarVisible = topbar && !topbar.classList.contains("toolbar-hidden");
+    const topbarHeight = topbarVisible ? topbar.offsetHeight : 0;
+
+    let scale;
+    if (this.mode === "spread") {
+      // Spread mode must always keep both pages fully visible.
+      // Margins are compact on tablet-sized viewports and roomier on desktop.
+      const availableWidth = wrap.clientWidth - (spreadMargins.side * 2);
+      const availableHeight = window.innerHeight - topbarHeight - (spreadMargins.vertical * 2);
+      const totalWidth = (pageWidth * shells.length) + gap;
+      scale = Math.min(1, availableWidth / totalWidth, availableHeight / pageHeight);
+      wrap.style.padding = `${spreadMargins.vertical}px ${spreadMargins.side}px`;
+      wrap.style.overflowX = "hidden";
+      mount.style.gap = `${gap}px`;
+    } else {
+      // Single mode adapts the side margin to the device.
+      // On small phones this intentionally allows a tiny horizontal crop/zoom.
+      const sideMargin = this.singlePageSideMargin();
+      const landscape = window.innerWidth > window.innerHeight;
+      // Portrait keeps the calmer canvas margins; landscape uses every pixel.
+      const verticalPadding = landscape ? 0 : (window.innerWidth < 900 ? 26 : 52);
+      const availableWidth = wrap.clientWidth - (sideMargin * 2);
+      scale = Math.min(1, availableWidth / pageWidth);
+      wrap.style.padding = `${verticalPadding}px ${Math.max(0, sideMargin)}px`;
+      wrap.style.overflowX = sideMargin < 0 ? "hidden" : "auto";
+      mount.style.gap = "0px";
+    }
+
+    shells.forEach(shell => {
+      const page = shell.querySelector(".page");
+      shell.style.transform = "none";
+      shell.style.width = `${pageWidth * scale}px`;
+      shell.style.height = `${pageHeight * scale}px`;
+      shell.style.minHeight = `${pageHeight * scale}px`;
+      if (page) page.style.transform = `scale(${scale})`;
+    });
+  }
+}
+
+/* =============================================================================
+   RENDERER: ChordLibraryRenderer
+   ============================================================================= */
+class ChordLibraryRenderer {
+  static PAGE_SIZE = 25;
+  constructor(app) { this.app = app; }
+  categories() { return this.app.data.library.chordCategories || []; }
+  chords() {
+    const category = this.app.chordLibraryCategory || "";
+    return (this.app.data.library.chords || []).filter(chord => !category || chord.category === category);
+  }
+  pages() {
+    const chords = this.chords();
+    if (!chords.length) return [{type:"chord-library", chords:[], total:0}];
+    const pages = [];
+    for (let i=0;i<chords.length;i+=ChordLibraryRenderer.PAGE_SIZE) {
+      pages.push({type:"chord-library", chords:chords.slice(i,i+ChordLibraryRenderer.PAGE_SIZE), total:chords.length});
+    }
+    return pages;
+  }
+  renderPage(pageData, pageIndex, pageCount) {
+    const page = document.createElement("section");
+    page.className = "page chord-library-page";
+    page.dataset.renderer = "ChordLibraryRenderer";
+    const header = document.createElement("div");
+    header.className = "page-header chord-library-header";
+    header.innerHTML = `
+      <h1 class="ptitle">Alle akkoordschema's</h1>
+      <div class="page-meta-line"><span class="chord-library-count">${pageData.total} ${pageData.total === 1 ? "akkoord" : "akkoorden"}</span><span class="page-meta-sep"> · </span><span class="page-subtitle">Blad ${pageIndex + 1} van ${pageCount}</span></div>
+      <label class="chord-library-filter"><span>Categorie</span><select aria-label="Filter akkoorden op categorie"><option value="">Alle categorieën</option></select></label>`;
+    const select = header.querySelector("select");
+    this.categories().forEach(category => {
+      const option = document.createElement("option");
+      option.value = category.id;
+      option.textContent = category.name;
+      option.selected = category.id === (this.app.chordLibraryCategory || "");
+      select.appendChild(option);
+    });
+    select.onchange = () => {
+      this.app.chordLibraryCategory = select.value;
+      this.app.viewer?.refresh();
+    };
+    page.appendChild(header);
+    const grid = document.createElement("div");
+    grid.className = "chord-library-grid";
+    if (!pageData.chords.length) {
+      grid.innerHTML = '<div class="chord-library-empty">Geen akkoorden in deze categorie.</div>';
+    } else {
+      pageData.chords.forEach(entry => grid.appendChild(ChordDiagramRenderer.render({name:entry.code, ...entry.diagram})));
+    }
+    page.appendChild(grid);
+    return page;
+  }
+}
+
+/* =============================================================================
+   APPLICATION: FretFlowApp, HomeView and record routing
+   ============================================================================= */
+class FretFlowApp {
+  constructor(data, pdfData = {records:[]}, options = {}) {
+    this.root = options.root || document;
+    this.homeOnly = Boolean(options.homeOnly);
+    this.data = FretFlow.normalizeNativeData(data);
+    this.data.project = this.data.project || {};
+    this.data.project.groups = FretFlow.normalizeGroups(this.data.project.groups || []);
+    this.data.project.homepage = this.data.project.homepage || {};
+    this.data.tabs = (this.data.tabs || []).map((tab,index) => {
+      const normalized = {artist:"",tags:[],description:"",footer:"",groups:[],sections:[],...tab,
+        nr:tab.nr || String(index + 1).padStart(2,"0")};
+      FretFlow.normalizeRecordGroups(normalized,this.data.project.groups);
+      return normalized;
+    });
+    this.activeTag = "";
+    this.chordLibraryCategory = "";
+    this.chordLibraryRenderer = new ChordLibraryRenderer(this);
+    this.frets = this.data.library.frets;
+    this.strings = this.data.library.strings;
+    this.rootsA = new Set(this.data.library.rootsA);
+    this.rootsC = new Set(this.data.library.rootsC);
+    this.viewer = this.homeOnly ? null : new Viewer(this);
+    this.pdfDocuments = new Map();
+    this.pdfRecords = new Map((pdfData.records || []).map(record => [record.embeddedId || record.id, record]));
+    const projectMeta = this.data.project || {};
+    const homepage = projectMeta.homepage || {};
+    const hero = this.root.querySelector(".hero");
+    if (hero) {
+      const badge = hero.querySelector(".badge");
+      const title = hero.querySelector("h1");
+      const intro = hero.querySelector("p");
+      if (badge) badge.textContent = homepage.badge || "Digitale gitaarmap";
+      if (title) title.textContent = homepage.title || projectMeta.title || "FretFlow";
+      if (intro) intro.textContent = homepage.intro || projectMeta.description || "Kies een oefenblad.";
+    }
+    const homeFooter = this.$id("homeFooter");
+    if (homeFooter) {
+      homeFooter.textContent = FretFlow.APP_CREDIT;
+      homeFooter.hidden = false;
+    }
+    if (!this.homeOnly && this.root === document && projectMeta.title) document.title = projectMeta.title;
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+    this.pent = {
+      0:[5,8,10,12,15,17], 1:[5,8,10,13,15,17], 2:[5,7,9,12,14,17],
+      3:[5,7,10,12,14,17], 4:[5,7,10,12,15,17], 5:[5,8,10,12,15,17]
+    };
+    this.bindEvents();
+    this.renderCards();
+    if (!this.homeOnly && location.hash) this.openTab(location.hash.slice(1));
+  }
+
+  $id(id) { return this.root.querySelector(`#${id}`); }
+
+  createElement(tag) { return (this.root.ownerDocument || document).createElement(tag); }
+
+  bindEvents() {
+    const search = this.$id("search");
+    if (search) search.oninput = e => this.renderCards(e.target.value);
+    const tagFilter = this.$id("tagFilter");
+    if (tagFilter) {
+      const tagMap = new Map();
+      this.records().flatMap(t => t.tags || []).filter(Boolean).forEach(tag => {
+        const key = FretFlow.tagKey(tag);
+        if (key && !tagMap.has(key)) tagMap.set(key, tag);
+      });
+      const tags = [...tagMap.values()].sort((a,b)=>a.localeCompare(b,"nl",{sensitivity:"base"}));
+      tagFilter.innerHTML = '<option value="">Alle tags</option>' + tags.map(tag => `<option value="${FretFlow.escape(tag)}">${FretFlow.escape(tag)}</option>`).join("");
+      tagFilter.onchange = e => { this.activeTag = e.target.value; this.renderCards(this.$id("search")?.value || ""); };
+    }
+  }
+
+  systemPages() {
+    const config = this.data.project?.systemPages?.chordLibrary || FretFlow.defaultSystemPages().chordLibrary;
+    return [{
+      id:"chord-library", nr:"LIB", title:"Alle akkoordschema's",
+      homeTitle:config.title || "Akkoordenbibliotheek",
+      description:config.description || "Bekijk alle akkoorddiagrammen per categorie.",
+      groups:[], tags:["akkoorden"], systemType:"chord-library"
+    }];
+  }
+
+  records() { return [...this.data.tabs, ...this.systemPages()]; }
+
+  visibleTabs() {
+    const records = this.records();
+    return this.activeTag ? records.filter(t => (t.tags || []).some(tag => FretFlow.tagKey(tag) === FretFlow.tagKey(this.activeTag))) : records;
+  }
+
+  renderCards(query="") {
+    const q = query.trim().toLowerCase();
+    const cards = this.$id("cards");
+
+    if (q || this.activeTag) {
+      this.renderSearchResults(q);
+      return;
+    }
+
+    this.renderCategories();
+  }
+
+  groupConfigs() {
+    return FretFlow.normalizeGroups(this.data.project?.groups || []);
+  }
+
+  groupById(id) {
+    return this.groupConfigs().find(group => group.id === id) || null;
+  }
+
+  groups() {
+    const tabs = this.visibleTabs().filter(t => !t.systemType);
+    return this.groupConfigs().map(config => ({
+      ...config,
+      count:tabs.filter(tab => (tab.groups || []).includes(config.id)).length
+    }));
+  }
+
+  renderCategories() {
+    const cards = this.$id("cards");
+    if (!cards) return;
+    cards.innerHTML = "";
+    cards.className = "category-grid";
+    this.setBreadcrumb(null);
+
+    const page = this.systemPages()[0];
+    if (page) {
+      const b = this.createElement("button");
+      b.className = "category-card system-card";
+      b.dataset.component = "HomeSystemTile";
+      b.innerHTML = `<h2>${FretFlow.escape(page.homeTitle || page.title)}</h2><p>${FretFlow.escape(page.description || "")}</p><span class="count-badge">${(this.data.library.chords || []).length} akkoorden</span>`;
+      b.onclick = () => this.openTab(page.id);
+      cards.appendChild(b);
+    }
+
+    this.groups().forEach(group => {
+      const b = this.createElement("button");
+      b.className = "category-card";
+      b.dataset.component = "HomeGroupTile";
+      b.innerHTML = `<h2>${FretFlow.escape(group.title)}</h2><p>${FretFlow.escape(group.description || "")}</p><span class="count-badge">${group.count} bladen</span>`;
+      b.onclick = () => this.renderGroup(group.id);
+      cards.appendChild(b);
+    });
+  }
+
+  renderGroup(groupId) {
+    const group = this.groups().find(g => g.id === groupId);
+    if (!group) return;
+    const cards = this.$id("cards");
+    cards.innerHTML = "";
+    cards.className = "grid";
+    this.setBreadcrumb(group);
+
+    this.visibleTabs()
+      .filter(t => (t.groups || []).includes(groupId) && !t.systemType)
+      .forEach(t => cards.appendChild(this.cardForTab(t)));
+  }
+
+  renderSearchResults(q) {
+    const cards = this.$id("cards");
+    cards.innerHTML = "";
+    cards.className = "grid";
+    const title = q && this.activeTag
+      ? `Resultaten voor “${q}” of tag “${this.activeTag}”`
+      : q
+        ? `Zoekresultaten voor “${q}”`
+        : `Tabs met tag “${this.activeTag}”`;
+    this.setBreadcrumb({ title, search: true });
+
+    const matches = this.records().filter(t => {
+      const groupText = (t.groups || []).map(id => this.groupById(id)?.title || id);
+      const textMatch = q && [t.title,t.artist,t.description,...groupText,...(t.tags||[])].filter(Boolean).join(" ").toLowerCase().includes(q);
+      const tagMatch = this.activeTag && (t.tags || []).some(tag => FretFlow.tagKey(tag) === FretFlow.tagKey(this.activeTag));
+      if (q && this.activeTag) return textMatch || tagMatch;
+      if (q) return textMatch;
+      if (this.activeTag) return tagMatch;
+      return true;
+    });
+
+    if (!matches.length) {
+      cards.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#6f6256;padding:20px;">Geen resultaten.</div>`;
+      return;
+    }
+
+    matches.forEach(t => cards.appendChild(this.cardForTab(t)));
+  }
+
+  cardForTab(t) {
+    const b = this.createElement("button");
+    b.className = "card";
+    b.dataset.component = "HomeRecordTile";
+    b.innerHTML = `${t.nr ? `<div class="nr">${FretFlow.escape(t.nr)}</div>` : ""}<h2>${FretFlow.escape(t.title)}</h2><p>${FretFlow.escape(t.description || "")}</p>`;
+    b.onclick = () => this.openTab(t.id);
+    return b;
+  }
+
+  setBreadcrumb(state) {
+    let bc = this.$id("breadcrumb");
+    if (!bc) {
+      bc = this.createElement("div");
+      bc.id = "breadcrumb";
+      bc.className = "breadcrumb";
+      this.root.querySelector(".shell").insertBefore(bc, this.$id("cards"));
+    }
+
+    if (!state) {
+      bc.style.display = "none";
+      bc.innerHTML = "";
+      return;
+    }
+
+    bc.style.display = "flex";
+    bc.innerHTML = `<button class="home-back" id="homeCrumb">← Terug</button><strong>${state.title}</strong>`;
+    this.$id("homeCrumb").onclick = () => {
+      this.$id("search").value = "";
+      const tagFilter = this.$id("tagFilter");
+      if (tagFilter) tagFilter.value = "";
+      this.activeTag = "";
+      this.renderCategories();
+    };
+  }
+
+  openTab(id) {
+    const tab = this.records().find(t => t.id === id);
+    if (!tab) return;
+    if (this.viewer) this.viewer.open(tab);
+  }
+
+  makeComponent(section) {
+    const map = {
+      fretboard: FretboardComponent,
+      transition: FretboardComponent,
+      rootmap: RootMapComponent,
+      text: TextComponent,
+      textgrid: TextGridComponent,
+      chordgrid: ChordGridComponent,
+      chordsection: ChordSectionComponent,
+      songsection: ChordSectionComponent,
+      tabsection: TabSectionComponent,
+      simpleriff: SimpleRiffComponent,
+      riffsection: RiffSectionComponent,
+      separator: SeparatorComponent,
+      unicodeplayground: UnicodePlaygroundComponent,
+      measuretest: MeasureTestComponent
+    };
+    const Klass = map[section.type] || TextGridComponent;
+    return new Klass(section, this);
+  }
+
+  paginate(tab) {
+    if (tab.systemType === "chord-library") return this.chordLibraryRenderer.pages();
+    if (tab.source && tab.source.type === "pdf") {
+      const count = Math.max(1, Number(tab.source.pageCount) || 1);
+      return Array.from({ length: count }, (_, index) => ({ pdfPage: index + 1 }));
+    }
+
+    const PAGE_BUDGET = Layout.BODY_BUDGET;
+    const pages = [];
+    let current = [];
+    let used = 0;
+
+    const sections = this.renderableSections(tab);
+
+    for (const section of sections) {
+      const component = this.makeComponent(section);
+      const h = component.height;
+      if (current.length && used + h > PAGE_BUDGET) {
+        pages.push(current);
+        current = [];
+        used = 0;
+      }
+      current.push(component);
+      used += h;
+    }
+    if (current.length) pages.push(current);
+    if (!pages.length) pages.push([]);
+    return pages;
+  }
+
+  renderableSections(tab) {
+    // Keep Text blocks as independent components. Their title, measured body
+    // height and page-break behaviour belong to the individual block.
+    return tab.sections || [];
+  }
+
+  mergeAdjacentTextSections(sections) {
+    const merged = [];
+    sections.forEach(section => {
+      if (section.type !== "text") {
+        merged.push(section);
+        return;
+      }
+      const current = this.textLines(section);
+      const previous = merged[merged.length - 1];
+      if (previous && previous.type === "text") {
+        previous.lines = [...this.textLines(previous), ...current];
+        delete previous.title;
+        delete previous.text;
+        delete previous.body;
+      } else {
+        merged.push({ type: "text", lines: current });
+      }
+    });
+    return merged;
+  }
+
+  textLines(section) {
+    if (section.lines) return section.lines;
+    const lines = [];
+    if (section.title) lines.push({ title: section.title });
+    const text = section.text || section.body || "";
+    if (text) lines.push({ text });
+    return lines;
+  }
+
+  renderPage(tab, components, pageIndex = 0, pageCount = 1) {
+    if (tab.systemType === "chord-library") return this.chordLibraryRenderer.renderPage(components, pageIndex, pageCount);
+    const page = document.createElement("section");
+
+    if (tab.source && tab.source.type === "pdf") {
+      page.className = "page pdf-page";
+      page.dataset.renderer = "FretFlowApp";
+      page.dataset.view = "PdfPage";
+      const pdfPage = (components && components.pdfPage) || pageIndex + 1;
+      const canvas = document.createElement("canvas");
+      canvas.className = "pdf-page-canvas";
+      canvas.setAttribute("aria-label", `${tab.title} — pagina ${pdfPage}`);
+      const status = document.createElement("div");
+      status.className = "pdf-status";
+      status.textContent = `PDF-pagina ${pdfPage} laden…`;
+      page.append(canvas, status);
+      if (tab.footer) {
+        const footer = document.createElement("div");
+        footer.className = "footer pdf-footer-overlay";
+        footer.dataset.component = "PdfFooterOverlay";
+        footer.textContent = tab.footer;
+        page.appendChild(footer);
+      }
+      this.renderPdfPage(tab, pdfPage, canvas, status);
+      return page;
+    }
+
+    page.className = "page";
+    page.dataset.renderer = "FretFlowApp";
+    page.dataset.view = "RecordPage";
+    page.style.setProperty("--layout-unit", `${Layout.UNIT}px`);
+    const displayTitle = (tab.artist ? `${tab.title} - ${tab.artist}` : tab.title) || "Nieuwe tab";
+    const tagText = (tab.tags || []).join(" · ");
+    page.innerHTML = `
+      <div class="page-header">
+        <h1 class="ptitle">${FretFlow.escape(displayTitle)}</h1>
+        <div class="page-meta-line">
+          ${tagText ? `<span class="page-tags">${FretFlow.escape(tagText)}</span><span class="page-meta-sep"> · </span>` : ""}
+          <span class="page-subtitle">Blad ${pageIndex + 1} van ${pageCount}</span>
+        </div>
+        ${pageIndex === 0 && tab.description ? `<div class="page-intro">${FretFlow.escape(tab.description)}</div>` : ""}
+      </div>
+    `;
+    components.forEach(component => page.appendChild(component.render()));
+    if ((tab.footer || "") || (tab.legend || []).length) {
+      const footer = document.createElement("div");
+      footer.className = "footer";
+      footer.innerHTML = FretFlow.escape(tab.footer || "") + this.renderLegend(tab.legend || []);
+      page.appendChild(footer);
+    }
+    return page;
+  }
+
+  async getPdfDocument(tab) {
+    if (!window.pdfjsLib) throw new Error("PDF.js kon niet worden geladen. Controleer de internetverbinding.");
+    const embeddedId = tab.source && tab.source.embeddedId;
+    if (!embeddedId) throw new Error("Geen ingebedde PDF ingesteld in de JSON-entry.");
+    if (!this.pdfDocuments.has(embeddedId)) {
+      const record = this.pdfRecords && this.pdfRecords.get(embeddedId);
+      const legacyNode = document.getElementById(embeddedId);
+      const base64 = String((record && record.data) || (legacyNode && legacyNode.textContent) || "").replace(/\s+/g, "");
+      if (!base64) throw new Error(`Ingebedde PDF-data niet gevonden: ${embeddedId}`);
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const task = window.pdfjsLib.getDocument({ data: bytes });
+      this.pdfDocuments.set(embeddedId, task.promise.catch(error => {
+        this.pdfDocuments.delete(embeddedId);
+        throw error;
+      }));
+    }
+    return this.pdfDocuments.get(embeddedId);
+  }
+
+  async renderPdfPage(tab, pageNumber, canvas, status) {
+    try {
+      const pdf = await this.getPdfDocument(tab);
+      if (!canvas.isConnected && !this.allowDetachedPdfRender) return;
+      const pdfPage = await pdf.getPage(pageNumber);
+      if (!canvas.isConnected && !this.allowDetachedPdfRender) return;
+      const base = pdfPage.getViewport({ scale: 1 });
+      const fitScale = Math.min(794 / base.width, 1123 / base.height);
+      const outputScale = Math.min(window.devicePixelRatio || 1, 2);
+      const viewport = pdfPage.getViewport({ scale: fitScale * outputScale });
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      canvas.style.width = `${viewport.width / outputScale}px`;
+      canvas.style.height = `${viewport.height / outputScale}px`;
+      const context = canvas.getContext("2d", { alpha: false });
+      await pdfPage.render({ canvasContext: context, viewport }).promise;
+      if (status.isConnected || this.allowDetachedPdfRender) status.remove();
+    } catch (error) {
+      console.error("PDF.js render error", error);
+      if (!status.isConnected && !this.allowDetachedPdfRender) return;
+      status.className = "pdf-status error";
+      const message = error && error.message ? error.message : String(error);
+      status.textContent = `De PDF kon niet worden geladen: ${message}`;
+    }
+  }
+
+  renderLegend(items) {
+    if (!items.length) return "";
+    return `<div class="legend">${items.map(l => `<span class="li"><span class="note ${l.class} ld">${l.label}</span>${l.text}</span>`).join("")}</div>`;
+  }
+
+  left(f) { return (this.frets.indexOf(f) + .5) * (520 / this.frets.length); }
+  between(f) { return (f - this.frets[0] + .5) * (520 / this.frets.length); }
+
+  rootNotes(mode) {
+    const out = {};
+    Object.entries(this.pent).forEach(([si, ns]) => {
+      out[si] = [];
+      ns.forEach(f => {
+        const key = `${si}-${f}`;
+        if (mode === "A" && this.rootsA.has(key)) out[si].push(f);
+        if (mode === "C" && this.rootsC.has(key)) out[si].push(f);
+        if (mode === "AC") out[si].push(f);
+      });
+    });
+    return out;
+  }
+
+  rootGhost(mode) {
+    if (mode !== "AC") return {};
+    const out = {};
+    Object.entries(this.pent).forEach(([si, ns]) => {
+      out[si] = ns.filter(f => !this.rootsA.has(`${si}-${f}`) && !this.rootsC.has(`${si}-${f}`));
+    });
+    return out;
+  }
+}
+
+/* =============================================================================
+   LAYOUT MODEL
+   ============================================================================= */
+const Layout = {
+  PAGE_HEIGHT: 1123,
+  HEADER_RESERVE: 82,
+  FOOTER_RESERVE: 60,
+  UNIT: 20,
+  units(count) { return Math.max(0, Number(count) || 0) * this.UNIT; },
+  BODY_UNITS: 49,
+  get BODY_BUDGET() { return this.units(this.BODY_UNITS); },
+  COMPONENT_HEADER_UNITS: 2,
+  COMPONENT_GAP_UNITS: 1,
+  TEXT_LINE_UNITS: 1,
+  TEXT_MIN_BODY_UNITS: 1,
+  TEXT_CONTENT_WIDTH: 674,
+  TEXT_FONT: "11px Arial",
+  FRETBOARD_UNITS: 8,
+  TEXTGRID_UNITS: 8,
+  CHORDGRID_UNITS: 9,
+  SIMPLE_RIFF_ROW_UNITS: 5,
+  CHORD_ROW_UNITS: 4,
+  TAB_ROW_UNITS: 5,
+  SEPARATOR_UNITS: 1
+};
+
+/* =============================================================================
+   COMPONENT BASE CLASS
+   ============================================================================= */
+class Component {
+  constructor(data, app) {
+    this.data = data;
+    this.app = app;
+    this.units = this.constructor.UNITS || 0;
+    this.height = this.units ? Layout.units(this.units) : (this.constructor.HEIGHT || Layout.units(1));
+  }
+
+  applyLayoutUnits(element, units = this.units) {
+    if (!element) return element;
+    element.dataset.component = this.constructor.name;
+    element.dataset.layoutUnits = String(units || 0);
+    element.style.setProperty("--component-units", String(units || 0));
+    element.style.setProperty("--component-height", `${Layout.units(units || 0)}px`);
+    return element;
+  }
+}
+
+/* COMPONENT: SeparatorComponent */
+class SeparatorComponent extends Component {
+  static UNITS = Layout.SEPARATOR_UNITS;
+  render() {
+    const el = document.createElement("div");
+    el.className = "sep layout-component";
+    return this.applyLayoutUnits(el);
+  }
+}
+
+/* COMPONENT: FretboardComponent */
+class FretboardComponent extends Component {
+  static UNITS = Layout.FRETBOARD_UNITS;
+
+  getNotes() { return this.data.notes || {}; }
+  getGhost() { return this.data.ghost || {}; }
+
+  render() {
+    const sec = document.createElement("div");
+    sec.className = "music-component component-block fretboard-block";
+    sec.innerHTML = `<h2 class="component-title">${this.data.title} ${this.data.small ? `<span style="font-weight:400;font-size:10px;">${this.data.small}</span>` : ""}</h2>`;
+    sec.appendChild(this.renderBoard(this.getNotes(), this.getGhost()));
+    return this.applyLayoutUnits(sec);
+  }
+
+  renderBoard(notes, ghost) {
+    const b = document.createElement("div");
+    b.className = "board" + (this.data.coach ? "" : " nocoach");
+    b.innerHTML = '<div class="fl">Fret</div><div class="fr">' + this.app.frets.map(f => `<span>${f}</span>`).join("") + "</div>";
+
+    this.app.strings.forEach((s, si) => {
+      const lab = document.createElement("div");
+      lab.className = "sl";
+      lab.style.gridRow = si + 2;
+      lab.textContent = s;
+      b.appendChild(lab);
+
+      const row = document.createElement("div");
+      row.className = "sg" + (si === 5 ? " last" : "");
+      row.style.gridRow = si + 2;
+      row.innerHTML = this.app.frets.map(() => "<div></div>").join("");
+
+      (notes[si] || notes[String(si)] || []).forEach(f => {
+        const key = `${si}-${f}`;
+        const n = document.createElement("span");
+        let cl = "note";
+        let txt = f;
+        if (this.app.rootsA.has(key)) cl += " root";
+        if ((ghost[si] || ghost[String(si)] || []).includes(f)) cl += " ghost";
+        n.className = cl;
+        n.textContent = txt;
+        n.style.left = this.app.left(f) + "px";
+        row.appendChild(n);
+      });
+
+      (this.data.arrows || []).filter(a => a[0] === si).forEach(a => {
+        const x = document.createElement("span");
+        x.className = "arrow";
+        x.textContent = "→";
+        x.style.left = this.app.between(a[1]) + "px";
+        row.appendChild(x);
+      });
+
+      (this.data.slashes || []).filter(a => a[0] === si).forEach(a => {
+        const x = document.createElement("span");
+        x.className = "slash";
+        x.textContent = "/";
+        x.style.left = this.app.between(a[1]) + "px";
+        row.appendChild(x);
+      });
+
+      b.appendChild(row);
+    });
+
+    if (this.data.coach) {
+      const c = document.createElement("div");
+      c.className = "coach";
+      c.innerHTML = this.data.coach;
+      b.appendChild(c);
+    }
+    return b;
+  }
+}
+
+/* COMPONENT: RootMapComponent */
+class RootMapComponent extends FretboardComponent {
+  static UNITS = Layout.FRETBOARD_UNITS;
+
+  getNotes() { return this.app.rootNotes(this.data.mode); }
+  getGhost() { return this.app.rootGhost(this.data.mode); }
+
+  renderBoard(notes, ghost) {
+    const b = super.renderBoard(notes, ghost);
+    b.querySelectorAll(".note").forEach(note => {
+      // Re-label root-map notes by looking at class/text/fret is handled in a small post-process below.
+    });
+    // Simpler: override note labels directly by rebuilding in specialized version would be verbose;
+    // this pass changes labels based on rendered location/text where possible.
+    [...b.querySelectorAll(".sg")].forEach((row, si) => {
+      [...row.querySelectorAll(".note")].forEach(n => {
+        const f = Number(n.textContent);
+        const key = `${si}-${f}`;
+        if (this.app.rootsA.has(key)) { n.textContent = "A"; n.classList.add("root"); }
+        else if (this.app.rootsC.has(key)) { n.textContent = "C"; n.classList.add("third"); }
+      });
+    });
+    return b;
+  }
+}
+
+/* COMPONENT: TextComponent */
+class TextComponent extends Component {
+  constructor(data, app) {
+    super(data, app);
+    const bodyLines = this.bodyLines(data);
+    const visualLines = bodyLines.reduce((sum, line) => sum + this.wrappedLineCount(line), 0);
+    const bodyUnits = Math.max(Layout.TEXT_MIN_BODY_UNITS, visualLines * Layout.TEXT_LINE_UNITS);
+    // Text has no extra bottom-gap unit: the rounded body units already contain
+    // the breathing room needed below the final line.
+    this.units = Layout.COMPONENT_HEADER_UNITS + bodyUnits;
+    this.height = Layout.units(this.units);
+  }
+
+  bodyLines(data) {
+    const legacyLines = Array.isArray(data.lines) ? data.lines : [];
+    if (legacyLines.length) {
+      return legacyLines.flatMap(line => String(line.title || line.text || "").split(/\n/));
+    }
+    return String(data.text || data.body || "").split(/\n/);
+  }
+
+  wrappedLineCount(text) {
+    const value = String(text || "");
+    if (!value) return 1;
+    const fallback = () => Math.max(1, Math.ceil(value.length / 92));
+    if (typeof document === "undefined") return fallback();
+    const canvas = TextComponent.measureCanvas || (TextComponent.measureCanvas = document.createElement("canvas"));
+    const context = canvas.getContext && canvas.getContext("2d");
+    if (!context) return fallback();
+    context.font = Layout.TEXT_FONT;
+    const maxWidth = Layout.TEXT_CONTENT_WIDTH;
+    const words = value.trim().split(/\s+/);
+    if (!words.length) return 1;
+    let lines = 1;
+    let current = "";
+    for (const word of words) {
+      // Long unbroken strings still need to consume multiple visual lines.
+      if (context.measureText(word).width > maxWidth) {
+        if (current) { lines += 1; current = ""; }
+        lines += Math.max(1, Math.ceil(context.measureText(word).width / maxWidth)) - 1;
+        continue;
+      }
+      const candidate = current ? `${current} ${word}` : word;
+      if (current && context.measureText(candidate).width > maxWidth) {
+        lines += 1;
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+    return Math.max(1, lines);
+  }
+
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "music-component text-component";
+    const title = this.data.title || "";
+    const body = this.data.text || this.data.body || "";
+    const legacyLines = Array.isArray(this.data.lines) ? this.data.lines : [];
+    wrap.innerHTML = `<div class="component-title">${FretFlow.escape(title)}</div><div class="component-content text-component-content"></div>`;
+    const content = wrap.querySelector(".text-component-content");
+    if (legacyLines.length) {
+      content.innerHTML = legacyLines.map(line => line.title
+        ? `<div class="text-component-line text-component-line-title">${FretFlow.escape(line.title)}</div>`
+        : `<p class="text-component-line text-component-body">${FretFlow.escape(line.text || "")}</p>`).join("");
+    } else {
+      content.textContent = body;
+    }
+    return this.applyLayoutUnits(wrap);
+  }
+}
+
+/* COMPONENT: TextGridComponent */
+class TextGridComponent extends Component {
+  static UNITS = Layout.TEXTGRID_UNITS;
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "music-component component-block textgrid-block";
+    wrap.innerHTML = `<h2 class="component-title">${this.data.title || ""}</h2>
+      <div class="practice">${(this.data.items || []).map(i => `<div class="box"><b>${i.title}</b>${i.text}</div>`).join("")}</div>`;
+    return this.applyLayoutUnits(wrap);
+  }
+}
+
+
+
+/* COMPONENT BASE: MusicSectionComponent */
+class MusicSectionComponent extends Component {
+  static UNITS = Layout.COMPONENT_HEADER_UNITS + Layout.CHORD_ROW_UNITS;
+
+  constructor(data, app) {
+    super(data, app);
+    this.lines = data.lines || [];
+    this.units = Layout.COMPONENT_HEADER_UNITS + Math.max(1, this.lines.length) * Layout.CHORD_ROW_UNITS;
+    this.height = Layout.units(this.units);
+  }
+
+  render() {
+    const g = document.createElement("div");
+    g.className = "music-component songsection chordsection";
+
+    const head = document.createElement("div");
+    head.className = "songsection-head";
+    head.innerHTML = `${this.segno(this.data.segno)}<div class="songsection-title">${this.data.title ?? this.data.name ?? ""}</div>`;
+    g.appendChild(head);
+
+    this.lines.forEach(line => g.appendChild(this.renderMeasureRow(line)));
+    return this.applyLayoutUnits(g);
+  }
+
+  segno(type) {
+    if (type === "single") return `<span class="segno">&#x1D10B;</span>`;
+    if (type === "double") return `<span class="segno">&#x1D10B; &#x1D10B;</span>`;
+    return `<span style="width:20px;display:inline-block"></span>`;
+  }
+
+  normalizedMeasures(line) {
+    const raw = (line.measures || []).slice(0, 4);
+
+    return raw.map((m, i) => {
+      const isLast = i === raw.length - 1;
+      const obj = Array.isArray(m)
+        ? { chords: m }
+        : (typeof m === "object" && m !== null)
+          ? { ...m }
+          : { chords: String(m).split(/\s*\+\s*/) };
+
+      if (obj.startBar == null || obj.startBar === "") obj.startBar = i === 0 ? "single" : "none";
+      if (obj.endBar == null || obj.endBar === "") obj.endBar = "single";
+      if (isLast && line.ending && !obj.endBar) obj.endBar = line.ending;
+      if (isLast && line.belowRight && !obj.belowRight) obj.belowRight = line.belowRight;
+      return obj;
+    });
+  }
+}
+
+/* COMPONENT: ChordSectionComponent */
+class ChordSectionComponent extends MusicSectionComponent {
+  renderMeasureRow(line) {
+    const row = document.createElement("div");
+    row.className = "song-measure-row";
+
+    const measures = this.normalizedMeasures(line);
+    measures.forEach((measure, index) => {
+      row.appendChild(new ChordMeasure(measure, index === measures.length - 1).render());
+    });
+
+    return row;
+  }
+}
+
+class MusicMeasure {
+  constructor(data, isLast = false) {
+    this.data = data || {};
+    this.isLast = isLast;
+    this.strum = [];
+    if (this.data.strum) this.setStrum(this.data.strum);
+  }
+
+  static get symbols() {
+    return {
+      startRepeat: "𝄆",
+      endRepeat: "𝄇",
+      singleBar: "𝄀",
+      doubleBar: "𝄁",
+      finalBar: "𝄂",
+      repeatedFigure: "𝄎",
+      dalSegno: "𝄉"
+    };
+  }
+
+  setStrum(pattern) {
+    if (Array.isArray(pattern)) {
+      this.strum = pattern.slice(0, 8);
+    } else {
+      const beats = String(pattern).trim().split(/\s+/).slice(0, 4);
+      this.strum = beats.flatMap(beat => {
+        const token = beat.toUpperCase();
+        return [token.includes("D") ? "D" : null, token.includes("U") ? "U" : null];
+      });
+    }
+    while (this.strum.length < 8) this.strum.push(null);
+    return this;
+  }
+
+  baseClasses() {
+    const classes = ["measure-box"];
+    if (this.isLast) classes.push("last");
+    if (this.data.startBar === "repeat") classes.push("start-repeat");
+    if (this.data.endBar === "repeat") classes.push("end-repeat");
+    if (this.strum.some(Boolean)) classes.push("has-strum");
+    return classes;
+  }
+
+  renderStrum(box) {
+    if (!this.strum.some(Boolean)) return;
+    const symbols = this.strum.map(value => {
+      if (value === "D") return "<span aria-label=\"downstroke\">↓</span>";
+      if (value === "U") return "<span aria-label=\"upstroke\">↑</span>";
+      return "<span></span>";
+    });
+    while (symbols.length < 8) symbols.push("<span></span>");
+    box.insertAdjacentHTML("afterbegin", `<div class="measure-strum">${symbols.join("")}</div>`);
+  }
+
+  renderFrame(box) {
+    const music = MusicMeasure.symbols;
+    const startSymbol = this.data.startBar === "repeat" ? music.startRepeat : music.singleBar;
+    box.insertAdjacentHTML("beforeend", `<span class="measure-start-symbol">${startSymbol}</span>`);
+
+    const endSymbol = this.endSymbol(music);
+    if (endSymbol) box.insertAdjacentHTML("beforeend", `<span class="measure-end-symbol">${endSymbol}</span>`);
+
+    if (this.data.belowRight) {
+      box.insertAdjacentHTML("beforeend", `<div class="measure-below">${this.renderBelow(this.data.belowRight, music)}</div>`);
+    }
+  }
+
+  endSymbol(music = MusicMeasure.symbols) {
+    if (this.data.endBar === "repeat") return music.endRepeat;
+    if (this.data.endBar === "double") return music.doubleBar;
+    if (this.data.endBar === "final") return music.finalBar;
+    return this.isLast ? music.singleBar : "";
+  }
+
+  renderBelow(text, music = MusicMeasure.symbols) {
+    if (text === "D.S.") return `<span class="measure-token">${music.dalSegno}</span>`;
+    return text;
+  }
+}
+
+class ChordMeasure extends MusicMeasure {
+  constructor(data, isLast = false) {
+    super(data, isLast);
+    this.canvas = new TabCanvas({ width: 168, top: 15, gap: 11, leftPad: 0, rightPad: 0 });
+  }
+
+  render() {
+    const music = MusicMeasure.symbols;
+    const box = document.createElement("div");
+    box.className = this.baseClasses().join(" ") + " chord-measure-shared-frame";
+
+    const chordList = this.data.chords || [""];
+    const layoutClass = chordList.length === 1 ? "one" : chordList.length === 2 ? "two" : chordList.length === 4 ? "four" : "many";
+    const chords = chordList.map(c => `<span>${this.renderChord(c, music)}</span>`).join("");
+    box.innerHTML = `<div class="measure-chords ${layoutClass}">${chords}</div>`;
+
+    this.renderStrum(box);
+    this.renderSharedFrame(box);
+    return box;
+  }
+
+  renderSharedFrame(box) {
+    const start = this.data.startBar || "none";
+    if (start !== "none") box.appendChild(this.canvas.barElement("start", start));
+    const end = this.data.endBar || "single";
+    if (end !== "none") box.appendChild(this.canvas.barElement("end", end));
+    if (this.data.belowRight) {
+      const below = document.createElement("span");
+      below.className = "tab-below chord-below";
+      below.innerHTML = this.renderBelow(this.data.belowRight);
+      box.appendChild(below);
+    }
+  }
+
+  renderChord(chord, music = MusicMeasure.symbols) {
+    if (chord === "%") return `<span class="measure-token">${music.repeatedFigure}</span>`;
+    return chord;
+  }
+}
+class TabCanvas {
+  constructor({ width, top = 18, gap = 11, leftPad = 12, rightPad = 12 }) {
+    this.width = width;
+    this.top = top;
+    this.gap = gap;
+    this.leftPad = leftPad;
+    this.rightPad = rightPad;
+  }
+
+  yFor(stringNumber) {
+    const index = Math.max(0, Math.min(5, Number(stringNumber || 1) - 1));
+    return this.top + index * this.gap;
+  }
+
+  renderStrings(box) {
+    for (let stringNumber = 1; stringNumber <= 6; stringNumber++) {
+      const line = document.createElement("span");
+      line.className = "tab-string";
+      line.style.top = `${this.yFor(stringNumber)}px`;
+      box.appendChild(line);
+    }
+  }
+
+  barElement(side, type = "single") {
+    const bar = document.createElement("span");
+    bar.className = `tab-boundary ${side} ${type}`;
+    if (type === "repeat") {
+      [3, 4].forEach(stringNumber => {
+        const dot = document.createElement("span");
+        dot.className = "tab-boundary-dot";
+        dot.style.top = `${this.yFor(stringNumber) - this.top - 2}px`;
+        bar.appendChild(dot);
+      });
+    }
+    return bar;
+  }
+}
+
+/* COMPONENT: SimpleRiffComponent */
+class SimpleRiffComponent extends Component {
+  static UNITS = Layout.COMPONENT_HEADER_UNITS + Layout.SIMPLE_RIFF_ROW_UNITS;
+
+  constructor(data, app) {
+    super(data, app);
+    this.lines = Array.isArray(data.lines) && data.lines.length
+      ? data.lines
+      : [{
+          notes: data.notes || [],
+          startBar: data.startBar || "single",
+          endBar: data.endBar || "single",
+          marker: data.marker || "",
+          belowRight: data.belowRight || ""
+        }];
+    this.units = Layout.COMPONENT_HEADER_UNITS + Math.max(1, this.lines.length) * Layout.SIMPLE_RIFF_ROW_UNITS;
+    this.height = Layout.units(this.units);
+  }
+
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "music-component simpleriff";
+    wrap.innerHTML = `<div class="music-component-title">${FretFlow.escape(this.data.title || "Riff")}</div>`;
+    this.lines.forEach(line => wrap.appendChild(new SimpleRiffMeasure(line).render()));
+    return this.applyLayoutUnits(wrap);
+  }
+}
+class SimpleRiffMeasure extends MusicMeasure {
+  constructor(data) {
+    super(data, true);
+    this.canvas = new TabCanvas({ width: 674, top: 18, gap: 11, leftPad: 12, rightPad: 12 });
+  }
+
+  render() {
+    const box = document.createElement("div");
+    box.className = "simple-riff-canvas tab-canvas";
+    this.canvas.renderStrings(box);
+    (this.data.notes || []).forEach(note => {
+      const raw = String(note.position ?? "0").trim();
+      let pct = parseFloat(raw);
+      if (!Number.isFinite(pct)) pct = 0;
+      pct = Math.max(0, Math.min(100, pct));
+      const x = this.canvas.leftPad + (pct / 100) * (this.canvas.width - this.canvas.leftPad - this.canvas.rightPad);
+      const y = this.canvas.yFor(note.string);
+      const n = document.createElement("span");
+      n.className = "tab-note simple-riff-note";
+      n.textContent = note.fret ?? "";
+      n.style.left = `${x}px`;
+      n.style.top = `${y}px`;
+      box.appendChild(n);
+      if (note.type && note.type !== "standard") {
+        const mark = document.createElement("span");
+        mark.className = `tab-technique simple-riff-technique ${note.type}`;
+        mark.style.left = `${x + 8}px`;
+        mark.style.top = `${y - 15}px`;
+        if (note.type === "slideUp") mark.textContent = "/";
+        if (note.type === "slideDown") mark.textContent = "\\";
+        box.appendChild(mark);
+      }
+    });
+    const start = this.data.startBar || "single";
+    const end = this.data.endBar || "single";
+    if (start !== "none") box.appendChild(this.canvas.barElement("start", start));
+    if (end !== "none") box.appendChild(this.canvas.barElement("end", end));
+    const markerLabels = {segno:"𝄋", doubleSegno:"𝄋 𝄋", coda:"𝄌"};
+    if (markerLabels[this.data.marker]) {
+      const marker = document.createElement("span");
+      marker.className = "tab-marker";
+      marker.textContent = markerLabels[this.data.marker];
+      box.appendChild(marker);
+    }
+    if (this.data.belowRight) {
+      const below = document.createElement("span");
+      below.className = "tab-below simple-riff-below";
+      below.textContent = this.data.belowRight;
+      box.appendChild(below);
+    }
+    return box;
+  }
+}
+
+/* COMPONENT: RiffSectionComponent */
+class RiffSectionComponent extends Component {
+  static UNITS = Layout.COMPONENT_HEADER_UNITS + Layout.SIMPLE_RIFF_ROW_UNITS;
+
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "riffsection";
+    wrap.innerHTML = `
+      <div class="riffsection-title">${this.data.title || "Riff"}</div>
+      ${this.data.note ? `<div class="riffsection-note">${this.data.note}</div>` : ""}
+    `;
+    (this.data.lines || []).forEach(line => wrap.appendChild(this.renderLine(line)));
+    return wrap;
+  }
+
+  renderLine(line) {
+    const box = document.createElement("div");
+    box.className = "riff-line";
+    const top = 14;
+    const gap = 11;
+    const yFor = stringIndex => top + stringIndex * gap;
+
+    for (let i = 0; i < 6; i++) {
+      const string = document.createElement("span");
+      string.className = "riff-string";
+      string.style.top = yFor(i) + "px";
+      box.appendChild(string);
+    }
+
+    if ((line.labels || []).length) box.classList.add("with-labels");
+    (line.labels || []).forEach(label => {
+      const l = document.createElement("span");
+      l.className = "riff-label";
+      l.textContent = label.text;
+      l.style.left = ((label.relX ?? 0) * 610) + "px";
+      box.appendChild(l);
+    });
+
+    (line.notes || []).forEach(note => {
+      const n = document.createElement("span");
+      n.className = "riff-note" + (note.ghost ? " ghost" : "");
+      n.textContent = note.ghost ? `(${note.fret})` : note.fret;
+      n.style.left = ((note.relX ?? 0) * 610) + "px";
+      n.style.top = yFor(note.string) + "px";
+      box.appendChild(n);
+    });
+
+    (line.bars || []).forEach(relX => {
+      const bar = document.createElement("span");
+      bar.className = "riff-measure-bar";
+      bar.style.left = (relX * 610) + "px";
+      box.appendChild(bar);
+    });
+
+    if (line.endBar === "repeat") {
+      const repeat = document.createElement("span");
+      repeat.className = "riff-repeat";
+      box.appendChild(repeat);
+    }
+    return box;
+  }
+}
+
+/* COMPONENT: TabSectionComponent */
+class TabSectionComponent extends MusicSectionComponent {
+  static UNITS = Layout.COMPONENT_HEADER_UNITS + Layout.TAB_ROW_UNITS;
+
+  constructor(data, app) {
+    super(data, app);
+    this.units = Layout.COMPONENT_HEADER_UNITS + Math.max(1, (data.lines || []).length) * Layout.TAB_ROW_UNITS;
+    this.height = Layout.units(this.units);
+  }
+
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "music-component tabsection";
+    wrap.innerHTML = `
+      <div class="tabsection-title">${this.data.title || "TAB"}</div>
+      ${this.data.note ? `<div class="tabsection-note">${this.data.note}</div>` : ""}
+    `;
+    (this.data.lines || []).forEach(line => wrap.appendChild(this.renderMeasureRow(line)));
+    return this.applyLayoutUnits(wrap);
+  }
+
+  renderMeasureRow(line) {
+    const row = document.createElement("div");
+    row.className = "tab-measure-row";
+    const measures = (line.measures || []).slice(0, 4).map((measure, idx) => ({
+      ...measure,
+      startBar: measure.startBar == null || measure.startBar === "" ? (idx === 0 ? "single" : "none") : measure.startBar,
+      endBar: measure.endBar == null || measure.endBar === "" ? "single" : measure.endBar
+    }));
+    measures.forEach((measure, idx) => row.appendChild(new TabMeasure(measure, idx === measures.length - 1).render()));
+    return row;
+  }
+}
+
+/* COMPONENT DETAIL: TabMeasure */
+class TabMeasure extends MusicMeasure {
+  constructor(data, isLast = false) {
+    super(data, isLast);
+    this.width = 168;
+    this.height = 92;
+    this.leftPad = 12;
+    this.rightPad = 12;
+    this.top = 18;
+    this.gap = 11;
+    this.canvas = new TabCanvas({
+      width: this.width,
+      top: this.top,
+      gap: this.gap,
+      leftPad: this.leftPad,
+      rightPad: this.rightPad
+    });
+  }
+
+  render() {
+    const box = document.createElement("div");
+    box.className = this.baseClasses().map(c => c === "measure-box" ? "tab-measure" : c).join(" ");
+    this.canvas.renderStrings(box);
+    this.renderBars(box);
+    this.renderNotes(box);
+    this.renderAboveAnnotation(box);
+    this.renderMarker(box);
+    this.renderBelowAnnotation(box);
+    return box;
+  }
+
+  xForPosition(value) {
+    const raw = String(value ?? "1").trim();
+    const usable = this.width - this.leftPad - this.rightPad;
+    if (raw.endsWith("%")) {
+      const pct = Math.max(0, Math.min(100, parseFloat(raw) || 0));
+      return this.leftPad + (pct / 100) * usable;
+    }
+    const pos = Math.max(1, Math.min(16, parseFloat(raw) || 1));
+    return this.leftPad + ((pos - 1) / 15) * usable;
+  }
+
+  renderBars(box) {
+    const start = this.data.startBar || "single";
+    if (start !== "none") box.appendChild(this.canvas.barElement("start", start));
+    const end = this.data.endBar || (this.isLast ? "single" : "none");
+    if (end !== "none") box.appendChild(this.canvas.barElement("end", end));
+  }
+
+  renderNotes(box) {
+    (this.data.notes || []).forEach(note => {
+      const x = this.xForPosition(note.position);
+      const y = this.canvas.yFor(note.string);
+      const n = document.createElement("span");
+      n.className = "tab-note" + (note.ghost ? " ghost" : "");
+      n.textContent = note.ghost ? `(${note.fret})` : note.fret;
+      n.style.left = `${x}px`;
+      n.style.top = `${y}px`;
+      box.appendChild(n);
+      this.renderTechnique(box, note, x, y);
+    });
+  }
+
+  renderTechnique(box, note, x, y) {
+    if (!note.type || note.type === "standard") return;
+    const technique = document.createElement("span");
+    technique.className = `tab-technique ${note.type}`;
+    technique.style.left = `${x + 8}px`;
+    technique.style.top = `${y - 15}px`;
+    if (note.type === "slideUp") technique.textContent = "/";
+    if (note.type === "slideDown") technique.textContent = "\\";
+    box.appendChild(technique);
+  }
+
+  renderAboveAnnotation(box) {
+    const values = String(this.data.above || "")
+      .split(",")
+      .map(value => value.trim())
+      .filter(Boolean);
+    if (!values.length) return;
+
+    const above = document.createElement("div");
+    above.className = "tab-above";
+    above.style.gridTemplateColumns = `repeat(${values.length}, minmax(0, 1fr))`;
+    values.forEach(value => {
+      const item = document.createElement("span");
+      item.textContent = value;
+      above.appendChild(item);
+    });
+    box.appendChild(above);
+  }
+
+  renderMarker(box) {
+    const labels = {segno:"𝄋", doubleSegno:"𝄋 𝄋", coda:"𝄌"};
+    if (!labels[this.data.marker]) return;
+    const marker = document.createElement("span");
+    marker.className = "tab-marker";
+    marker.textContent = labels[this.data.marker];
+    box.appendChild(marker);
+  }
+
+  renderBelowAnnotation(box) {
+    if (!this.data.belowRight) return;
+    const below = document.createElement("span");
+    below.className = "tab-below";
+    below.innerHTML = this.renderBelow(this.data.belowRight);
+    box.appendChild(below);
+  }
+}
+
+class MeasureTestComponent extends Component {
+  static UNITS = 8;
+
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "measure-test";
+    wrap.innerHTML = `
+      <div class="measure-test-title">${this.data.title || "Measure test"}</div>
+      <div class="measure-test-description">${this.data.description || ""}</div>
+      <div class="measure-test-row"></div>
+    `;
+    const row = wrap.querySelector(".measure-test-row");
+    (this.data.measures || []).forEach((m, idx, arr) => {
+      row.appendChild(this.renderMeasure(m, idx === arr.length - 1));
+    });
+    return wrap;
+  }
+
+  renderMeasure(m, isLast) {
+    return new ChordMeasure(m, isLast).render();
+  }
+}
+
+class UnicodePlaygroundComponent extends Component {
+  static HEIGHT = 620;
+
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "unicode-playground";
+    wrap.innerHTML = `<div class="unicode-section-title">${this.data.title || "Unicode test"}</div>`;
+
+    const tests = [
+      {label: "Default browser font", cls: "font-default"},
+      {label: "Music font stack", cls: "font-stack"},
+      {label: "Generic serif fallback", cls: "font-serif"}
+    ];
+
+    const grid = document.createElement("div");
+    grid.className = "font-test-grid";
+
+    tests.forEach(test => {
+      const panel = document.createElement("div");
+      panel.className = "font-panel";
+      panel.innerHTML = `<div class="font-panel-title">${test.label}</div>`;
+      (this.data.rows || []).forEach(row => {
+        const r = document.createElement("div");
+        r.className = "symbol-row";
+        r.innerHTML = `
+          <div class="symbol-label">${row.label}</div>
+          <div class="symbols ${test.cls}">
+            ${(row.symbols || []).map(s => `<span class="unicode-symbol">${s}</span>`).join("")}
+          </div>
+        `;
+        panel.appendChild(r);
+      });
+      grid.appendChild(panel);
+    });
+
+    wrap.appendChild(grid);
+
+    const examples = document.createElement("div");
+    examples.className = "example-list";
+    examples.innerHTML = `<div class="font-panel-title">SongChart examples, music font stack</div>` +
+      (this.data.examples || []).map(e => `<div class="unicode-example font-stack">${e}</div>`).join("");
+    wrap.appendChild(examples);
+
+    return wrap;
+  }
+}
+
+/* RENDERER: ChordDiagramRenderer */
+class ChordDiagramRenderer {
+  static render(chord, fallbackStartFret = 1) {
+    const startFret = chord.startFret || fallbackStartFret || 1;
+    const visibleFrets = 5;
+    const dotFrets = new Set([3, 5, 7, 9, 12, 15, 17]);
+    const el = document.createElement("div");
+    el.className = chord.missing ? "chord chord-missing" : "chord";
+    el.dataset.renderer = "ChordDiagramRenderer";
+    el.innerHTML = `<div class="chord-title">${FretFlow.escape(chord.name || "")}</div>`;
+    if (chord.missing) {
+      el.innerHTML += `<div class="chord-missing-message">Akkoord niet gevonden</div>`;
+      return el;
+    }
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 100 132");
+    const stringXs = [18, 31, 44, 57, 70, 83];
+    const topY = 24, fretGap = 17, leftX = 18, rightX = 83;
+    let markup = `<line x1="${leftX}" y1="${topY}" x2="${rightX}" y2="${topY}" stroke="#111" stroke-width="3"/>`;
+    if (startFret > 1) markup += `<text x="8" y="${topY + fretGap/2 + 3}" font-size="9" font-weight="700" text-anchor="middle" fill="#333">${startFret}</text>`;
+    markup += stringXs.map(x => `<line x1="${x}" y1="${topY}" x2="${x}" y2="${topY + visibleFrets * fretGap}" stroke="#666" stroke-width="1"/>`).join("");
+    for (let i=1;i<=visibleFrets;i++) {
+      const y = topY + i * fretGap;
+      markup += `<line x1="${leftX}" y1="${y}" x2="${rightX}" y2="${y}" stroke="#b8b8b8" stroke-width="1"/>`;
+      const actualFret = startFret + i - 1;
+      if (dotFrets.has(actualFret)) markup += `<text x="9" y="${y - fretGap/2 + 3}" font-size="8" text-anchor="middle" fill="#555">${actualFret}</text>`;
+    }
+    (chord.frets || []).forEach((f,i) => {
+      const x=stringXs[i];
+      if (f === "x") markup += `<text x="${x}" y="14" font-size="9" font-weight="700" text-anchor="middle">x</text>`;
+      else if (f === 0) markup += `<text x="${x}" y="14" font-size="9" font-weight="700" text-anchor="middle">o</text>`;
+    });
+    (chord.frets || []).forEach((f,i) => {
+      if (typeof f !== "number" || f === 0) return;
+      const rel=f-startFret+1; if(rel<1||rel>visibleFrets)return;
+      const x=stringXs[i], y=topY+(rel-.5)*fretGap, finger=Array.isArray(chord.fingers)?chord.fingers[i]:null;
+      markup += `<circle cx="${x}" cy="${y}" r="5.8" fill="#111"/>`;
+      if (finger != null && finger !== "") markup += `<text x="${x}" y="${y}" font-size="7" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#fff">${FretFlow.escape(finger)}</text>`;
+    });
+    (chord.barres || []).forEach(barre => {
+      const fret=Number(barre.fret), from=Math.max(0,Math.min(5,Number(barre.fromString??0))), to=Math.max(0,Math.min(5,Number(barre.toString??5))), rel=fret-startFret+1;
+      if(!Number.isFinite(fret)||rel<1||rel>visibleFrets)return;
+      const y=topY+(rel-.5)*fretGap, x1=stringXs[Math.min(from,to)], x2=stringXs[Math.max(from,to)];
+      markup += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#111" stroke-width="11.6" stroke-linecap="round"/>`;
+      if(barre.finger!=null&&barre.finger!=="") markup += `<text x="${(x1+x2)/2}" y="${y}" font-size="7" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#fff">${FretFlow.escape(barre.finger)}</text>`;
+    });
+    svg.innerHTML=markup; el.appendChild(svg); return el;
+  }
+}
+
+/* COMPONENT: ChordGridComponent */
+class ChordGridComponent extends Component {
+  static UNITS = Layout.CHORDGRID_UNITS;
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "music-component component-block chordgrid-block";
+    wrap.innerHTML = `<h2 class="component-title">${FretFlow.escape(this.data.title || "")}</h2><div class="chord-grid"></div>`;
+    const grid = wrap.querySelector(".chord-grid");
+    const chordMap = FretFlow.chordMap(this.app.data.library || {});
+    (this.data.chords || []).forEach(code => {
+      const entry = chordMap.get(code);
+      const chord = entry ? {name:entry.code, ...entry.diagram} : {name:code, missing:true};
+      if (!entry) console.warn(`Unknown chord code: ${code}`);
+      grid.appendChild(ChordDiagramRenderer.render(chord));
+    });
+    return this.applyLayoutUnits(wrap);
+  }
+}
+
+FretFlow.renderNativeRecord = function(record, libraryData = {}) {
+  const data = {
+    app: { title: "FretFlow Preview", subtitle: "" },
+    groups: {songs:{title:"Liedjes"},exercises:{title:"Oefeningen"},cheatsheets:{title:"Cheat sheets"},developer:{title:"Developer"}},
+    library: {
+      frets: libraryData.frets || Array.from({length:17}, (_,i)=>i+1),
+      strings: libraryData.strings || ["Hoge E","B","G","D","A","Dikke E"],
+      rootsA: libraryData.rootsA || [],
+      rootsC: libraryData.rootsC || [],
+      chordCategories: libraryData.chordCategories || FretFlow.defaultChordCategories(),
+      chords: libraryData.chords || []
+    },
+    tabs: [record]
+  };
+  const app = Object.create(FretFlowApp.prototype);
+  app.data = FretFlow.normalizeNativeData(data);
+  app.frets = data.library.frets;
+  app.strings = data.library.strings;
+  app.rootsA = new Set(data.library.rootsA);
+  app.rootsC = new Set(data.library.rootsC);
+  app.pdfDocuments = new Map();
+  app.chordLibraryCategory = "";
+  app.chordLibraryRenderer = new ChordLibraryRenderer(app);
+  app.pent = {
+    0:[5,8,10,12,15,17], 1:[5,8,10,13,15,17], 2:[5,7,9,12,14,17],
+    3:[5,7,10,12,14,17], 4:[5,7,10,12,15,17], 5:[5,8,10,12,15,17]
+  };
+  const mount = document.createElement("div");
+  mount.className = "builder-record-preview";
+  const pages = app.paginate(record);
+  pages.forEach((components, index) => {
+    const shell = document.createElement("div");
+    shell.className = "page-shell";
+    shell.appendChild(app.renderPage(record, components, index, pages.length));
+    mount.appendChild(shell);
+  });
+  return mount;
+};
+
+FretFlow.renderChordPreview = function(entry) {
+  const mount = document.createElement("div");
+  mount.className = "chord-editor-preview";
+  const chord = entry ? {name:entry.code || "Nieuw akkoord", ...(entry.diagram || {})} : {name:"Nieuw akkoord", frets:["x","x","x","x","x","x"]};
+  mount.appendChild(ChordDiagramRenderer.render(chord));
+  return mount;
+};
+
+FretFlow.renderChordLibraryPreview = function(libraryData = {}) {
+  const app = Object.create(FretFlowApp.prototype);
+  app.data = FretFlow.normalizeNativeData({library:JSON.parse(JSON.stringify(libraryData)), tabs:[]});
+  app.chordLibraryCategory = "";
+  app.chordLibraryRenderer = new ChordLibraryRenderer(app);
+  const mount = document.createElement("div");
+  mount.className = "builder-record-preview";
+  const pages = app.chordLibraryRenderer.pages();
+  pages.forEach((pageData,index) => {
+    const shell = document.createElement("div"); shell.className = "page-shell";
+    shell.appendChild(app.chordLibraryRenderer.renderPage(pageData,index,pages.length));
+    mount.appendChild(shell);
+  });
+  return mount;
+};
+
+FretFlow.renderPdfRecordPreview = async function(record) {
+  const mount = document.createElement("div");
+  mount.className = "builder-record-preview";
+  const embeddedId = record.embeddedId || record.id;
+  const tab = {
+    id:record.id,
+    nr:record.nr || "",
+    title:record.title || "PDF",
+    artist:record.artist || "",
+    tags:record.tags || [],
+    description:record.description || "",
+    footer:record.footer || "",
+    groups:record.groups || [],
+    source:{type:"pdf",embeddedId,pageCount:Math.max(1,Number(record.pageCount)||1)},
+    sections:[],legend:[]
+  };
+
+  const app = Object.create(FretFlowApp.prototype);
+  app.pdfDocuments = new Map();
+  app.pdfRecords = new Map([[embeddedId, record]]);
+  app.allowDetachedPdfRender = true;
+
+  if (record.data && window.pdfjsLib) {
+    try {
+      const pdf = await app.getPdfDocument(tab);
+      record.pageCount = pdf.numPages;
+      tab.source.pageCount = pdf.numPages;
+    } catch (error) {
+      // Keep the shared page renderer responsible for the visible error state.
+    }
+  }
+
+  const pages = app.paginate(tab);
+  pages.forEach((pageData,index) => {
+    const shell = document.createElement("div");
+    shell.className = "page-shell";
+    shell.appendChild(app.renderPage(tab,pageData,index,pages.length));
+    mount.appendChild(shell);
+  });
+  return mount;
+};
+
+FretFlow.FretFlowApp = FretFlowApp;
+FretFlow.ChordLibraryRenderer = ChordLibraryRenderer;
+FretFlow.ChordDiagramRenderer = ChordDiagramRenderer;
+const projectDataNode = document.getElementById("fretflow-project-json");
+if (document.getElementById("home") && projectDataNode) {
+  const projectModel = FretFlow.normalizeProjectModel(JSON.parse(projectDataNode.textContent));
+  const {appData, pdfData} = FretFlow.composeProjectData(projectModel);
+  new FretFlowApp(appData, pdfData);
+}
+};
+FretFlow.initApp();
+})(window);
+
+</script>
+
+<!-- =======================================================================
+     BUILDER UI: EDITORS, BUILD AND UNPACK
+     Builder-only code is not copied into FretFlow.html.
+     ======================================================================= -->
+<script id="fretflow-builder-runtime">
+/* ============================================================================
+   FRETFLOW BUILDER 10E — SOURCE INDEX
+
+   1. Integrated project state and dataset registry
+   2. Project metadata, groups and system-page editor
+   3. Native/PDF metadata editors
+   4. Component editors: Text, ChordGrid, ChordSection, SimpleRiff, TabSection
+   5. Chord and category editors
+   6. Shared live preview through the FretFlow component renderer
+   7. New/Open/Build project workflow
+   ============================================================================ */
+
+/* =============================================================================
+   BUILDER PROJECT STATE — one integrated project object
+   ============================================================================= */
+const DATASETS={
+  project:{label:'Project'},
+  chords:{label:'Akkoorden'},
+  native:{label:'Native tabs'},
+  pdf:{label:'PDF tabs'}
+};
+let projectData=null;
+let activeKind='project',current=null,draftRecord=null;
+let chordLibraryMode=false,chordCategoryMode=false,currentChordCode='',draftChord=null,chordLibraryMessage='';
+let projectBaselineJson='';
+let projectMetadataSaved=false;
+let recordMetadataSavedKey='';
+const $=s=>document.querySelector(s),esc=FretFlow.escape;
+function projectSnapshot(){return projectData?JSON.stringify(projectData):''}
+function rememberProjectBaseline(){projectBaselineJson=projectSnapshot()}
+function hasProjectChanges(){return !!projectData&&projectSnapshot()!==projectBaselineJson}
+function recordMetadataFormValue(){
+  const r=get();if(!r||!document.getElementById('metaTitle'))return null;
+  const rawTags=metaTags.value.split(',').map(x=>x.trim()).filter(Boolean);
+  const systemTag=activeKind==='pdf'?'pdf':activeKind==='native'?'native':'';
+  return {
+    title:metaTitle.value,artist:metaArtist.value,
+    groups:[...document.querySelectorAll('input[name="metaGroups"]:checked')].map(input=>input.value).sort(),
+    tags:FretFlow.normalizeTags(rawTags,FretFlow.tagCanonicalMap(projectData),systemTag),
+    description:metaDescription.value,
+    footer:document.getElementById('metaFooter')?metaFooter.value:undefined,
+    tuning:document.getElementById('metaTuning')?(metaTuning.value.trim()||'Standard'):undefined
+  };
+}
+function storedRecordMetadataValue(){
+  const r=get();if(!r)return null;
+  const systemTag=activeKind==='pdf'?'pdf':activeKind==='native'?'native':'';
+  return {
+    title:r.title||'',artist:r.artist||'',groups:[...(r.groups||[])].sort(),
+    tags:FretFlow.normalizeTags(r.tags||[],FretFlow.tagCanonicalMap(projectData),systemTag),
+    description:r.description||'',
+    footer:document.getElementById('metaFooter')?(r.footer||''):undefined,
+    tuning:document.getElementById('metaTuning')?(r.tuning||'Standard'):undefined
+  };
+}
+function projectMetadataFormValue(){
+  if(!projectData||!document.getElementById('projectTitle'))return null;
+  return {
+    title:projectTitle.value.trim()||'FretFlow',description:projectDescription.value,
+    homepage:{badge:homeBadge.value.trim()||'Digitale gitaarmap',title:homeTitle.value.trim()||(projectTitle.value.trim()||'FretFlow'),intro:homeIntro.value}
+  };
+}
+function storedProjectMetadataValue(){
+  if(!projectData)return null;const meta=projectData.project,home=meta.homepage||{};
+  return {title:meta.title||'FretFlow',description:meta.description||'',homepage:{badge:home.badge||'Digitale gitaarmap',title:home.title||meta.title||'FretFlow',intro:home.intro||''}};
+}
+function hasUnsavedMetadata(){
+  if(activeKind==='project'){const a=projectMetadataFormValue(),b=storedProjectMetadataValue();return !!a&&JSON.stringify(a)!==JSON.stringify(b)}
+  if(['native','pdf'].includes(activeKind)){const a=recordMetadataFormValue(),b=storedRecordMetadataValue();return !!a&&JSON.stringify(a)!==JSON.stringify(b)}
+  return false;
+}
+function confirmDiscardUnsavedMetadata(){return !hasUnsavedMetadata()||confirm('Er zijn niet-opgeslagen wijzigingen in de metadata. Doorgaan zonder deze op te slaan?')}
+function confirmReplaceCurrentProject(action){
+  if(!projectData)return true;
+  if(!hasUnsavedMetadata()&&!hasProjectChanges())return true;
+  return confirm(`Er zijn niet-opgeslagen wijzigingen in de huidige gitaarmap. ${action} Deze wijzigingen gaan verloren.`);
+}
+function currentRecordMetadataKey(){return ['native','pdf'].includes(activeKind)&&current&&current!=='__new__'?`${activeKind}:${current}`:''}
+function savedButton(label,saved,id,onclick){return `<button id="${id}" onclick="${onclick}" ${saved?'disabled':''}>${saved?'✓ Opgeslagen':label}</button>`}
+function resetSavedMetadataState(target){
+  if(!target)return;
+  const projectIds=new Set(['projectTitle','projectDescription','homeBadge','homeTitle','homeIntro']);
+  if(projectIds.has(target.id)){projectMetadataSaved=false;const button=document.getElementById('projectMetadataSave');if(button){button.textContent='Projectmetadata opslaan';button.disabled=false}}
+  if(target.id?.startsWith('meta')||target.name==='metaGroups'){recordMetadataSavedKey='';const button=document.getElementById('metadataSave');if(button){button.textContent='Metadata opslaan';button.disabled=false}}
+}
+function preserveRecordMetadataForm(){return recordMetadataFormValue()}
+function restoreRecordMetadataForm(values){if(!values||!document.getElementById('metaTitle'))return;metaTitle.value=values.title??'';metaArtist.value=values.artist??'';for(const input of document.querySelectorAll('input[name="metaGroups"]'))input.checked=(values.groups||[]).includes(input.value);metaTags.value=(values.tags||[]).join(', ');metaDescription.value=values.description??'';if(document.getElementById('metaFooter'))metaFooter.value=values.footer??'';if(document.getElementById('metaTuning'))metaTuning.value=values.tuning??'Standard'}
+function preserveProjectMetadataForm(){return projectMetadataFormValue()}
+function restoreProjectMetadataForm(values){if(!values||!document.getElementById('projectTitle'))return;projectTitle.value=values.title??'FretFlow';projectDescription.value=values.description??'';homeBadge.value=values.homepage?.badge??'Digitale gitaarmap';homeTitle.value=values.homepage?.title??values.title??'FretFlow';homeIntro.value=values.homepage?.intro??''}
+
+function records(){if(!projectData)return[];if(activeKind==='native')return projectData.nativeTabs;if(activeKind==='pdf')return projectData.pdfTabs;return[]}
+function activateDataset(kind){if(!projectData||!DATASETS[kind])return;activeKind=kind;current=null;draftRecord=null;chordCategoryMode=false;chordLibraryMode=kind==='chords';if(kind==='chords'){currentChordCode=chordLibrary().map(chord=>chord.code).sort((a,b)=>a.localeCompare(b,'nl',{numeric:true,sensitivity:'base'}))[0]||'';draftChord=currentChordCode?structuredClone(chordByCode(currentChordCode)):emptyChord();chordLibraryMessage=''}else{currentChordCode='';draftChord=null}render()}
+function renderDatasetSwitch(){const wrap=$('#datasetSwitch'),select=$('#datasetKind');wrap.hidden=!projectData;if(!projectData)return;select.innerHTML=Object.entries(DATASETS).map(([id,item])=>`<option value="${id}" ${id===activeKind?'selected':''}>${item.label}</option>`).join('')}
+function recordText(r){const groupText=(r.groups||[]).map(id=>projectData?.project?.groups?.find(g=>g.id===id)?.title||id);return [r.title,r.artist,(r.tags||[]).join(' '),groupText.join(' ')].filter(Boolean).join(' ').toLowerCase()}
+function list(){const picker=$('#recordPicker');if(!projectData||!['native','pdf'].includes(activeKind)){picker.style.display='none';recordSelect.innerHTML='<option value="">Kies een tab…</option>';return}picker.style.display='grid';const q=(recordSearch.value||'').trim().toLowerCase();const items=records().filter(r=>!q||recordText(r).includes(q));recordSelect.innerHTML='<option value="">Kies een tab…</option>'+items.map(r=>`<option value="${esc(r.id)}" ${r.id===current?'selected':''}>${esc(r.title)}${r.artist?' — '+esc(r.artist):''}</option>`).join('')}
+function get(){return current==='__new__'?draftRecord:records().find(r=>r.id===current)}
+let previewTimer=null;
+let showLayoutUnits=false;
+$('#toggleUnits').onclick=()=>{
+  showLayoutUnits=!showLayoutUnits;
+  preview.classList.toggle('show-layout-units',showLayoutUnits);
+  $('#toggleUnits').textContent=showLayoutUnits?'Verberg layout-units':'Toon layout-units';
+};
+function renderPreviewOnly(){if(chordCategoryMode){renderChordLibraryPreview();return}if(chordLibraryMode){renderChordEditorPreview();return}const r=get();if(!r||current==='__new__')return;renderRecordPreview(r)}
+function schedulePreview(delay=320){clearTimeout(previewTimer);previewTimer=setTimeout(renderPreviewOnly,delay)}
+function update(k,v){const r=get();if(!r)return;r[k]=v;if(k==='title'||k==='artist')r.id=FretFlow.slug(`${r.title}-${r.artist||''}`)||r.id;render()}
+function select(id){draftRecord=null;current=id;render()}
+function goHome(){draftRecord=null;current=null;render()}
+function renderActions(){
+  libraryActions.innerHTML='';
+  if(!projectData)return;
+  if(activeKind==='native'){
+    libraryActions.innerHTML='<button id="newRecord">Nieuwe native tab</button><button class="danger" id="deleteRecord" '+(current?'':'disabled')+'>Verwijder tab</button>';
+    $('#newRecord').onclick=newNative;$('#deleteRecord').onclick=deleteCurrent;
+  }else if(activeKind==='pdf'){
+    libraryActions.innerHTML='<button id="newRecord">Nieuwe PDF</button><button class="danger" id="deleteRecord" '+(current?'':'disabled')+'>Verwijder tab</button>';
+    $('#newRecord').onclick=newPdf;$('#deleteRecord').onclick=deleteCurrent;
+  }
+}
+function render(){
+  list();renderActions();renderDatasetSwitch();
+  if(!projectData){
+    $('#status').textContent='Nog geen gitaarmap geopend.';
+    editor.innerHTML='<div class="empty">Kies <b>Nieuwe gitaarmap</b> of open een bestaande gitaarmap, zoals <b>FretFlow.html</b>, om muziek toe te voegen.</div>';
+    preview.innerHTML='';return;
+  }
+  $('#status').textContent=`${projectData.project.title||'FretFlow'} · ${projectData.nativeTabs.length} native · ${projectData.pdfTabs.length} PDF · ${projectData.chords.chords.length} akkoorden`;
+  if(activeKind==='project'){renderProjectEditor();return}
+  if(activeKind==='chords'){
+    chordLibraryMode=true;
+    if(chordCategoryMode){renderChordCategoryEditor();return}
+    renderChordLibraryEditor();return;
+  }
+  const r=get();
+  if(!r){editor.innerHTML='<div class="empty">Kies een tab of maak een nieuwe tab.</div>';preview.innerHTML='';return}
+  editor.innerHTML=`<div class="back-row"><button class="small secondary" onclick="goHome()">← Terug naar overzicht</button></div>`+(activeKind==='pdf'?pdfEditor(r):nativeEditor(r));
+  if(current==='__new__'){preview.innerHTML='<div class="empty">De preview verschijnt nadat de tab is aangemaakt.</div>';return}
+  renderRecordPreview(r);
+}
+async function renderRecordPreview(r){
+  preview.replaceChildren();
+  try{
+    const node=activeKind==='pdf'
+      ? await FretFlow.renderPdfRecordPreview(r)
+      : FretFlow.renderNativeRecord(r,projectData.chords||{});
+    if(get()!==r)return;
+    preview.replaceChildren(node);
+  }catch(err){
+    preview.innerHTML=`<div class="empty">Preview mislukt: ${esc(err.message)}</div>`;
+  }
+}
+function projectGroups(){return projectData?.project?.groups||[]}
+function groupById(id){return projectGroups().find(group=>group.id===id)}
+function chordLibrarySystemPage(){
+  projectData.project.systemPages=projectData.project.systemPages||FretFlow.defaultSystemPages();
+  projectData.project.systemPages.chordLibrary=projectData.project.systemPages.chordLibrary||FretFlow.defaultSystemPages().chordLibrary;
+  return projectData.project.systemPages.chordLibrary;
+}
+function renderProjectEditor(){
+  const meta=projectData.project,home=meta.homepage||{},chordPage=chordLibrarySystemPage();
+  const groupRows=projectGroups().map((group,index)=>`<div class="project-row"><div class="project-row-head"><b>${esc(group.title||group.id)}</b><span class="project-id">${esc(group.id)}</span><button class="small secondary" onclick="moveProjectGroup(${index},-1)" ${index===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveProjectGroup(${index},1)" ${index===projectGroups().length-1?'disabled':''}>↓</button><button class="small danger" onclick="deleteProjectGroup(${index})">Verwijder groep</button></div><div class="project-row-grid"><div class="field"><label>Naam</label><input value="${esc(group.title||'')}" oninput="updateProjectGroup(${index},'title',this.value)"></div><div class="field"><label>Beschrijving</label><input value="${esc(group.description||'')}" oninput="updateProjectGroup(${index},'description',this.value)"></div></div></div>`).join('');
+  editor.innerHTML=`<div class="mode-note">Elke groep verschijnt automatisch als tegel op de homepage. Voor aanvullende classificatie zonder homepage-tegel gebruik je tags.</div>
+  <div class="grid"><div class="field"><label>Naam gitaarmap</label><input id="projectTitle" value="${esc(meta.title||'FretFlow')}"></div><div class="field"><label>Schema <span class="label-hint">(technische dataversie; wordt niet in de app getoond)</span></label><input value="${esc(projectData.schemaVersion)}" disabled></div><div class="field full"><label>Beschrijving <span class="label-hint">(algemene projecttekst; fallback wanneer Homepage intro leeg is)</span></label><textarea id="projectDescription">${esc(meta.description||'')}</textarea></div><div class="field"><label>Homepage badge</label><input id="homeBadge" value="${esc(home.badge||'')}"></div><div class="field"><label>Homepage titel</label><input id="homeTitle" value="${esc(home.title||'')}"></div><div class="field full"><label>Homepage intro <span class="label-hint">(laat leeg om Beschrijving als fallback te gebruiken)</span></label><textarea id="homeIntro">${esc(home.intro||'')}</textarea></div></div><div class="toolbar">${savedButton('Projectmetadata opslaan',projectMetadataSaved,'projectMetadataSave','saveProjectMetadata()')}</div>
+  <div class="project-section"><h3>Groepen</h3><div class="hint" style="text-align:left;margin:0 0 9px">Iedere groep wordt automatisch een tegel op de homepage. De volgorde hieronder is ook de volgorde op de homepage. Tabs mogen aan nul, één of meerdere groepen gekoppeld zijn.</div><div class="project-list">${groupRows||'<div class="empty">Nog geen groepen. Tabs blijven ook zonder groep geldig en vindbaar via zoeken en tags.</div>'}</div><div class="inline-add" style="margin-top:9px"><input id="newProjectGroupName" placeholder="Nieuwe groep, bijv. Kerst"><button onclick="addProjectGroup()">+ Groep</button></div></div>
+  <div class="project-section"><h3>Systeempagina</h3><div class="hint" style="text-align:left;margin:0 0 9px">De Akkoordenbibliotheek staat altijd als aparte systeempagina op de homepage en kan niet als groep aan tabs worden gekoppeld.</div><div class="project-row"><div class="project-row-head"><b>Akkoordenbibliotheek</b><span class="project-id">chord-library</span></div><div class="project-row-grid"><div class="field"><label>Titel</label><input value="${esc(chordPage.title||'')}" oninput="updateChordLibrarySystemPage('title',this.value)"></div><div class="field"><label>Beschrijving</label><input value="${esc(chordPage.description||'')}" oninput="updateChordLibrarySystemPage('description',this.value)"></div></div></div></div>`;
+  renderProjectPreview();
+}
+function renderProjectPreview(){
+  const template=document.getElementById('fretflow-app-shell-template');
+  const sourceHome=template?.content?.querySelector('#home');
+  if(!sourceHome){preview.innerHTML='<div class="empty">App-homepage template niet gevonden.</div>';return}
+  const surface=document.createElement('div');
+  surface.className='fretflow-app-surface';
+  surface.dataset.builderPreview='HomeView';
+  surface.appendChild(sourceHome.cloneNode(true));
+  preview.replaceChildren(surface);
+  const {appData,pdfData}=FretFlow.composeProjectData(structuredClone(projectData));
+  new FretFlow.FretFlowApp(appData,pdfData,{root:surface,homeOnly:true});
+}
+function captureProjectMetadataForm(){
+  if(!document.getElementById('projectTitle'))return;
+  const meta=projectData.project;
+  meta.title=projectTitle.value.trim()||'FretFlow';
+  meta.description=projectDescription.value;
+  meta.homepage=meta.homepage||{};
+  meta.homepage.badge=homeBadge.value.trim()||'Digitale gitaarmap';
+  meta.homepage.title=homeTitle.value.trim()||meta.title;
+  meta.homepage.intro=homeIntro.value;
+}
+function saveProjectMetadata(){captureProjectMetadataForm();projectMetadataSaved=true;render()}
+function updateProjectGroup(index,key,value){const group=projectGroups()[index];if(!group)return;group[key]=value;renderProjectPreview()}
+function moveProjectGroup(index,delta){const pending=preserveProjectMetadataForm(),groups=projectGroups(),next=index+delta;if(next<0||next>=groups.length)return;[groups[index],groups[next]]=[groups[next],groups[index]];render();restoreProjectMetadataForm(pending)}
+function addProjectGroup(){const pending=preserveProjectMetadataForm(),input=document.getElementById('newProjectGroupName'),title=String(input?.value||'').trim();if(!title){input?.focus();return}let base=FretFlow.slug(title)||'groep',id=base,n=2;while(projectGroups().some(group=>group.id===id))id=`${base}-${n++}`;projectGroups().push({id,title,description:''});render();restoreProjectMetadataForm(pending)}
+function deleteProjectGroup(index){const pending=preserveProjectMetadataForm(),group=projectGroups()[index];if(!group)return;const used=[...projectData.nativeTabs,...projectData.pdfTabs].filter(record=>(record.groups||[]).includes(group.id)).length;if(!confirm(`Groep “${group.title}” verwijderen?${used?` De koppeling wordt bij ${used} tab(s) verwijderd.`:''}`))return;for(const record of [...projectData.nativeTabs,...projectData.pdfTabs])record.groups=(record.groups||[]).filter(id=>id!==group.id);projectGroups().splice(index,1);render();restoreProjectMetadataForm(pending)}
+function updateChordLibrarySystemPage(key,value){const page=chordLibrarySystemPage();page[key]=value;renderProjectPreview()}
+function groupAssignmentEditor(selected=[]){const set=new Set(selected||[]);const groups=projectGroups();return groups.length?`<div class="group-assignment">${groups.map(group=>`<label class="group-check"><input type="checkbox" name="metaGroups" value="${esc(group.id)}" ${set.has(group.id)?'checked':''}><span>${esc(group.title)}</span></label>`).join('')}</div>`:'<div class="hint">Maak eerst onder Project een groep aan.</div>'}
+function common(r,{creating=false,includeTuning=false,includeFooter=true}={}){return `<div class="grid"><div class="field"><label>Titel</label><input id="metaTitle" value="${esc(r.title||'')}"></div><div class="field"><label>Artiest</label><input id="metaArtist" value="${esc(r.artist||'')}"></div>${includeTuning?`<div class="field"><label>Tuning</label><input id="metaTuning" value="${esc(r.tuning||'Standard')}"></div>`:''}<div class="field"><label>Tags</label><input id="metaTags" value="${esc((r.tags||[]).join(', '))}"></div><div class="field full"><label>Groepen <span class="label-hint">(optioneel; meerdere mogelijk; iedere groep verschijnt op de homepage)</span></label>${groupAssignmentEditor(r.groups||[])}</div><div class="field full"><label>Beschrijving <span class="label-hint">(wordt gebruikt op de tegel en als korte intro onder de titel)</span></label><textarea id="metaDescription">${esc(r.description||'')}</textarea></div>${includeFooter?`<div class="field full"><label>Footer op muziekblad <span class="label-hint">(verschijnt op iedere pagina)</span></label><textarea id="metaFooter">${esc(r.footer||'')}</textarea></div>`:''}</div><div class="toolbar">${creating?'<button id="createTab" onclick="applyMetadata(true)">Tab aanmaken</button>':savedButton('Metadata opslaan',recordMetadataSavedKey===currentRecordMetadataKey(),'metadataSave','applyMetadata(false)')}</div>${creating?'<div class="hint">Vul eerst de metadata in en maak de tab aan. Daarna kun je inhoud toevoegen.</div>':'<div class="hint" style="text-align:left">Alleen bovenstaande metadata gebruikt deze knop. Tabinhoud, componenten en PDF-data worden automatisch opgeslagen.</div>'}`}
+function captureMetadataForm(){const r=get();if(!r||!document.getElementById('metaTitle'))return;r.title=metaTitle.value;r.artist=metaArtist.value;r.groups=[...document.querySelectorAll('input[name="metaGroups"]:checked')].map(input=>input.value);const rawTags=metaTags.value.split(',').map(x=>x.trim()).filter(Boolean);const systemTag=activeKind==='pdf'?'pdf':activeKind==='native'?'native':'';r.tags=FretFlow.normalizeTags(rawTags,FretFlow.tagCanonicalMap(projectData),systemTag);r.description=metaDescription.value;if(document.getElementById('metaFooter'))r.footer=metaFooter.value;if(document.getElementById('metaTuning'))r.tuning=metaTuning.value.trim()||'Standard'}
+function applyMetadata(creating=false){const r=get();if(!r)return;captureMetadataForm();if(current!=='__new__')FretFlow.canonicalizeProjectTags(projectData);const title=r.title.trim();if(!title){alert('Vul eerst een titel in.');metaTitle.focus();return}r.title=title;const id=FretFlow.slug(`${r.title}-${r.artist||''}`)||'nieuwe-tab';if(creating){let unique=id,n=2;while(records().some(x=>x.id===unique))unique=`${id}-${n++}`;r.id=unique;records().push(r);draftRecord=null;current=r.id}else{const old=current;r.id=id;if(old!==r.id&&records().some(x=>x!==r&&x.id===r.id)){alert('Er bestaat al een tab met dit ID. Pas titel of artiest aan.');r.id=old;return}current=r.id}if(!creating)recordMetadataSavedKey=currentRecordMetadataKey();render()}
+function pdfEditor(r){return common(r,{creating:current==='__new__',includeFooter:true})+`<div class="field"><label>Pagina's</label><input type="number" value="${r.pageCount||1}" oninput="get().pageCount=+this.value;schedulePreview(0)"></div><div class="field"><label>PDF toevoegen/vervangen</label><input type="file" accept="application/pdf" onchange="readPdf(this.files[0])"><div class="hint">${r.data?`Geladen${r.fileName?`: ${esc(r.fileName)}`:''}`:'Nog geen PDF geladen.'}</div></div><div class="hint">De PDF wordt als Base64-data onderdeel van deze gitaarmap en komt mee in FretFlow.html.</div>`}
+
+function componentToolbar(pos='top'){return `<div class="toolbar component-toolbar ${pos}">${[['text','Tekst'],['chordgrid','Akkoorddiagrammen'],['chordsection','Akkoordenschema'],['simpleriff','Simple riff'],['tabsection','Tab per maat']].map(([t,l])=>`<button class="small" onclick="addSection('${t}')">+ ${l}</button>`).join('')}</div>`}
+function nativeEditor(r){if(current==='__new__')return common(r,{creating:true,includeTuning:true});return common(r,{includeTuning:true})+`${componentToolbar('top')}<div>${(r.sections||[]).map((s,i)=>sectionEditor(s,i)).join('')}</div>${componentToolbar('bottom')}`}
+function sectionEditor(s,i){
+  let body='';
+  if(s.type==='text')body=`<div class="field"><label>Titel</label><input value="${esc(s.title||'')}" oninput="sec(${i},'title',this.value)"></div><div class="field"><label>Tekst</label><textarea oninput="sec(${i},'text',this.value)">${esc(s.text||'')}</textarea></div>`;
+  if(s.type==='chordgrid')body=`<div class="field"><label>Titel</label><input value="${esc(s.title||'')}" oninput="sec(${i},'title',this.value)"></div><div class="chord-picker"><select onchange="if(this.value){addChordCode(${i},this.value);this.value=''}"><option value="">Akkoord uit bibliotheek toevoegen…</option>${chordOptionGroups()}</select></div><div class="selected-chords">${(s.chords||[]).map((c,ci)=>`<div class="selected-chord"><b>${esc(c)}</b><button class="small secondary" onclick="moveChordCode(${i},${ci},-1)" ${ci===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordCode(${i},${ci},1)" ${ci===(s.chords.length-1)?'disabled':''}>↓</button><button class="small danger" onclick="removeChordCode(${i},${ci})">×</button></div>`).join('')}</div>`;
+  if(s.type==='chordsection')body=chordSectionEditor(s,i);
+  if(s.type==='simpleriff')body=simpleRiffEditor(s,i);
+  if(s.type==='tabsection')body=tabSectionEditor(s,i);
+  return `<div class="block"><div class="block-head"><b>${sectionLabel(s.type)}</b><span class="spacer"></span><button class="small secondary" onclick="moveSection(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveSection(${i},1)" ${i===(get().sections.length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="duplicateSection(${i})">Dupliceer blok</button><select class="insert-select" onchange="if(this.value){addSection(this.value,${i+1});this.value=''}"><option value="">+ blok hierna…</option><option value="text">Tekst</option><option value="chordgrid">Akkoorddiagrammen</option><option value="chordsection">Akkoordenschema</option><option value="simpleriff">Simple riff</option><option value="tabsection">Tab per maat</option></select><button class="small danger" onclick="removeSection(${i})">×</button></div>${body}</div>`
+}
+function sectionLabel(type){return {text:'Tekst',chordgrid:'Akkoorddiagrammen',chordsection:'Akkoordenschema',simpleriff:'Simple riff',tabsection:'Tab per maat'}[type]||type}
+function simpleRiffEditor(s,si){
+  const lines=ensureSimpleRiffLines(s);
+  return `<div class="field"><label>Titel</label><input value="${esc(s.title||'Riff')}" oninput="sec(${si},'title',this.value)"></div>${lines.map((line,li)=>simpleRiffLineEditor(line,si,li)).join('')}<button class="small" onclick="addRiffLine(${si})">+ Regel</button>`;
+}
+function simpleRiffLineEditor(line,si,li){
+  return `<div class="subbox"><div class="block-head"><b>Riffregel ${li+1}</b><span class="spacer"></span><div class="line-actions"><button class="small secondary" onclick="moveRiffLine(${si},${li},-1)" ${li===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveRiffLine(${si},${li},1)" ${li===(ensureSimpleRiffLines(get().sections[si]).length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="duplicateRiffLine(${si},${li})">Dupliceer</button><button class="small danger" onclick="removeRiffLine(${si},${li})">Verwijder regel</button></div></div>${riffBarFields(si,li,line)}${riffNotesEditor(si,li,line.notes||[])}<button class="small add-note" onclick="addRiffNote(${si},${li},this)">+ Noot</button></div>`;
+}
+function riffBarFields(si,li,o){return `<div class="grid"><div class="field"><label>Begin</label><select onchange="riffLine(${si},${li},'startBar',this.value)">${barOpts(o.startBar)}</select></div><div class="field"><label>Einde</label><select onchange="riffLine(${si},${li},'endBar',this.value)">${barOpts(o.endBar)}</select></div><div class="field"><label>Teken</label><select onchange="riffLine(${si},${li},'marker',this.value)">${markOpts(o.marker)}</select></div><div class="field"><label>Annotatie rechts onder</label><input value="${esc(o.belowRight||'')}" oninput="riffLine(${si},${li},'belowRight',this.value)"></div></div>`}
+function riffNotesEditor(si,li,notes){return notes.map((n,ni)=>`<div class="note-row"><div class="field"><label>Positie</label><input class="note-position" value="${esc(n.position??'10%')}" oninput="riffNote(${si},${li},${ni},'position',this.value)"></div><div class="field"><label>Snaar</label><select onchange="riffNote(${si},${li},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${Number(n.string)===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" oninput="riffNote(${si},${li},${ni},'fret',this.value)"></div><div class="field"><label>Type</label><select onchange="riffNote(${si},${li},${ni},'type',this.value)">${[['standard','Standard'],['legato','Legato'],['slideUp','Slide up'],['slideDown','Slide down']].map(([x,l])=>`<option value="${x}" ${n.type===x?'selected':''}>${l}</option>`).join('')}</select></div><button class="small danger" onclick="removeRiffNote(${si},${li},${ni})">×</button></div>`).join('')}
+function tabSectionEditor(s,si){
+  s.lines=s.lines||[];
+  return `<div class="field"><label>Titel</label><input value="${esc(s.title||'Tab')}" oninput="sec(${si},'title',this.value)"></div><div class="field"><label>Toelichting</label><input value="${esc(s.note||'')}" oninput="sec(${si},'note',this.value)"></div>${s.lines.map((line,li)=>tabLineEditor(line,si,li)).join('')}<button class="small" onclick="addTabLine(${si})">+ Regel</button>`;
+}
+function tabLineEditor(line,si,li){
+  const measures=line.measures||[];
+  return `<div class="subbox"><div class="block-head"><b>Tabregel ${li+1}</b><span class="spacer"></span><div class="line-actions"><button class="small" onclick="moveTabLine(${si},${li},-1)">↑</button><button class="small" onclick="moveTabLine(${si},${li},1)">↓</button><button class="small" onclick="duplicateTabLine(${si},${li})">Dupliceer</button><button class="small danger" onclick="removeTabLine(${si},${li})">Verwijder regel</button></div></div>${measures.map((m,mi)=>tabMeasureEditor(m,si,li,mi)).join('')}<div class="toolbar"><button class="small" onclick="addTabMeasure(${si},${li})" ${measures.length>=4?'disabled title="Maximaal vier maten per regel"':''}>+ Maat</button>${measures.length&&measures.length<4?`<select class="insert-select" id="duplicateMeasure-${si}-${li}">${measures.map((_,mi)=>`<option value="${mi}">Maat ${mi+1}</option>`).join('')}</select><button class="small secondary" onclick="duplicateSelectedTabMeasure(${si},${li})">Dupliceer gekozen maat</button>`:''}<span class="hint"> ${measures.length}/4 maten</span></div></div>`;
+}
+function tabMeasureEditor(m,si,li,mi){
+  return `<div class="subbox"><div class="block-head"><b>Maat ${mi+1}</b><span class="spacer"></span><button class="small danger" onclick="removeTabMeasure(${si},${li},${mi})">Verwijder maat</button></div>${tabBarFields(si,li,mi,m)}<div class="hint">Positie: 1–16, of een vrije positie zoals 27%. Gelijke positie betekent gelijktijdig spelen.</div>${tabNotesEditor(si,li,mi,m.notes||[])}<button class="small add-note" onclick="addTabNote(${si},${li},${mi},this)">+ Noot</button></div>`;
+}
+function tabBarFields(si,li,mi,m){return `<div class="grid"><div class="field"><label>Begin maat</label><select onchange="tabMeasure(${si},${li},${mi},'startBar',this.value)">${barOpts(m.startBar)}</select></div><div class="field"><label>Einde maat</label><select onchange="tabMeasure(${si},${li},${mi},'endBar',this.value)">${barOpts(m.endBar)}</select></div><div class="field"><label>Navigatieteken</label><select onchange="tabMeasure(${si},${li},${mi},'marker',this.value)">${markOpts(m.marker)}</select></div><div class="field"><label>Annotatie boven</label><input value="${esc(m.above||'')}" placeholder="Am, G, D/F#…" oninput="tabMeasure(${si},${li},${mi},'above',this.value)"></div><div class="field"><label>Annotatie rechts onder</label><input value="${esc(m.belowRight||'')}" placeholder="3×, D.S., Fine…" oninput="tabMeasure(${si},${li},${mi},'belowRight',this.value)"></div></div>`}
+function tabNotesEditor(si,li,mi,notes){return notes.map((n,ni)=>`<div class="note-row"><div class="field"><label>Positie</label><input class="note-position" value="${esc(n.position??'1')}" oninput="tabNote(${si},${li},${mi},${ni},'position',this.value)"></div><div class="field"><label>Snaar</label><select onchange="tabNote(${si},${li},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${Number(n.string)===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" oninput="tabNote(${si},${li},${mi},${ni},'fret',this.value)"></div><div class="field"><label>Type</label><select onchange="tabNote(${si},${li},${mi},${ni},'type',this.value)">${[['standard','Standard'],['legato','Legato'],['slideUp','Slide up'],['slideDown','Slide down']].map(([x,l])=>`<option value="${x}" ${n.type===x?'selected':''}>${l}</option>`).join('')}</select></div><button class="small danger" onclick="removeTabNote(${si},${li},${mi},${ni})">×</button></div>`).join('')}
+function chordSectionEditor(s,si){
+  const segno=s.segno||'';
+  return `<div class="grid"><div class="field"><label>Sectienaam</label><input value="${esc(s.title||'')}" oninput="sec(${si},'title',this.value)"></div><div class="field"><label>Dal Segno bij sectie</label><select onchange="sec(${si},'segno',this.value)">${['','single','double'].map(x=>`<option value="${x}" ${segno===x?'selected':''}>${x===''?'geen':x==='single'?'Segno':'Dubbel Segno'}</option>`).join('')}</select></div></div>${(s.lines||[]).map((line,li)=>chordLineEditor(si,li,line)).join('')}<button class="small" onclick="addChordLine(${si})">+ Regel</button>`;
+}
+function chordLineEditor(si,li,line){
+  return `<div class="subbox"><div class="block-head"><b>Regel ${li+1}</b><span class="spacer"></span><div class="line-actions"><button class="small secondary" onclick="moveChordLine(${si},${li},-1)" ${li===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordLine(${si},${li},1)" ${li===(get().sections[si].lines.length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="duplicateChordLine(${si},${li})">Dupliceer</button><button class="small danger" onclick="removeChordLine(${si},${li})">Verwijder regel</button></div></div><div class="hint">Elke maat houdt een vaste breedte. Een regel bevat maximaal vier maten; bij minder maten blijft rechts lege ruimte.</div>${(line.measures||[]).map((m,mi)=>chordMeasureEditor(si,li,mi,m)).join('')}<button class="small" onclick="addChordMeasure(${si},${li})" ${(line.measures||[]).length>=4?'disabled title="Maximaal vier maten per regel"':''}>+ Maat</button></div>`;
+}
+function chordMeasureEditor(si,li,mi,m){
+  return `<div class="subbox"><div class="block-head"><b>Maat ${mi+1}</b><span class="spacer"></span><button class="small danger" onclick="removeChordMeasure(${si},${li},${mi})">Verwijder maat</button></div><div class="field"><label>Akkoorden en tekens (komma's)</label><input value="${esc((m.chords||[]).join(', '))}" onchange="chordMeasure(${si},${li},${mi},'chords',this.value.split(',').map(x=>x.trim()).filter(Boolean))"></div><div class="field"><label>Akkoord uit bibliotheek toevoegen</label><select onchange="if(this.value){addChordToMeasure(${si},${li},${mi},this.value);this.value=''}"><option value="">Kies akkoord…</option>${chordOptionGroups()}</select></div><div class="field"><label>Slagritme</label><input value="${esc(m.strum||'')}" placeholder="D D D D" oninput="chordMeasure(${si},${li},${mi},'strum',this.value)"></div>${chordBarFields(si,li,mi,m)}</div>`;
+}
+function chordBarFields(si,li,mi,m){return `<div class="grid"><div class="field"><label>Begin maat</label><select onchange="chordMeasure(${si},${li},${mi},'startBar',this.value)">${barOpts(m.startBar)}</select></div><div class="field"><label>Einde maat</label><select onchange="chordMeasure(${si},${li},${mi},'endBar',this.value)">${barOpts(m.endBar)}</select></div><div class="field full"><label>Annotatie rechts onder</label><input value="${esc(m.belowRight||'')}" placeholder="3×, D.S., D.S.S., Fine…" oninput="chordMeasure(${si},${li},${mi},'belowRight',this.value)"></div></div>`}
+function barFields(si,mi,o){const path=mi===null?'sec':'mea';return `<div class="grid"><div class="field"><label>Begin</label><select onchange="${path}Bar(${si},${mi},'startBar',this.value)">${barOpts(o.startBar)}</select></div><div class="field"><label>Einde</label><select onchange="${path}Bar(${si},${mi},'endBar',this.value)">${barOpts(o.endBar)}</select></div><div class="field"><label>Teken</label><select onchange="${path}Bar(${si},${mi},'marker',this.value)">${markOpts(o.marker)}</select></div><div class="field"><label>Tekst</label><input value="${esc(o.belowRight||'')}" oninput="${path}Bar(${si},${mi},'belowRight',this.value)"></div></div>`}
+function barOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function markOpts(v){return ['','segno','doubleSegno','coda'].map(x=>`<option value="${x}" ${v===x?'selected':''}>${x||'geen'}</option>`).join('')}
+function notesEditor(si,mi,notes){return notes.map((n,ni)=>`<div class="note-row"><div class="field"><label>Positie</label><input class="note-position" value="${esc(n.position??'1')}" oninput="note(${si},${mi},${ni},'position',this.value)"></div><div class="field"><label>Snaar</label><select onchange="note(${si},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${n.string===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" oninput="note(${si},${mi},${ni},'fret',this.value)"></div><div class="field"><label>Type</label><select onchange="note(${si},${mi},${ni},'type',this.value)">${['standard','legato','slideUp','slideDown'].map(x=>`<option ${n.type===x?'selected':''}>${x}</option>`).join('')}</select></div><button class="small danger" onclick="removeNote(${si},${mi},${ni})">×</button></div>`).join('')}
+function addSection(type,index=null){const r=get(),s={type};if(type==='text')Object.assign(s,{title:'',text:''});if(type==='chordgrid')Object.assign(s,{title:'Akkoorden in dit nummer',chords:[]});if(type==='chordsection')Object.assign(s,{title:'Akkoorden',segno:'',lines:[{measures:[]}]});if(type==='simpleriff')Object.assign(s,{title:'Riff',lines:[{notes:[],startBar:'single',endBar:'single'}]});if(type==='tabsection')Object.assign(s,{title:'Tab',note:'',lines:[{measures:[]}]});if(index===null)r.sections.push(s);else r.sections.splice(index,0,s);render()}
+function moveSection(i,d){const a=get().sections,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];render()}
+function duplicateSection(i){const a=get().sections;a.splice(i+1,0,structuredClone(a[i]));render()}
+function chordOptionGroups(){
+  if(!projectData)return "";
+  const categories=chordCategories(),chords=chordLibrary();
+  return categories.map(category=>{const items=chords.filter(chord=>chord.category===category.id).sort((a,b)=>a.code.localeCompare(b.code,"nl",{numeric:true,sensitivity:"base"}));return items.length?`<optgroup label="${esc(category.name)}">${items.map(chord=>`<option value="${esc(chord.code)}">${esc(chord.code)}</option>`).join("")}</optgroup>`:""}).join("");
+}
+function addChordCode(si,code){const chords=get().sections[si].chords||(get().sections[si].chords=[]);if(!chords.includes(code))chords.push(code);render()}
+function removeChordCode(si,ci){get().sections[si].chords.splice(ci,1);render()}
+function moveChordCode(si,ci,d){const a=get().sections[si].chords,j=ci+d;if(j<0||j>=a.length)return;[a[ci],a[j]]=[a[j],a[ci]];render()}
+function addChordToMeasure(si,li,mi,code){const m=get().sections[si].lines[li].measures[mi];m.chords=m.chords||[];m.chords.push(code);render()}
+function removeSection(i){get().sections.splice(i,1);render()}function sec(i,k,v){if(v===''&&['segno','marker','belowRight','startBar','endBar'].includes(k))delete get().sections[i][k];else get().sections[i][k]=v;schedulePreview()}function secBar(i,mi,k,v){sec(i,k,v);schedulePreview(0)}function mea(si,mi,k,v){const m=get().sections[si].measures[mi];if(v==='')delete m[k];else m[k]=v;schedulePreview()}function meaBar(si,mi,k,v){mea(si,mi,k,v);schedulePreview(0)}
+function addChordLine(si){get().sections[si].lines.push({measures:[]});render()}function removeChordLine(si,li){get().sections[si].lines.splice(li,1);render()}function duplicateChordLine(si,li){const lines=get().sections[si].lines;lines.splice(li+1,0,structuredClone(lines[li]));render()}function moveChordLine(si,li,d){const lines=get().sections[si].lines,j=li+d;if(j<0||j>=lines.length)return;[lines[li],lines[j]]=[lines[j],lines[li]];render()}function addChordMeasure(si,li){const measures=get().sections[si].lines[li].measures;if(measures.length>=4)return;measures.push({chords:[],startBar:measures.length===0?'single':'none',endBar:'single'});render()}function removeChordMeasure(si,li,mi){const measures=get().sections[si].lines[li].measures;measures.splice(mi,1);if(measures[0]&&(!measures[0].startBar||measures[0].startBar==='none'))measures[0].startBar='single';render()}function chordMeasure(si,li,mi,k,v){const m=get().sections[si].lines[li].measures[mi];if(v===''||(Array.isArray(v)&&!v.length))delete m[k];else m[k]=v;schedulePreview(Array.isArray(v)?320:0)}
+function ensureSimpleRiffLines(section){
+  if(!Array.isArray(section.lines)||!section.lines.length){section.lines=[{notes:structuredClone(section.notes||[]),startBar:section.startBar||'single',endBar:section.endBar||'single',marker:section.marker||'',belowRight:section.belowRight||''}];delete section.notes;delete section.startBar;delete section.endBar;delete section.marker;delete section.belowRight}
+  return section.lines;
+}
+function addRiffLine(si){ensureSimpleRiffLines(get().sections[si]).push({notes:[],startBar:'single',endBar:'single'});render()}
+function removeRiffLine(si,li){const lines=ensureSimpleRiffLines(get().sections[si]);lines.splice(li,1);if(!lines.length)lines.push({notes:[],startBar:'single',endBar:'single'});render()}
+function duplicateRiffLine(si,li){const lines=ensureSimpleRiffLines(get().sections[si]);lines.splice(li+1,0,structuredClone(lines[li]));render()}
+function moveRiffLine(si,li,d){const lines=ensureSimpleRiffLines(get().sections[si]),j=li+d;if(j<0||j>=lines.length)return;[lines[li],lines[j]]=[lines[j],lines[li]];render()}
+function riffLine(si,li,k,v){const line=ensureSimpleRiffLines(get().sections[si])[li];if(v==='')delete line[k];else line[k]=v;schedulePreview(k==='startBar'||k==='endBar'||k==='marker'?0:320)}
+function riffNote(si,li,ni,k,v){ensureSimpleRiffLines(get().sections[si])[li].notes[ni][k]=v;schedulePreview(k==='string'||k==='type'?0:320)}
+function addRiffNote(si,li,btn){const notes=ensureSimpleRiffLines(get().sections[si])[li].notes,previous=notes.at(-1)?.position??'10%';notes.push({position:previous,string:6,fret:'0',type:'standard'});render();requestAnimationFrame(()=>{const block=editor.querySelectorAll('.block')[si];const line=block.querySelectorAll(':scope > .subbox')[li];const fields=line?.querySelectorAll('.note-position');fields?.[fields.length-1]?.focus();fields?.[fields.length-1]?.select()})}
+function removeRiffNote(si,li,ni){ensureSimpleRiffLines(get().sections[si])[li].notes.splice(ni,1);render()}
+function addTabLine(si){get().sections[si].lines.push({measures:[]});render()}
+function removeTabLine(si,li){get().sections[si].lines.splice(li,1);render()}
+function duplicateTabLine(si,li){const lines=get().sections[si].lines;lines.splice(li+1,0,structuredClone(lines[li]));render()}
+function moveTabLine(si,li,d){const lines=get().sections[si].lines,j=li+d;if(j<0||j>=lines.length)return;[lines[li],lines[j]]=[lines[j],lines[li]];render()}
+function addTabMeasure(si,li){const measures=get().sections[si].lines[li].measures;if(measures.length>=4)return;measures.push({notes:[],startBar:measures.length===0?'single':'none',endBar:'single'});render()}
+function removeTabMeasure(si,li,mi){const measures=get().sections[si].lines[li].measures;measures.splice(mi,1);if(measures[0]&&(!measures[0].startBar||measures[0].startBar==='none'))measures[0].startBar='single';render()}
+function duplicateTabMeasure(si,li,mi){const measures=get().sections[si].lines[li].measures;if(measures.length>=4)return;const copy=structuredClone(measures[mi]);copy.startBar=measures.length===0?'single':'none';copy.endBar=copy.endBar||'single';measures.push(copy);render()}
+function duplicateSelectedTabMeasure(si,li){const select=document.getElementById(`duplicateMeasure-${si}-${li}`);if(!select)return;duplicateTabMeasure(si,li,+select.value)}
+function tabMeasure(si,li,mi,k,v){const m=get().sections[si].lines[li].measures[mi];if(v==='')delete m[k];else m[k]=v;schedulePreview(k==='marker'||k==='startBar'||k==='endBar'?0:320)}
+function tabNote(si,li,mi,ni,k,v){get().sections[si].lines[li].measures[mi].notes[ni][k]=v;schedulePreview(k==='string'||k==='type'?0:320)}
+function addTabNote(si,li,mi,btn){const notes=get().sections[si].lines[li].measures[mi].notes,previous=notes.at(-1)?.position??'1';notes.push({position:previous,string:6,fret:'0',type:'standard'});render();requestAnimationFrame(()=>{const block=editor.querySelectorAll('.block')[si];const line=block.querySelectorAll('.subbox')[li];const measure=line.querySelectorAll(':scope > .subbox')[mi];const fields=measure?.querySelectorAll('.note-position');fields?.[fields.length-1]?.focus();fields?.[fields.length-1]?.select()})}
+function removeTabNote(si,li,mi,ni){get().sections[si].lines[li].measures[mi].notes.splice(ni,1);render()}
+function addMeasure(si,type){get().sections[si].measures.push(type==='tab'?{notes:[]}:{chords:[]});render()}function removeMeasure(si,mi){get().sections[si].measures.splice(mi,1);render()}function note(si,mi,ni,k,v){const s=get().sections[si],a=mi===null?s.notes:s.measures[mi].notes;a[ni][k]=v;schedulePreview(k==='string'||k==='type'?0:320)}function addNote(si,mi,btn){const s=get().sections[si],a=mi===null?s.notes:s.measures[mi].notes,previous=a.at(-1)?.position??(mi===null?'10%':'1');a.push({position:previous,string:6,fret:'0',type:'standard'});render();requestAnimationFrame(()=>{const root=mi===null?editor.querySelectorAll('.block')[si]:editor.querySelectorAll('.block')[si].querySelectorAll('.subbox')[mi];const fields=root.querySelectorAll('.note-position');fields[fields.length-1]?.focus();fields[fields.length-1]?.select()})}function removeNote(si,mi,ni){const s=get().sections[si],a=mi===null?s.notes:s.measures[mi].notes;a.splice(ni,1);render()}
+
+function chordLibrary(){
+  projectData.chords=FretFlow.normalizeChordLibrary(projectData.chords||FretFlow.emptyChordData());
+  return projectData.chords.chords;
+}
+function chordCategories(){projectData.chords=FretFlow.normalizeChordLibrary(projectData.chords||FretFlow.emptyChordData());return projectData.chords.chordCategories}
+function chordByCode(code){return chordLibrary().find(chord=>chord.code===code)}
+function emptyChord(){return {code:'',category:chordCategories()[0]?.id||'',diagram:{startFret:1,frets:['x','x','x','x','x','x'],fingers:[null,null,null,null,null,null],barres:[]}}}
+function openChordLibrary(){if(activeKind!=='chords')return;chordLibraryMode=true;chordCategoryMode=false;current=null;currentChordCode=chordLibrary().map(chord=>chord.code).sort((a,b)=>a.localeCompare(b,'nl',{numeric:true,sensitivity:'base'}))[0]||'';draftChord=currentChordCode?structuredClone(chordByCode(currentChordCode)):emptyChord();chordLibraryMessage='';render()}
+function closeChordLibrary(){activateDataset('chords')}
+function openChordCategories(){if(activeKind!=='chords')return;chordCategoryMode=true;chordLibraryMode=false;current=null;draftChord=null;currentChordCode='';chordLibraryMessage='';render()}
+function closeChordCategories(){chordCategoryMode=false;openChordLibrary()}
+function newChord(){currentChordCode='';draftChord=emptyChord();chordLibraryMessage='';render()}
+function selectChord(code){currentChordCode=code;draftChord=structuredClone(chordByCode(code)||emptyChord());chordLibraryMessage='';render()}
+function filteredChordCodes(){const q=(document.getElementById('chordLibrarySearch')?.value||'').trim().toLowerCase();return chordLibrary().filter(chord=>!q||chord.code.toLowerCase().includes(q)||(chordCategories().find(category=>category.id===chord.category)?.name||'').toLowerCase().includes(q)).map(chord=>chord.code).sort((a,b)=>a.localeCompare(b,'nl',{numeric:true,sensitivity:'base'}))}
+function updateChordLibraryList(){const sel=document.getElementById('chordLibrarySelect');if(!sel)return;const codes=filteredChordCodes();sel.innerHTML=codes.map(code=>`<option value="${esc(code)}" ${code===currentChordCode?'selected':''}>${esc(code)}</option>`).join('');if(!codes.length)sel.innerHTML='<option value="">Geen akkoorden gevonden</option>'}
+function renderChordLibraryEditor(){
+  if(!draftChord){newChord();return}
+  draftChord.diagram=draftChord.diagram||emptyChord().diagram;
+  const diagram=draftChord.diagram,stringNames=['Dikke E','A','D','G','B','Hoge E'];
+  const strings=stringNames.map((label,i)=>`<div class="string-editor"><b>${label}</b><div class="field"><label>Fret</label><input value="${esc(diagram.frets?.[i]??'x')}" placeholder="x, 0 of fret" oninput="setChordString(${i},'fret',this.value)"></div><div class="field"><label>Vinger</label><select onchange="setChordString(${i},'finger',this.value)"><option value="" ${diagram.fingers?.[i]==null?'selected':''}>—</option>${[1,2,3,4].map(n=>`<option value="${n}" ${Number(diagram.fingers?.[i])===n?'selected':''}>${n}</option>`).join('')}</select></div></div>`).join('');
+  const barre=(diagram.barres||[])[0]||null;
+  editor.innerHTML=`<div class="back-row"><button class="small secondary" onclick="closeChordLibrary()">← Terug naar bibliotheek</button></div><div class="mode-note">Akkoordcodes, categorieën en diagrammen staan uitsluitend in <b>project.chords</b>.</div><div class="chord-library-layout"><div class="chord-library-list"><input id="chordLibrarySearch" placeholder="Zoek akkoord of categorie" oninput="updateChordLibraryList()"><select id="chordLibrarySelect" size="12" onchange="selectChord(this.value)"></select><button onclick="newChord()">Nieuw akkoord</button><button class="secondary" onclick="openChordCategories()">Categorieën beheren</button></div><div><div class="grid"><div class="field"><label>Akkoordcode</label><input value="${esc(draftChord.code||'')}" placeholder="bijv. Am7" oninput="setChordField('code',this.value)"></div><div class="field"><label>Categorie</label><select onchange="setChordField('category',this.value)">${chordCategories().map(category=>`<option value="${esc(category.id)}" ${draftChord.category===category.id?'selected':''}>${esc(category.name)}</option>`).join('')}</select></div><div class="field"><label>Startfret</label><input type="number" min="1" max="24" value="${Number(diagram.startFret)||1}" onchange="setChordDiagramField('startFret',+this.value)"></div></div><h3>Snaren</h3>${strings}<div class="subbox"><div class="field"><label><input type="checkbox" ${barre?'checked':''} onchange="toggleChordBarre(this.checked)"> Barré</label></div>${barre?`<div class="grid"><div class="field"><label>Fret</label><input type="number" min="1" max="24" value="${barre.fret||1}" onchange="setBarreField('fret',+this.value)"></div><div class="field"><label>Van snaar</label><select onchange="setBarreField('fromString',+this.value)">${stringNames.map((n,i)=>`<option value="${i}" ${barre.fromString===i?'selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label>Tot snaar</label><select onchange="setBarreField('toString',+this.value)">${stringNames.map((n,i)=>`<option value="${i}" ${barre.toString===i?'selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label>Vinger</label><select onchange="setBarreField('finger',+this.value)">${[1,2,3,4].map(n=>`<option value="${n}" ${Number(barre.finger||1)===n?'selected':''}>${n}</option>`).join('')}</select></div></div>`:''}</div><div class="toolbar"><button onclick="saveChord()">Akkoord opslaan</button><button class="danger" onclick="deleteChord()" ${currentChordCode?'':'disabled'}>Akkoord verwijderen</button></div><div id="chordLibraryMessage" class="${chordLibraryMessage?'success':''}">${esc(chordLibraryMessage)}</div></div></div>`;
+  updateChordLibraryList();renderChordEditorPreview();
+}
+function renderChordCategoryEditor(){
+  const categories=chordCategories();
+  editor.innerHTML=`<div class="back-row"><button class="small secondary" onclick="closeChordCategories()">← Terug naar bibliotheek</button></div><div class="mode-note">De volgorde hieronder bepaalt de volgorde in alle categorie-selectors. Categorienamen bestaan maar één keer.</div><div class="category-manager">${categories.map((category,index)=>`<div class="category-row"><input value="${esc(category.name)}" onchange="renameChordCategory('${esc(category.id)}',this.value)"><button class="small secondary" onclick="moveChordCategory(${index},-1)" ${index===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordCategory(${index},1)" ${index===categories.length-1?'disabled':''}>↓</button><button class="small danger" onclick="deleteChordCategory('${esc(category.id)}')">×</button></div>`).join('')}<div class="inline-add"><input id="newChordCategoryName" placeholder="Nieuwe categorie"><button onclick="addChordCategory()">Toevoegen</button></div></div>`;
+  renderChordLibraryPreview();
+}
+function addChordCategory(){const input=document.getElementById('newChordCategoryName'),name=String(input?.value||'').trim();if(!name){input?.focus();return}const categories=chordCategories();let base=FretFlow.slug(name)||'categorie',id=base,n=2;while(categories.some(category=>category.id===id))id=`${base}-${n++}`;categories.push({id,name});render()}
+function renameChordCategory(id,name){name=String(name||'').trim();if(!name){render();return}const category=chordCategories().find(category=>category.id===id);if(category)category.name=name;render()}
+function moveChordCategory(index,direction){const categories=chordCategories(),target=index+direction;if(target<0||target>=categories.length)return;[categories[index],categories[target]]=[categories[target],categories[index]];render()}
+function deleteChordCategory(id){const categories=chordCategories(),used=chordLibrary().filter(chord=>chord.category===id);if(categories.length===1){alert('Er moet minimaal één categorie blijven bestaan.');return}const fallback=categories.find(category=>category.id!==id);const detail=used.length?`\n${used.length} akkoord(en) worden verplaatst naar “${fallback.name}”.`:'';if(!confirm(`Categorie verwijderen?${detail}`))return;used.forEach(chord=>chord.category=fallback.id);projectData.chords.chordCategories=categories.filter(category=>category.id!==id);render()}
+function setChordField(k,v){draftChord[k]=v;schedulePreview(120)}
+function setChordDiagramField(k,v){draftChord.diagram=draftChord.diagram||emptyChord().diagram;draftChord.diagram[k]=v;schedulePreview(120)}
+function parseFretValue(v){const t=String(v).trim().toLowerCase();if(t==='x'||t===''||t==='-')return'x';const n=Number(t);return Number.isFinite(n)&&n>=0?n:'x'}
+function setChordString(i,k,v){const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram);diagram.frets=diagram.frets||['x','x','x','x','x','x'];diagram.fingers=diagram.fingers||[null,null,null,null,null,null];if(k==='fret')diagram.frets[i]=parseFretValue(v);else diagram.fingers[i]=v===''?null:Number(v);schedulePreview(160)}
+function activateBarreStrings(){const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram),barre=(diagram.barres||[])[0];if(!barre)return;diagram.frets=diagram.frets||['x','x','x','x','x','x'];const start=Math.max(0,Math.min(5,Math.min(Number(barre.fromString)||0,Number(barre.toString)||0))),end=Math.max(0,Math.min(5,Math.max(Number(barre.fromString)||0,Number(barre.toString)||0)));for(let i=start;i<=end;i++)if(String(diagram.frets[i]).toLowerCase()==='x')diagram.frets[i]=0}
+function toggleChordBarre(on){const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram);diagram.barres=on?[{fret:Number(diagram.startFret)||1,fromString:0,toString:5,finger:1}]:[];if(on)activateBarreStrings();render()}
+function setBarreField(k,v){const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram);diagram.barres=diagram.barres||[];if(!diagram.barres[0])diagram.barres[0]={fret:1,fromString:0,toString:5,finger:1};diagram.barres[0][k]=v;if(k==='fromString'||k==='toString'){activateBarreStrings();render();return}schedulePreview(0)}
+function renderChordEditorPreview(){if(!chordLibraryMode||!draftChord)return;preview.replaceChildren(FretFlow.renderChordPreview(structuredClone(draftChord)))}
+function renderChordLibraryPreview(){if(!chordCategoryMode)return;preview.replaceChildren(FretFlow.renderChordLibraryPreview(projectData.chords||{}))}
+function chordUsages(code){const found=[];for(const tab of projectData.nativeTabs||[])for(const section of tab.sections||[]){if(section.type==='chordgrid'&&(section.chords||[]).includes(code))found.push(tab.title);if(['chordsection','songsection'].includes(section.type))for(const line of section.lines||[])for(const measure of line.measures||[])if((measure.chords||[]).includes(code))found.push(tab.title)}return [...new Set(found)]}
+function replaceChordCode(oldCode,newCode){for(const tab of projectData.nativeTabs||[])for(const section of tab.sections||[]){if(section.type==='chordgrid')section.chords=(section.chords||[]).map(code=>code===oldCode?newCode:code);if(['chordsection','songsection'].includes(section.type))for(const line of section.lines||[])for(const measure of line.measures||[])measure.chords=(measure.chords||[]).map(code=>code===oldCode?newCode:code)}}
+function saveChord(){const code=String(draftChord.code||'').trim();if(!code){alert('Vul een akkoordcode in.');return}const library=chordLibrary(),existing=library.find(chord=>chord.code===code);if(existing&&code!==currentChordCode&&!confirm(`Akkoord ${code} bestaat al. Overschrijven?`))return;const entry=structuredClone(draftChord);entry.code=code;entry.category=entry.category||chordCategories()[0]?.id||'';entry.diagram=entry.diagram||emptyChord().diagram;entry.diagram.startFret=Math.max(1,Number(entry.diagram.startFret)||1);entry.diagram.frets=(entry.diagram.frets||[]).slice(0,6);while(entry.diagram.frets.length<6)entry.diagram.frets.push('x');entry.diagram.fingers=(entry.diagram.fingers||[]).slice(0,6);while(entry.diagram.fingers.length<6)entry.diagram.fingers.push(null);if(!(entry.diagram.barres||[]).length)delete entry.diagram.barres;const originalIndex=currentChordCode?library.findIndex(chord=>chord.code===currentChordCode):-1;if(currentChordCode&&currentChordCode!==code)replaceChordCode(currentChordCode,code);const filtered=library.filter(chord=>chord.code!==currentChordCode&&chord.code!==code),insertAt=originalIndex<0?filtered.length:Math.min(originalIndex,filtered.length);filtered.splice(insertAt,0,entry);projectData.chords.chords=filtered;currentChordCode=code;draftChord=structuredClone(entry);chordLibraryMessage=`${code} opgeslagen.`;render()}
+function deleteChord(){if(!currentChordCode)return;const uses=chordUsages(currentChordCode),detail=uses.length?`\nWordt gebruikt in: ${uses.join(', ')}. Verwijzingen worden ook verwijderd.`:'';if(!confirm(`Akkoord ${currentChordCode} verwijderen?${detail}`))return;projectData.chords.chords=chordLibrary().filter(chord=>chord.code!==currentChordCode);for(const tab of projectData.nativeTabs||[])for(const section of tab.sections||[]){if(section.type==='chordgrid')section.chords=(section.chords||[]).filter(code=>code!==currentChordCode);if(['chordsection','songsection'].includes(section.type))for(const line of section.lines||[])for(const measure of line.measures||[])measure.chords=(measure.chords||[]).filter(code=>code!==currentChordCode)}currentChordCode='';draftChord=emptyChord();chordLibraryMessage='Akkoord verwijderd.';render()}
+function defaultRecordGroups(){return[]}
+function newNative(){draftRecord={id:'',kind:'native',title:'',artist:'',groups:defaultRecordGroups(),tuning:'Standard',tags:['native'],description:'',footer:'',sections:[]};current='__new__';render();requestAnimationFrame(()=>metaTitle?.focus())}function newPdf(){const base='nieuwe-pdf',existing=new Set(projectData.pdfTabs.map(r=>r.id));let id=base,n=2;while(existing.has(id))id=`${base}-${n++}`;const r={id,embeddedId:`${id}-base64`,kind:'pdf',title:'Nieuwe PDF',artist:'',groups:defaultRecordGroups(),tags:['pdf'],description:'',footer:'',pageCount:1,data:'',fileName:''};projectData.pdfTabs.push(r);select(r.id)}async function readPdf(f){if(!f)return;const pending=preserveRecordMetadataForm(),r=get(),buf=await f.arrayBuffer(),bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));r.data=btoa(bin);r.fileName=f.name||r.fileName||'';render();restoreRecordMetadataForm(pending)}
+/* =============================================================================
+   BUILDER PROJECT WORKFLOW
+   - builder.html is the source of all HTML/CSS/JS and data templates.
+   - FretFlow.html contains one integrated project JSON object.
+   - Opening an integrated FretFlow project loads only project data; the active code uses the current 10B project schema with the 10E Builder workflow.
+   ============================================================================= */
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function exportStandalone({appBody, js, css, projectData}) {
+  const projectCopy = FretFlow.normalizeProjectModel(projectData);
+  const safeJson = value => JSON.stringify(value, null, 2).replace(/<\/script/gi, "<\\/script");
+  const safeScript = String(js || "").replace(/<\/script/gi, "<\\/script");
+  const pageTitle = FretFlow.escape(projectCopy.project.title || "FretFlow");
+  return `<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${pageTitle}</title>
+
+<!-- =======================================================================
+     FRETFLOW APP CSS — readable component rules from builder.html
+     ======================================================================= -->
+<style id="fretflow-app-css">
+${css}
+</style>
+</head>
+<body>
+<!-- =======================================================================
+     FRETFLOW APP SHELL — HomeView and ViewerView
+     ======================================================================= -->
+${appBody}
+
+<!-- =======================================================================
+     FRETFLOW PROJECT DATA — one integrated JSON project object
+     ======================================================================= -->
+<script id="fretflow-project-json" type="application/json">${safeJson(projectCopy)}<\/script>
+
+<!-- PDF.js is the only external runtime dependency. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"><\/script>
+
+<!-- =======================================================================
+     FRETFLOW RUNTIME — named renderers and component classes
+     ======================================================================= -->
+<script id="fretflow-runtime">
+${safeScript}
+<\/script>
+</body>
+</html>`;
+};
+
+
+function normalizeTabSections(d){for(const record of d.tabs||[]){for(const section of record.sections||[]){if(section.type!=='tabsection')continue;if(!section.lines&&section.measures)section.lines=[{measures:section.measures}];section.lines=section.lines||[];for(const line of section.lines){line.measures=(line.measures||[]).map(m=>{m.notes=(m.notes||[]).map(n=>({position:n.position??(n.relX!=null?`${Math.round(n.relX*100)}%`:(n.pos!=null?String(Math.max(1,Math.min(16,n.pos+1))):'1')),string:(n.position==null&&(n.relX!=null||n.pos!=null)?Number(n.string||0)+1:Number(n.string||1)),fret:n.fret??'0',type:n.type||'standard',...(n.ghost?{ghost:true}:{})}));delete m.grid;delete m.width;delete m.pickup;return m});}delete section.measures;}}return d}
+function normalizeCurrentProject(data){const prepared=FretFlow.normalizeProjectModel(structuredClone(data));const nativeLike=normalizeTabSections({tabs:prepared.nativeTabs});prepared.nativeTabs=nativeLike.tabs;for(const record of prepared.nativeTabs)for(const section of record.sections||[])if(section.type==='simpleriff')ensureSimpleRiffLines(section);return FretFlow.normalizeProjectModel(prepared)}
+function deleteCurrent(){if(!get()||!confirm('Tab verwijderen?'))return;const target=records();const index=target.findIndex(r=>r.id===current);if(index>=0)target.splice(index,1);current=null;render()}
+function appSource(id){const node=document.getElementById(id);if(!node)throw new Error(`Interne Builder-bron ontbreekt: ${id}`);return node.textContent}
+function buildStandalone(){if(!projectData)throw new Error('Open eerst een gitaarmap of maak een nieuwe.');projectData=normalizeCurrentProject(projectData);return exportStandalone({appBody:document.getElementById('fretflow-app-shell-template').innerHTML.trim(),js:appSource('fretflow-runtime'),css:appSource('fretflow-app-css'),projectData})}
+function buildAndDownload(){downloadBlob(new Blob([buildStandalone()],{type:'text/html'}),'FretFlow.html');rememberProjectBaseline()}
+function jsonFromNode(doc,id){const node=doc.getElementById(id);if(!node)return null;return JSON.parse(node.textContent)}
+const CURRENT_SCHEMA=FretFlow.CURRENT_SCHEMA;
+function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
+function assertSupportedSchema(raw){
+  const schema=projectSchema(raw);
+  if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
+  if(schema!==CURRENT_SCHEMA)throw new Error(`Deze gitaarmap gebruikt schema ${schema}. Builder 10E ondersteunt schema ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow Builder.`);
+}
+function migrateProjectToCurrent(raw){
+  assertSupportedSchema(raw);
+  return structuredClone(raw);
+}
+function loadProject(raw){
+  return normalizeCurrentProject(migrateProjectToCurrent(raw));
+}
+function readProjectFromStandalone(html){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  const current=jsonFromNode(doc,'fretflow-project-json');
+  if(!current)throw new Error('Geen geïntegreerde FretFlow-projectdata gevonden.');
+  return loadProject(current);
+}
+function setProject(data,kind='project'){projectData=loadProject(data);projectMetadataSaved=false;recordMetadataSavedKey='';activateDataset(kind);rememberProjectBaseline()}
+function createNewProject(){if(!confirmReplaceCurrentProject('Nieuwe gitaarmap starten?'))return;setProject(FretFlow.createEmptyProject(),'project')}
+async function openStandaloneFile(file){const loaded=readProjectFromStandalone(await file.text());setProject(loaded,'project')}
+
+/* =============================================================================
+   BUILDER UI BINDINGS
+   ============================================================================= */
+recordSearch.oninput=()=>list();
+recordSelect.onchange=()=>{const next=recordSelect.value;if(!next)return;if(!confirmDiscardUnsavedMetadata()){recordSelect.value=current||'';return}select(next)};
+datasetKind.onchange=()=>{const next=datasetKind.value;if(!confirmDiscardUnsavedMetadata()){datasetKind.value=activeKind;return}activateDataset(next)};
+newProject.onclick=()=>createNewProject();
+openApp.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap openen?'))return;standaloneFile.value='';standaloneFile.click()};
+standaloneFile.onchange=async e=>{try{const file=e.target.files[0];if(file)await openStandaloneFile(file)}catch(err){alert(`Openen mislukt: ${err.message}`)}finally{e.target.value=''}};
+buildApp.onclick=()=>{if(!confirmDiscardUnsavedMetadata())return;try{buildAndDownload()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
+// Buttons inside editor/library can rerender or navigate; protect unsaved metadata first.
+document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(['metadataSave','projectMetadataSave','createTab'].includes(button.id))return;if(!(editor.contains(button)||libraryActions.contains(button)))return;if(!confirmDiscardUnsavedMetadata()){event.preventDefault();event.stopImmediatePropagation()}},true);
+document.addEventListener('input',event=>resetSavedMetadataState(event.target));
+document.addEventListener('change',event=>resetSavedMetadataState(event.target));
+window.addEventListener('beforeunload',event=>{if(!hasUnsavedMetadata()&&!hasProjectChanges())return;event.preventDefault();event.returnValue=''});
+render();
+
+</script>
+</body>
+</html>
