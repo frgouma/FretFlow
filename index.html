@@ -1,11 +1,253 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=builder.html">
-  <title>FretFlow</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FretFlow</title>
+
+<style>
+:root{
+  --fretflow-app-background:
+    radial-gradient(circle at 18% 12%, #ffeab955, transparent 34%),
+    linear-gradient(135deg, #2c241d, #5b4632 45%, #28313a);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#1f2933;
+  background:var(--fretflow-app-background);
+}
+
+.home{
+  max-width:1040px;
+  margin:0 auto;
+  padding:44px 22px;
+}
+
+.shell{
+  border-radius:28px;
+  padding:34px;
+  background:linear-gradient(180deg,#fffaf0f5,#f6efe0ef);
+  box-shadow:0 18px 55px #1a130c47;
+  border:1px solid #ffffff88;
+}
+
+.hero{
+  text-align:center;
+  margin-bottom:30px;
+}
+
+.badge{
+  display:inline-block;
+  margin-bottom:14px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#c47a2c22;
+  border:1px solid #c47a2c55;
+  color:#8f4f1b;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  text-decoration:none;
+  transition:background .15s ease,border-color .15s ease;
+}
+
+.badge:hover{
+  background:#c47a2c33;
+  border-color:#c47a2c77;
+}
+
+h1{
+  margin:0 0 12px;
+  font-size:44px;
+  color:#20170f;
+}
+
+.hero p{
+  margin:0 auto;
+  max-width:640px;
+  color:#5d5146;
+  font-size:17px;
+  line-height:1.45;
+}
+
+.category-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+}
+
+.category-card{
+  display:flex;
+  flex-direction:column;
+  border:1px solid #5c483029;
+  border-radius:22px;
+  padding:24px;
+  text-align:left;
+  background:linear-gradient(180deg,#ffffffe6,#fff8ebef);
+  min-height:190px;
+  box-shadow:0 12px 28px #261c1221;
+  transition:.14s;
+  position:relative;
+  overflow:hidden;
+  text-decoration:none;
+  color:inherit;
+}
+
+.category-card:after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:5px;
+  background:#c47a2c;
+}
+
+.category-card:nth-child(2):after{
+  background:#536d8c;
+}
+
+.category-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 18px 36px #261c1238;
+}
+
+.category-card h2{
+  margin:0 0 10px;
+  font-size:24px;
+  color:#20170f;
+}
+
+.category-card p{
+  margin:0 0 20px;
+  line-height:1.4;
+  color:#5d5146;
+  font-size:14px;
+}
+
+.action{
+  display:inline-flex;
+  align-self:flex-start;
+  margin-top:auto;
+  border-radius:999px;
+  background:#221812;
+  color:white;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.info{
+  margin-top:24px;
+  padding:20px 22px;
+  border:1px solid #5c483029;
+  border-radius:18px;
+  background:#ffffff8f;
+  color:#5d5146;
+  line-height:1.5;
+  font-size:14px;
+}
+
+.info h2{
+  margin:0 0 10px;
+  color:#20170f;
+  font-size:18px;
+}
+
+.info p{
+  margin:8px 0 0;
+}
+
+.info a{
+  color:#8f4f1b;
+  font-weight:700;
+}
+
+.hint{
+  margin-top:24px;
+  text-align:center;
+  color:#6f6256;
+  font-size:13px;
+}
+
+@media(max-width:700px){
+  .home{padding:22px 14px}
+  .shell{padding:24px 18px}
+  h1{font-size:38px}
+  .category-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
+
 <body>
-  <p><a href="builder.html">Open FretFlow Builder</a></p>
+<main class="home">
+  <div class="shell">
+    <section class="hero">
+      <a
+        class="badge"
+        href="https://github.com/frgouma/FretFlow"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Digitale gitaarmap</a>
+
+      <h1>FretFlow</h1>
+      <p>
+        Maak je eigen digitale gitaarmap of bekijk eerst een voorbeeld.
+        FretFlow werkt rechtstreeks in de browser.
+      </p>
+    </section>
+
+    <section class="category-grid">
+      <a class="category-card" href="builder.html">
+        <h2>FretFlow Builder</h2>
+        <p>
+          Maak een nieuwe gitaarmap, open een bestaande FretFlow-map
+          en voeg tabs, akkoorden en PDF-bladen toe.
+        </p>
+        <span class="action">Open Builder</span>
+      </a>
+
+      <a class="category-card" href="demo.html">
+        <h2>Voorbeeld gitaarmap</h2>
+        <p>
+          Bekijk hoe een FretFlow-gitaarmap eruitziet en hoe de
+          verschillende onderdelen werken.
+        </p>
+        <span class="action">Bekijk voorbeeld</span>
+      </a>
+    </section>
+
+    <section class="info">
+      <h2>Over deze demo</h2>
+      <p>
+        De Builder en voorbeeldgitaarmap op deze pagina laten zien hoe FretFlow werkt.
+        FretFlow is ontworpen om gitaarmappen als één zelfstandig HTML-bestand te maken,
+        dat ook volledig offline gebruikt kan worden.
+      </p>
+      <p>
+        Op iPhone en iPad werken lokale HTML-bestanden niet volledig interactief in de
+        standaard voorvertoning. Open een lokale FretFlow-map daarom in
+        <a href="https://apps.apple.com/us/app/sitecase/id6762896369"
+           target="_blank"
+           rel="noopener noreferrer">Sitecase</a>,
+        of gebruik de online voorbeelden op deze pagina.
+      </p>
+      <p>
+        Je eigen gitaarmappen en toegevoegde PDF-bestanden blijven lokaal op je apparaat
+        en worden niet naar deze website geüpload.
+      </p>
+    </section>
+
+    <div class="hint">
+      FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo
+    </div>
+  </div>
+</main>
 </body>
 </html>
