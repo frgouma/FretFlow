@@ -572,7 +572,7 @@
 }
 .component-row.single>.component-full{width:100%;flex-basis:100%}
 .chordsection .song-measure-row{width:100%}
-.chordsection .measure-box{flex:1 1 0;width:auto;min-width:0}
+.chordsection .measure-box{flex:0 0 25%;width:25%;min-width:0}
 .component-wide.chordsection .measure-box{font-size:18px;padding-left:10px;padding-right:10px}
 .component-half.chordsection .measure-box{font-size:16px;padding-left:8px;padding-right:8px}
 .component-narrow.chordsection .measure-box{font-size:13px;padding-left:5px;padding-right:5px}
@@ -590,6 +590,25 @@
   .component-row{display:block}
   .component-row>.music-component,.component-row>.layout-component{width:100%!important;flex-basis:100%!important}
 }
+
+
+/* FretFlow 2.0.0 final tweaks — repeat-bar orientation and internal repeat variants */
+.tab-boundary.start.repeat,
+.tab-boundary.internal.repeat{
+  width:7px;
+  background:linear-gradient(to right,#111 0 3px,transparent 3px 5px,#111 5px 7px);
+}
+.tab-boundary.end.repeat,
+.tab-boundary.internal.repeatEnd{
+  width:7px;
+  background:linear-gradient(to right,#111 0 2px,transparent 2px 4px,#111 4px 7px);
+}
+.tab-boundary.internal.repeatBoth{
+  width:11px;
+  background:linear-gradient(to right,#111 0 2px,transparent 2px 4px,#111 4px 7px,transparent 7px 9px,#111 9px 11px);
+}
+.tab-boundary .tab-boundary-dot.repeat-dot-right{left:calc(100% + 2px);right:auto}
+.tab-boundary .tab-boundary-dot.repeat-dot-left{right:calc(100% + 2px);left:auto}
 
 </style>
 
@@ -2476,7 +2495,7 @@ class MusicSectionComponent extends Component {
   segno(type) {
     if (type === "single") return `<span class="segno">&#x1D10B;</span>`;
     if (type === "double") return `<span class="segno">&#x1D10B; &#x1D10B;</span>`;
-    return `<span style="width:20px;display:inline-block"></span>`;
+    return ``;
   }
 
   normalizedMeasures(line) {
@@ -2659,12 +2678,17 @@ class TabCanvas {
   barElement(side, type = "single") {
     const bar = document.createElement("span");
     bar.className = `tab-boundary ${side} ${type}`;
-    if (type === "repeat") {
-      [3, 4].forEach(stringNumber => {
-        const dot = document.createElement("span");
-        dot.className = "tab-boundary-dot";
-        dot.style.top = `${this.yFor(stringNumber) - this.top - 2}px`;
-        bar.appendChild(dot);
+    if (["repeat", "repeatEnd", "repeatBoth"].includes(type)) {
+      const dotSides = type === "repeatBoth"
+        ? ["left", "right"]
+        : [type === "repeatEnd" || (type === "repeat" && side === "end") ? "left" : "right"];
+      dotSides.forEach(dotSide => {
+        [3, 4].forEach(stringNumber => {
+          const dot = document.createElement("span");
+          dot.className = `tab-boundary-dot repeat-dot-${dotSide}`;
+          dot.style.top = `${this.yFor(stringNumber) - this.top - 2}px`;
+          bar.appendChild(dot);
+        });
       });
     }
     return bar;
@@ -3479,7 +3503,7 @@ function riffBoundaryEditor(measure,si,li,mi,measures){
   const ranges=riffMeasureRanges({measures});
   const start=ranges[mi]?.start??0;
   const nextEnd=ranges[mi+1]?.end??100;
-  return `<div class="riff-boundary-editor"><div class="block-head"><b>Maatstreep na maat ${mi+1}</b><span class="spacer"></span><button class="small danger" onclick="mergeRiffMeasures(${si},${li},${mi})">Verwijder maatstreep</button></div><div class="riff-bar-row"><div class="field"><label>Positie op volledige regel (%)</label><input value="${esc(percentDisplay(measure.end,''))}" oninput="riffMeasureEnd(${si},${li},${mi},this.value)"></div><div class="field"><label>Type maatstreep</label><select onchange="riffMeasure(${si},${li},${mi},'endBar',this.value)">${barOpts(measure.endBar||'single')}</select></div></div><div class="hint">Deze grens bepaalt de visuele breedte van maat ${mi+1} en ${mi+2}. De noten behouden hun relatieve positie binnen hun eigen maat.</div></div>`;
+  return `<div class="riff-boundary-editor"><div class="block-head"><b>Maatstreep na maat ${mi+1}</b><span class="spacer"></span><button class="small danger" onclick="mergeRiffMeasures(${si},${li},${mi})">Verwijder maatstreep</button></div><div class="riff-bar-row"><div class="field"><label>Positie op volledige regel (%)</label><input value="${esc(percentDisplay(measure.end,''))}" oninput="riffMeasureEnd(${si},${li},${mi},this.value)"></div><div class="field"><label>Type maatstreep</label><select onchange="riffMeasure(${si},${li},${mi},'endBar',this.value)">${internalBarOpts(measure.endBar||'single')}</select></div></div><div class="hint">Deze grens bepaalt de visuele breedte van maat ${mi+1} en ${mi+2}. De noten behouden hun relatieve positie binnen hun eigen maat.</div></div>`;
 }
 function riffLabelsEditor(si,li,mi,items){return items.map((item,ii)=>`<div class="note-row"><div class="field"><label>Positie in maat (%)</label><input value="${esc(percentDisplay(item.position,'50'))}" oninput="riffAnnotation(${si},${li},${mi},'labels',${ii},'position',this.value)"></div><div class="field"><label>Tekst</label><input value="${esc(item.text||'')}" placeholder="Am, G, D/F#…" oninput="riffAnnotation(${si},${li},${mi},'labels',${ii},'text',this.value)"></div><button class="small danger" onclick="removeRiffAnnotation(${si},${li},${mi},'labels',${ii})">×</button></div>`).join('')}
 function riffMarkersEditor(si,li,mi,items){return items.map((item,ii)=>`<div class="note-row"><div class="field"><label>Positie in maat (%)</label><input value="${esc(percentDisplay(item.position,'50'))}" oninput="riffAnnotation(${si},${li},${mi},'markers',${ii},'position',this.value)"></div><div class="field"><label>Teken</label><select onchange="riffAnnotation(${si},${li},${mi},'markers',${ii},'type',this.value)">${markOpts(item.type||'')}</select></div><button class="small danger" onclick="removeRiffAnnotation(${si},${li},${mi},'markers',${ii})">×</button></div>`).join('')}
@@ -3488,7 +3512,7 @@ function riffNotesEditor(si,li,mi,notes){return notes.map((n,ni)=>`<div class="n
 
 function chordSectionEditor(s,si){
   const segno=s.segno||'';
-  return `<div class="grid"><div class="field"><label>Sectienaam</label><input value="${esc(s.title||'')}" oninput="sec(${si},'title',this.value)"></div>${componentWidthField(s,si)}<div class="field full"><label>Dal Segno bij sectie</label><select onchange="sec(${si},'segno',this.value)">${['','single','double'].map(x=>`<option value="${x}" ${segno===x?'selected':''}>${x===''?'geen':x==='single'?'Segno':'Dubbel Segno'}</option>`).join('')}</select></div></div>${(s.lines||[]).map((line,li)=>chordLineEditor(si,li,line)).join('')}<button class="small" onclick="addChordLine(${si})">+ Regel</button>`;
+  return `<div class="grid"><div class="field"><label>Titel</label><input value="${esc(s.title||'')}" oninput="sec(${si},'title',this.value)"></div>${componentWidthField(s,si)}<div class="field full"><label>Dal Segno bij sectie</label><select onchange="sec(${si},'segno',this.value)">${['','single','double'].map(x=>`<option value="${x}" ${segno===x?'selected':''}>${x===''?'geen':x==='single'?'Segno':'Dubbel Segno'}</option>`).join('')}</select></div></div>${(s.lines||[]).map((line,li)=>chordLineEditor(si,li,line)).join('')}<button class="small" onclick="addChordLine(${si})">+ Regel</button>`;
 }
 function chordLineEditor(si,li,line){
   return `<div class="subbox"><div class="block-head"><b>Regel ${li+1}</b><span class="spacer"></span><div class="line-actions"><button class="small secondary" onclick="moveChordLine(${si},${li},-1)" ${li===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordLine(${si},${li},1)" ${li===(get().sections[si].lines.length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="duplicateChordLine(${si},${li})">Dupliceer</button><button class="small danger" onclick="removeChordLine(${si},${li})">Verwijder regel</button></div></div><div class="hint">Elke maat houdt een vaste breedte. Een regel bevat maximaal vier maten; bij minder maten blijft rechts lege ruimte.</div>${(line.measures||[]).map((m,mi)=>chordMeasureEditor(si,li,mi,m)).join('')}<button class="small" onclick="addChordMeasure(${si},${li})" ${(line.measures||[]).length>=4?'disabled title="Maximaal vier maten per regel"':''}>+ Maat</button></div>`;
@@ -3498,7 +3522,7 @@ function chordMeasureEditor(si,li,mi,m){
 }
 function chordBarFields(si,li,mi,m){return `<div class="grid"><div class="field"><label>Begin maat</label><select onchange="chordMeasure(${si},${li},${mi},'startBar',this.value)">${barOpts(m.startBar)}</select></div><div class="field"><label>Einde maat</label><select onchange="chordMeasure(${si},${li},${mi},'endBar',this.value)">${barOpts(m.endBar)}</select></div><div class="field full"><label>Annotatie rechts onder</label><input value="${esc(m.belowRight||'')}" placeholder="3×, D.S., D.S.S., Fine…" oninput="chordMeasure(${si},${li},${mi},'belowRight',this.value)"></div></div>`}
 function barFields(si,mi,o){const path=mi===null?'sec':'mea';return `<div class="grid"><div class="field"><label>Begin</label><select onchange="${path}Bar(${si},${mi},'startBar',this.value)">${barOpts(o.startBar)}</select></div><div class="field"><label>Einde</label><select onchange="${path}Bar(${si},${mi},'endBar',this.value)">${barOpts(o.endBar)}</select></div><div class="field"><label>Teken</label><select onchange="${path}Bar(${si},${mi},'marker',this.value)">${markOpts(o.marker)}</select></div><div class="field"><label>Tekst</label><input value="${esc(o.belowRight||'')}" oninput="${path}Bar(${si},${mi},'belowRight',this.value)"></div></div>`}
-function barOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function markOpts(v){return ['','segno','doubleSegno','coda'].map(x=>`<option value="${x}" ${v===x?'selected':''}>${x||'geen'}</option>`).join('')}
+function barOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function internalBarOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','begin herhaling'],['repeatEnd','einde herhaling'],['repeatBoth','einde + begin herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function markOpts(v){return ['','segno','doubleSegno','coda'].map(x=>`<option value="${x}" ${v===x?'selected':''}>${x||'geen'}</option>`).join('')}
 function notesEditor(si,mi,notes){return notes.map((n,ni)=>`<div class="note-row"><div class="field"><label>Positie</label><input class="note-position" value="${esc(n.position??'1')}" oninput="note(${si},${mi},${ni},'position',this.value)"></div><div class="field"><label>Snaar</label><select onchange="note(${si},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${n.string===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" oninput="note(${si},${mi},${ni},'fret',this.value)"></div><div class="field"><label>Type</label><select onchange="note(${si},${mi},${ni},'type',this.value)">${['standard','legato','slideUp','slideDown'].map(x=>`<option ${n.type===x?'selected':''}>${x}</option>`).join('')}</select></div><button class="small danger" onclick="removeNote(${si},${mi},${ni})">×</button></div>`).join('')}
 function addSection(type,index=null){const r=get(),s={type};if(type==='text')Object.assign(s,{title:'',text:'',width:'full'});if(type==='chordgrid')Object.assign(s,{title:'Akkoorden in dit nummer',chords:[],width:'full'});if(type==='chordsection')Object.assign(s,{title:'Akkoorden',segno:'',lines:[{measures:[]}],width:'full'});if(type==='simpleriff')Object.assign(s,{title:'Tab / riff',lines:[{measures:[{end:'100%',notes:[],labels:[],markers:[],below:[]}],startBar:'single',endBar:'single'}],width:'full'});if(type==='shapebox')Object.assign(s,{title:'Shapebox',width:'full',firstFret:1,lastFret:17,markers:[],guides:[]});if(index===null)r.sections.push(s);else r.sections.splice(index,0,s);render()}
 function moveSection(i,d){const a=get().sections,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];render()}
