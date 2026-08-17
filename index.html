@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FretFlow</title>
+<title>FretFlow 2.0.0</title>
 
 <style>
 :root{
@@ -74,6 +74,18 @@ h1{
   color:#5d5146;
   font-size:17px;
   line-height:1.45;
+}
+
+.version{
+  display:inline-block;
+  margin:0 0 14px;
+  padding:5px 10px;
+  border-radius:999px;
+  background:#221812;
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.03em;
 }
 
 .category-grid{
@@ -169,6 +181,64 @@ h1{
   font-weight:700;
 }
 
+.changes{
+  margin-top:18px;
+  border:1px solid #5c483029;
+  border-radius:18px;
+  background:#ffffff8f;
+  overflow:hidden;
+}
+
+.changes summary{
+  list-style:none;
+  cursor:pointer;
+  padding:15px 18px;
+  background:#221812;
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  user-select:none;
+}
+
+.changes summary::-webkit-details-marker{
+  display:none;
+}
+
+.changes summary::after{
+  content:"+";
+  float:right;
+  font-size:18px;
+  line-height:1;
+}
+
+.changes[open] summary::after{
+  content:"−";
+}
+
+.changes-content{
+  padding:18px 22px 20px;
+  color:#5d5146;
+  font-size:14px;
+  line-height:1.5;
+}
+
+.changes-content p{
+  margin:0 0 12px;
+}
+
+.changes-content ul{
+  margin:0 0 14px;
+  padding-left:20px;
+}
+
+.changes-content li{
+  margin:5px 0;
+}
+
+.changes-content strong{
+  color:#20170f;
+}
+
 .hint{
   margin-top:24px;
   text-align:center;
@@ -197,6 +267,7 @@ h1{
       >Digitale gitaarmap</a>
 
       <h1>FretFlow</h1>
+      <div class="version">Versie 2.0.0</div>
       <p>
         Maak je eigen digitale gitaarmap of bekijk eerst een voorbeeld.
         FretFlow werkt rechtstreeks in de browser.
@@ -208,7 +279,7 @@ h1{
         <h2>FretFlow Builder</h2>
         <p>
           Maak een nieuwe gitaarmap, open een bestaande FretFlow-map
-          en voeg tabs, akkoorden en PDF-bladen toe.
+          en voeg tabs/riffs, shapeboxes, akkoorden, tekst en PDF-bladen toe.
         </p>
         <span class="action">Open Builder</span>
       </a>
@@ -243,6 +314,31 @@ h1{
         en worden niet naar deze website geüpload.
       </p>
     </section>
+
+    <details class="changes">
+      <summary>Aanpassingen FretFlow 2.0.0</summary>
+      <div class="changes-content">
+        <p>
+          FretFlow 2.0.0 breidt de Builder en viewer uit met een vernieuwde
+          componentarchitectuur en een aantal nieuwe bewerkings- en weergavemogelijkheden.
+        </p>
+        <ul>
+          <li><strong>Tab / riff</strong> is één algemene editor voor tabs en riffs, met maten, maatstrepen, technieken en annotaties.</li>
+          <li><strong>Shapebox</strong> maakt fretboard-shapes, overgangen en grondtoonkaarten volledig bewerkbaar.</li>
+          <li>Native componenten ondersteunen gedeelde breedtes van <strong>100%, 70%, 50% en 30%</strong> en kunnen waar passend naast elkaar staan.</li>
+          <li>Tekst en footers ondersteunen <strong>vet, cursief en inline fretboard-markers</strong>.</li>
+          <li>De akkoordenbibliotheek en akkoorddiagrammen zijn verder geïntegreerd in de Builder.</li>
+          <li>De viewer heeft een consistente SVG-toolbar met <strong>single-page, spread, fullscreen en print</strong>.</li>
+          <li>Native bladen en PDF's kunnen volledig worden afgedrukt, inclusief FretFlow-overlayfooters op PDF-pagina's.</li>
+        </ul>
+        <p>
+          <strong>Backwards compatible:</strong> de FretFlow 2.0.0 Builder kan bestaande
+          FretFlow 1.0-gitaarmappen openen. Ondersteunde oudere datastructuren worden bij
+          het openen automatisch naar het huidige model genormaliseerd, zodat bestaande
+          gitaarmappen niet opnieuw hoeven te worden opgebouwd.
+        </p>
+      </div>
+    </details>
 
     <div class="hint">
       FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo
