@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FretFlow Builder 2.0.0</title>
+<title>FretFlow Builder 2.0.0b</title>
 
 <!-- =======================================================================
      APP SOURCE: CSS
@@ -52,7 +52,7 @@
 .shape-guide{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:15px;font-weight:700;color:#111;z-index:1;line-height:1}
 .component-row{box-sizing:border-box;width:calc(100% - (2 * var(--page-inset,60px)));margin:0 var(--page-inset,60px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
 .component-row>.music-component,.component-row>.layout-component{width:100%;margin-left:0!important;margin-right:0!important;min-width:0}
-@media(max-width:850px){.component-row{grid-template-columns:1fr}}
+
 .component-title{font-size:14px;font-weight:700;margin:0 60px 6px;color:#1f2933}
 .section .component-title{margin-left:0}
 .component-note{margin:0 60px 12px;font-size:10.5px;color:#333;line-height:1.35}
@@ -377,7 +377,7 @@
 .page-intro{margin:5px 0 0;color:#61564d;font-size:12px;line-height:1.35;max-width:620px}
 .page-meta-right{display:flex;align-items:flex-end;flex-direction:column;gap:3px;text-align:right;margin-left:auto}
 .page-tags{font-size:10px;color:#75685d;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:650px){.home-filters{grid-template-columns:1fr}.page-tags{max-width:180px}}
+@media(max-width:650px){.home-filters{grid-template-columns:1fr}}
 
 
 /* V8e shared page/component layout */
@@ -586,10 +586,10 @@
 .inline-shape-marker.black{background:#111;color:#fff;border-color:#111}
 .inline-shape-marker.outline{background:#fff;color:#111;border:2px solid #111}
 .inline-shape-marker.ghost{opacity:.28}
-@media(max-width:850px){
-  .component-row{display:block}
-  .component-row>.music-component,.component-row>.layout-component{width:100%!important;flex-basis:100%!important}
-}
+/* FretFlow 2.0.0b — document-layout invariant:
+   native component proportions are part of the fixed A4 page and never
+   change with viewport size. Responsive behaviour belongs to Viewer chrome
+   and uniform whole-page scaling only. */
 
 
 /* FretFlow 2.0.0 final tweaks — repeat-bar orientation and internal repeat variants */
@@ -648,7 +648,7 @@ header button{white-space:nowrap}.dev-only{display:none!important}
   <button class="secondary" id="newProject">Nieuwe gitaarmap</button>
   <button class="secondary dev-only" id="toggleUnits" title="Interne ontwikkeloptie: toon of verberg de vaste layout-units in de live preview">Toon layout-units</button>
   <span class="spacer"></span>
-  <h1>FretFlow Builder 2.0.0</h1>
+  <h1>FretFlow Builder 2.0.0b</h1>
 </header>
 <div class="quicklook-warning builder-quicklook-warning" id="builderQuicklookWarning"><b>Beste iCrap gebruiker,</b> helaas werkt FretFlow Builder niet in deze voorvertoning. Open FretFlow Builder in <a href="https://apps.apple.com/us/app/sitecase/id6762896369" target="_blank" rel="noopener noreferrer">Sitecase</a> voor een goed werkende app, of koop een Samsung.</div>
 <div class="layout">
@@ -901,7 +901,7 @@ FretFlow.starterChordData = () => {
   return FretFlow.normalizeChordLibrary(library);
 };
 FretFlow.CURRENT_SCHEMA = "11";
-FretFlow.BUILDER_VERSION = "2.0.0";
+FretFlow.BUILDER_VERSION = "2.0.0b";
 FretFlow.createEmptyProject = function() {
   return {
     schemaVersion:FretFlow.CURRENT_SCHEMA,
@@ -1877,28 +1877,25 @@ class FretFlowApp {
     return a < 1 && b < 1 && Math.abs((a + b) - 1) < 0.001;
   }
 
-  stackNarrowComponents() {
-    return typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(max-width:850px)").matches;
-  }
-
   layoutRows(components = []) {
+    // A4 document layout is deterministic and independent of viewport size.
+    // Width-aware components pair solely from their stored 100/70/50/30 widths.
     const rows = [];
-    const stacked = this.stackNarrowComponents();
     for (let index = 0; index < components.length; index += 1) {
       const first = components[index];
       if (!this.isWidthAwareComponent(first)) {
-        first.setLayoutContext?.({paired:false,stacked:false});
+        first.setLayoutContext?.({paired:false});
         rows.push({components:[first],height:first.height,paired:false,widthAware:false});
         continue;
       }
       const second = components[index + 1];
-      if (!stacked && this.canPairComponents(first, second)) {
-        first.setLayoutContext?.({paired:true,stacked:false});
-        second.setLayoutContext?.({paired:true,stacked:false});
+      if (this.canPairComponents(first, second)) {
+        first.setLayoutContext?.({paired:true});
+        second.setLayoutContext?.({paired:true});
         rows.push({components:[first,second],height:Math.max(first.height,second.height),paired:true,widthAware:true});
         index += 1;
       } else {
-        first.setLayoutContext?.({paired:false,stacked});
+        first.setLayoutContext?.({paired:false});
         rows.push({components:[first],height:first.height,paired:false,widthAware:true});
       }
     }
@@ -2092,8 +2089,7 @@ const Layout = {
   COMPONENT_GAP_UNITS: 1,
   COMPONENT_ROW_GAP: 14,
   HALF_COMPONENT_GAP: 14,
-  componentContentWidth(width, {paired=false,stacked=false} = {}) {
-    if (stacked) return this.TEXT_CONTENT_WIDTH;
+  componentContentWidth(width, {paired=false} = {}) {
     const ratio = FretFlow.componentWidthRatio(width);
     return (this.TEXT_CONTENT_WIDTH - (paired ? this.COMPONENT_ROW_GAP : 0)) * ratio;
   },
@@ -2122,9 +2118,8 @@ class Component {
     this.height = this.units ? Layout.units(this.units) : (this.constructor.HEIGHT || Layout.units(1));
   }
 
-  setLayoutContext({paired=false,stacked=false} = {}) {
+  setLayoutContext({paired=false} = {}) {
     this.layoutPaired = Boolean(paired);
-    this.layoutStacked = Boolean(stacked);
     if (typeof this.recalculateLayout === "function") this.recalculateLayout();
     return this;
   }
@@ -2132,7 +2127,7 @@ class Component {
   layoutWidth() { return FretFlow.normalizeComponentWidth(this.data?.width); }
 
   contentPixelWidth() {
-    return Layout.componentContentWidth(this.layoutWidth(), {paired:Boolean(this.layoutPaired),stacked:Boolean(this.layoutStacked)});
+    return Layout.componentContentWidth(this.layoutWidth(), {paired:Boolean(this.layoutPaired)});
   }
 
   applyLayoutUnits(element, units = this.units) {
@@ -3231,7 +3226,7 @@ FretFlow.initApp();
      ======================================================================= -->
 <script id="fretflow-builder-runtime">
 /* ============================================================================
-   FRETFLOW BUILDER 2.0.0 — STEP 2 SHAPEBOX SOURCE INDEX
+   FRETFLOW BUILDER 2.0.0b — STEP 2 SHAPEBOX SOURCE INDEX
 
    1. Integrated project state and dataset registry
    2. Project metadata, groups and system-page editor
@@ -3977,7 +3972,7 @@ function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. Builder 2.0.0 ondersteunt schema 10B en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow Builder.`);
+  if(!['10B',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. Builder 2.0.0b ondersteunt schema 10B en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow Builder.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);
