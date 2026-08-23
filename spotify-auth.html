@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FretFlow · Spotify koppelen</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#f4efe8;color:#241d17;margin:0;padding:32px}
+main{max-width:520px;margin:10vh auto;background:#fff;border:1px solid #cdbfae;border-radius:14px;padding:24px;box-shadow:0 8px 30px #0002}
+h1{font-size:22px;margin-top:0}p{line-height:1.45}
+</style>
+</head>
+<body>
+<main><h1>Spotify koppelen</h1><p id="message">Aanmelding verwerken…</p></main>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const payload = {
+    type:"fretflow-spotify-auth",
+    code:params.get("code") || "",
+    state:params.get("state") || "",
+    error:params.get("error") || ""
+  };
+  const message = document.getElementById("message");
+
+  if (window.opener && !window.opener.closed) {
+    window.opener.postMessage(payload, "*");
+    message.textContent = payload.error
+      ? "Spotify-aanmelding is geannuleerd of mislukt. Je kunt dit venster sluiten."
+      : "Spotify is gekoppeld. Dit venster sluit automatisch.";
+    if (!payload.error) setTimeout(() => window.close(), 650);
+  } else {
+    message.textContent =
+      "FretFlow kon het oorspronkelijke venster niet terugvinden. Ga terug naar FretFlow en probeer de koppeling opnieuw.";
+  }
+})();
+</script>
+</body>
+</html>
