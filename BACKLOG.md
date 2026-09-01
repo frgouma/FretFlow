@@ -12,11 +12,22 @@ Replace the current explicit barre model with a position-only chord model.
 
 #### Target model
 
-A chord diagram contains ordinary positions only:
+A chord diagram uses `positions` only. Each ordinary position contains:
 
 * string
 * fret
 * finger
+
+The position shape is `{ string, fret, finger }`.
+
+Strings use musical string numbers:
+
+* 1 = high e
+* 2 = B
+* 3 = G
+* 4 = D
+* 5 = A
+* 6 = low E
 
 A barre is not stored as a separate musical element.
 
@@ -79,19 +90,24 @@ Current 3.2-beta data uses schema 14 and may contain explicit barre data with:
 
 Migration is deterministic.
 
-When opening older supported data:
+Schema 15 is the current schema for this change. Builder version remains `3.2-beta`.
+
+When opening any supported pre-15 data:
 
 1. detect the old schema/model
-2. preserve ordinary fret/finger positions
+2. convert ordinary `frets` / `fingers` entries into positions
 3. convert every old barre into ordinary positions on all strings covered by that barre, using the same fret and finger
-4. merge those positions without losing valid existing positions
-5. remove dependence on the old explicit barre representation
-6. continue exclusively with the normalized current model
-7. save only the new model
+4. preserve multiple valid positions on the same string
+5. deduplicate only exact `{string, fret, finger}` duplicates
+6. remove dependence on `frets`, `fingers` and the old explicit `barres` representation
+7. continue exclusively with the normalized positions-only current model
+8. save only schema-15 positions-based chord data
 
 No musical information may be guessed or discarded.
 
-This structural model change should use a new schema version above 14 unless implementation analysis shows a compelling reason not to. Builder version remains `3.2-beta`.
+Do not add special fallback behaviour for hypothetical legacy barres without a finger. Existing valid FretFlow barre input includes a finger.
+
+The `barre` chord category remains unchanged.
 
 #### Renderer logic
 
@@ -105,6 +121,8 @@ Conceptually:
 6. single position → render ordinary dot
 7. higher positions on a string remain visible over an underlying barre
 
+Rendered barres keep their current visual design. This item changes how barres are represented and inferred, not how they look.
+
 #### Acceptance criteria
 
 * ordinary non-barre chords render unchanged
@@ -114,7 +132,7 @@ Conceptually:
 * non-adjacent matching positions are not connected
 * multiple positions on one string are preserved and rendered correctly
 * existing schema-14 barre data migrates deterministically
-* saved data no longer depends on an explicit `barres` property
+* saved schema-15 data uses `positions` and contains no chord-diagram `frets`, `fingers` or `barres` properties
 * Builder preview and Viewer agree
 * existing supported older songbooks remain loadable
 

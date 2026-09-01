@@ -819,19 +819,17 @@ header button{white-space:nowrap}.dev-only{display:none!important}
 .search-result-title{display:block;font-weight:700;margin-bottom:2px}
 .search-result-meta{display:block;font-size:12px;color:#6b5e52}
 #editor .grid.chord-meta-grid{grid-template-columns:minmax(105px,1fr) minmax(105px,1fr) minmax(135px,1.2fr) 90px}
-/* FretFlow 3.0 beta 2 — final chord-editor polish */
-.chord-string-matrix{display:grid;grid-template-columns:148px repeat(6,minmax(54px,1fr));gap:6px;align-items:center;margin:4px 0 10px}
+/* FretFlow 3.2 beta — positions-only chord editor */
+.chord-string-matrix{display:grid;grid-template-columns:repeat(6,minmax(78px,1fr));gap:6px;align-items:start;margin:4px 0 10px;overflow-x:auto}
 .chord-string-matrix .matrix-head{text-align:center;font-size:12px;font-weight:700}
 .chord-string-matrix .matrix-head small{display:block;font-size:10px;font-weight:400;color:#6b5e52;margin-top:1px}
-.chord-string-matrix .matrix-label{font-size:12px;font-weight:700;color:#4f453c}
 .chord-string-matrix input,.chord-string-matrix select{width:100%;min-width:0;padding:7px;border:1px solid #b9aa98;border-radius:6px;background:#fff}
-.chord-string-matrix .barre-label{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.chord-string-matrix .barre-label label{display:flex;align-items:center;gap:4px;margin:0}
-.chord-string-matrix .barre-label input[type="checkbox"]{width:auto;margin:0}
-.chord-string-matrix .barre-fret{display:flex;align-items:center;gap:4px;font-weight:400}
-.chord-string-matrix .barre-fret input{width:48px;padding:6px}
-.chord-string-matrix select:disabled,.chord-string-matrix input:disabled{opacity:.5;cursor:not-allowed}
-@media(max-width:720px){.chord-string-matrix{grid-template-columns:132px repeat(6,minmax(48px,1fr));gap:4px;overflow-x:auto}.chord-string-matrix input,.chord-string-matrix select{padding:6px 4px}.chord-string-matrix .barre-fret input{width:44px}}
+.chord-position-list{display:flex;flex-direction:column;gap:5px;min-width:78px}
+.chord-position-row{display:grid;grid-template-columns:minmax(0,1fr) 24px;gap:3px;padding:4px;border:1px solid #d8cabc;border-radius:7px;background:#fffaf4}
+.chord-position-row input,.chord-position-row select{grid-column:1}
+.chord-position-row .chord-position-remove{grid-column:2;grid-row:1/3;min-width:24px;padding:3px}
+.chord-position-add{width:100%;padding:4px}
+@media(max-width:720px){.chord-string-matrix{grid-template-columns:repeat(6,minmax(74px,1fr));gap:4px}.chord-string-matrix input,.chord-string-matrix select{padding:6px 4px}}
 
 /* STEP 2 REVISION 2 — compact Text formatting toolbar */
 .text-format-toolbar{display:flex;align-items:center;gap:5px;margin:0 0 5px;flex-wrap:wrap}
@@ -972,6 +970,74 @@ FretFlow.defaultChordCategories = () => [
   {id:"slash-chords", name:"Slash chords"},
   {id:"custom", name:"Eigen"}
 ];
+FretFlow.normalizeChordFret = function(value) {
+  if (value == null) return "x";
+  if (typeof value === "string") {
+    const text = value.trim();
+    if (!text || text.toLowerCase() === "x" || text === "-") return "x";
+    const numeric = Number(text);
+    return Number.isFinite(numeric) && numeric >= 0 ? numeric : text;
+  }
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : value;
+};
+FretFlow.normalizeChordFinger = function(value) {
+  if (value == null || value === "") return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : value;
+};
+FretFlow.normalizeChordDiagram = function(rawDiagram = {}) {
+  const diagram = rawDiagram && typeof rawDiagram === "object" ? {...rawDiagram} : {};
+  diagram.startFret = Math.max(1, Number(diagram.startFret) || 1);
+  const positions = [];
+  const seen = new Set();
+  const addPosition = raw => {
+    const string = Number(raw?.string);
+    if (!Number.isInteger(string) || string < 1 || string > 6) return;
+    const position = {
+      string,
+      fret:FretFlow.normalizeChordFret(raw?.fret),
+      finger:FretFlow.normalizeChordFinger(raw?.finger)
+    };
+    const key = JSON.stringify([position.string, position.fret, position.finger]);
+    if (seen.has(key)) return;
+    seen.add(key);
+    positions.push(position);
+  };
+
+  if (Array.isArray(diagram.positions)) diagram.positions.forEach(addPosition);
+
+  const hasLegacyModel = ["frets","fingers","barres"].some(key => Object.prototype.hasOwnProperty.call(diagram,key));
+  if (hasLegacyModel) {
+    const frets = Array.isArray(diagram.frets) ? diagram.frets.slice(0,6) : [];
+    const fingers = Array.isArray(diagram.fingers) ? diagram.fingers.slice(0,6) : [];
+    for (let index=0;index<6;index++) {
+      addPosition({
+        string:6-index,
+        fret:index<frets.length ? frets[index] : "x",
+        finger:index<fingers.length ? fingers[index] : null
+      });
+    }
+    for (const barre of Array.isArray(diagram.barres) ? diagram.barres : []) {
+      const rawFrom = Number(barre?.fromString ?? 0);
+      const rawTo = Number(barre?.toString ?? 5);
+      if (!Number.isFinite(rawFrom) || !Number.isFinite(rawTo)) continue;
+      const from = Math.max(0,Math.min(5,rawFrom));
+      const to = Math.max(0,Math.min(5,rawTo));
+      for (let index=Math.min(from,to);index<=Math.max(from,to);index++) {
+        addPosition({string:6-index,fret:barre.fret,finger:barre.finger});
+      }
+    }
+  }
+
+  const representedStrings = new Set(positions.map(position => position.string));
+  for (let string=1;string<=6;string++) if (!representedStrings.has(string)) addPosition({string,fret:"x",finger:null});
+  diagram.positions = positions;
+  delete diagram.frets;
+  delete diagram.fingers;
+  delete diagram.barres;
+  return diagram;
+};
 FretFlow.normalizeChordLibrary = function(libraryData = {}) {
   const library = libraryData || {};
   let categories = Array.isArray(library.chordCategories) ? library.chordCategories : [];
@@ -1029,12 +1095,7 @@ FretFlow.normalizeChordLibrary = function(libraryData = {}) {
       delete diagram.name; delete diagram.variantLabel; delete diagram.variant;
     }
     if (diagram.name === code) delete diagram.name;
-    diagram.startFret = Math.max(1, Number(diagram.startFret) || 1);
-    diagram.frets = (diagram.frets || []).slice(0,6);
-    while (diagram.frets.length < 6) diagram.frets.push("x");
-    diagram.fingers = (diagram.fingers || []).slice(0,6);
-    while (diagram.fingers.length < 6) diagram.fingers.push(null);
-    if (!(diagram.barres || []).length) delete diagram.barres;
+    diagram = FretFlow.normalizeChordDiagram(diagram);
 
     chords.push({
       id,
@@ -1066,11 +1127,11 @@ FretFlow.chordById = function(libraryData = {}, chordId = "") {
   return FretFlow.normalizeChordLibrary(libraryData).chords.find(chord => chord.id === String(chordId || "")) || null;
 };
 FretFlow.autoChordVariantLabel = function(chord = {}) {
-  const names = ["E","A","D","G","B","e"];
-  const frets = chord.diagram?.frets || [];
-  for (let i=0;i<Math.min(6,frets.length);i++) {
-    const fret = Number(frets[i]);
-    if (Number.isFinite(fret) && fret > 0) return `${names[i]}${fret}`;
+  const names = {6:"E",5:"A",4:"D",3:"G",2:"B",1:"e"};
+  const positions = FretFlow.normalizeChordDiagram(chord.diagram || {}).positions;
+  for (let string=6;string>=1;string--) {
+    const frets = positions.filter(position => position.string === string).map(position => Number(position.fret)).filter(fret => Number.isFinite(fret) && fret > 0);
+    if (frets.length) return `${names[string]}${Math.max(...frets)}`;
   }
   const startFret = Number(chord.diagram?.startFret) || 1;
   return startFret > 1 ? `startfret ${startFret}` : "";
@@ -1199,22 +1260,22 @@ FretFlow.emptyChordData = () => FretFlow.normalizeChordLibrary({
   chords:[]
 });
 FretFlow.starterChords = () => ([
-  {code:"A",  category:"open-chords", diagram:{startFret:1,frets:["x",0,2,2,2,0],fingers:[null,null,3,2,1,null]}},
-  {code:"Am", category:"open-chords", diagram:{startFret:1,frets:["x",0,2,2,1,0],fingers:[null,null,3,2,1,null]}},
-  {code:"C",  category:"open-chords", diagram:{startFret:1,frets:["x",3,2,0,1,0],fingers:[null,3,2,null,1,null]}},
-  {code:"D",  category:"open-chords", diagram:{startFret:1,frets:["x","x",0,2,3,2],fingers:[null,null,null,2,3,1]}},
-  {code:"Dm", category:"open-chords", diagram:{startFret:1,frets:["x","x",0,2,3,1],fingers:[null,null,null,2,3,1]}},
-  {code:"E",  category:"open-chords", diagram:{startFret:1,frets:[0,2,2,1,0,0],fingers:[null,3,2,1,null,null]}},
-  {code:"Em", category:"open-chords", diagram:{startFret:1,frets:[0,2,2,0,0,0],fingers:[null,3,2,null,null,null]}},
-  {code:"F",  category:"barre", diagram:{startFret:1,frets:[1,3,3,2,1,1],fingers:[1,3,4,2,1,1],barres:[{fret:1,fromString:0,toString:5,finger:1}]}},
-  {code:"G",  category:"open-chords", diagram:{startFret:1,frets:[3,2,0,0,3,3],fingers:[2,1,null,null,3,4]}}
+  {code:"A",  category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:"x",finger:null},{string:5,fret:0,finger:null},{string:4,fret:2,finger:3},{string:3,fret:2,finger:2},{string:2,fret:2,finger:1},{string:1,fret:0,finger:null}]}},
+  {code:"Am", category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:"x",finger:null},{string:5,fret:0,finger:null},{string:4,fret:2,finger:3},{string:3,fret:2,finger:2},{string:2,fret:1,finger:1},{string:1,fret:0,finger:null}]}},
+  {code:"C",  category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:"x",finger:null},{string:5,fret:3,finger:3},{string:4,fret:2,finger:2},{string:3,fret:0,finger:null},{string:2,fret:1,finger:1},{string:1,fret:0,finger:null}]}},
+  {code:"D",  category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:"x",finger:null},{string:5,fret:"x",finger:null},{string:4,fret:0,finger:null},{string:3,fret:2,finger:2},{string:2,fret:3,finger:3},{string:1,fret:2,finger:1}]}},
+  {code:"Dm", category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:"x",finger:null},{string:5,fret:"x",finger:null},{string:4,fret:0,finger:null},{string:3,fret:2,finger:2},{string:2,fret:3,finger:3},{string:1,fret:1,finger:1}]}},
+  {code:"E",  category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:0,finger:null},{string:5,fret:2,finger:3},{string:4,fret:2,finger:2},{string:3,fret:1,finger:1},{string:2,fret:0,finger:null},{string:1,fret:0,finger:null}]}},
+  {code:"Em", category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:0,finger:null},{string:5,fret:2,finger:3},{string:4,fret:2,finger:2},{string:3,fret:0,finger:null},{string:2,fret:0,finger:null},{string:1,fret:0,finger:null}]}},
+  {code:"F",  category:"barre", diagram:{startFret:1,positions:[{string:6,fret:1,finger:1},{string:5,fret:3,finger:3},{string:4,fret:3,finger:4},{string:3,fret:2,finger:2},{string:2,fret:1,finger:1},{string:1,fret:1,finger:1},{string:5,fret:1,finger:1},{string:4,fret:1,finger:1},{string:3,fret:1,finger:1}]}},
+  {code:"G",  category:"open-chords", diagram:{startFret:1,positions:[{string:6,fret:3,finger:2},{string:5,fret:2,finger:1},{string:4,fret:0,finger:null},{string:3,fret:0,finger:null},{string:2,fret:3,finger:3},{string:1,fret:3,finger:4}]}}
 ]);
 FretFlow.starterChordData = () => {
   const library = FretFlow.emptyChordData();
   library.chords = FretFlow.starterChords();
   return FretFlow.normalizeChordLibrary(library);
 };
-FretFlow.CURRENT_SCHEMA = "14";
+FretFlow.CURRENT_SCHEMA = "15";
 FretFlow.BUILDER_VERSION = "3.2-beta";
 FretFlow.createEmptyProject = function() {
   return {
@@ -4840,7 +4901,8 @@ class UnicodePlaygroundComponent extends Component {
 /* RENDERER: ChordDiagramRenderer */
 class ChordDiagramRenderer {
   static render(chord, fallbackStartFret = 1) {
-    const startFret = chord.startFret || fallbackStartFret || 1;
+    const diagram = FretFlow.normalizeChordDiagram(chord);
+    const startFret = Math.max(1,Number(chord.startFret) || Number(fallbackStartFret) || 1);
     const visibleFrets = 5;
     const dotFrets = new Set([3, 5, 7, 9, 12, 15, 17]);
     const el = document.createElement("div");
@@ -4864,25 +4926,59 @@ class ChordDiagramRenderer {
       const actualFret = startFret + i - 1;
       if (dotFrets.has(actualFret)) markup += `<text x="9" y="${y - fretGap/2 + 3}" font-size="8" text-anchor="middle" fill="#555">${actualFret}</text>`;
     }
-    (chord.frets || []).forEach((f,i) => {
-      const x=stringXs[i];
-      if (f === "x") markup += `<text x="${x}" y="14" font-size="9" font-weight="700" text-anchor="middle">x</text>`;
-      else if (f === 0) markup += `<text x="${x}" y="14" font-size="9" font-weight="700" text-anchor="middle">o</text>`;
-    });
-    (chord.frets || []).forEach((f,i) => {
-      if (typeof f !== "number" || f === 0) return;
-      const rel=f-startFret+1; if(rel<1||rel>visibleFrets)return;
-      const x=stringXs[i], y=topY+(rel-.5)*fretGap, finger=Array.isArray(chord.fingers)?chord.fingers[i]:null;
+    const positions = diagram.positions || [];
+    const xForString = string => stringXs[6-Number(string)];
+    const positionKey = position => JSON.stringify([position.string,position.fret,position.finger]);
+    const grouped = new Map();
+    for (const position of positions) {
+      const fret = Number(position.fret), finger = position.finger;
+      if (!Number.isFinite(fret) || fret <= 0 || finger == null || finger === "") continue;
+      const key = JSON.stringify([fret,finger]);
+      if (!grouped.has(key)) grouped.set(key,[]);
+      grouped.get(key).push(position);
+    }
+    const barrePositions = new Set();
+    const inferredBarres = [];
+    for (const group of grouped.values()) {
+      const sorted = [...new Map(group.map(position => [position.string,position])).values()].sort((a,b) => a.string-b.string);
+      let run = [];
+      const finishRun = () => {
+        if (run.length >= 2) {
+          inferredBarres.push({fret:run[0].fret,finger:run[0].finger,strings:run.map(position => position.string)});
+          run.forEach(position => barrePositions.add(positionKey(position)));
+        }
+      };
+      for (const position of sorted) {
+        if (run.length && position.string !== run.at(-1).string+1) { finishRun(); run=[]; }
+        run.push(position);
+      }
+      finishRun();
+    }
+    const markerKeys = new Set();
+    for (const position of positions) {
+      const fret = position.fret;
+      if (fret !== "x" && fret !== 0) continue;
+      const key = `${position.string}:${fret}`;
+      if (markerKeys.has(key)) continue;
+      markerKeys.add(key);
+      const x=xForString(position.string);
+      markup += `<text x="${x}" y="14" font-size="9" font-weight="700" text-anchor="middle">${fret === "x" ? "x" : "o"}</text>`;
+    }
+    for (const position of positions) {
+      const f=Number(position.fret);
+      if (!Number.isFinite(f) || f <= 0 || barrePositions.has(positionKey(position))) continue;
+      const rel=f-startFret+1; if(rel<1||rel>visibleFrets)continue;
+      const x=xForString(position.string), y=topY+(rel-.5)*fretGap, finger=position.finger;
       markup += `<circle cx="${x}" cy="${y}" r="5.8" fill="#111"/>`;
       if (finger != null && finger !== "") markup += `<text x="${x}" y="${y}" font-size="7" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#fff">${FretFlow.escape(finger)}</text>`;
-    });
-    (chord.barres || []).forEach(barre => {
-      const fret=Number(barre.fret), from=Math.max(0,Math.min(5,Number(barre.fromString??0))), to=Math.max(0,Math.min(5,Number(barre.toString??5))), rel=fret-startFret+1;
-      if(!Number.isFinite(fret)||rel<1||rel>visibleFrets)return;
-      const y=topY+(rel-.5)*fretGap, x1=stringXs[Math.min(from,to)], x2=stringXs[Math.max(from,to)];
+    }
+    for (const barre of inferredBarres) {
+      const fret=Number(barre.fret), rel=fret-startFret+1;
+      if(!Number.isFinite(fret)||rel<1||rel>visibleFrets)continue;
+      const y=topY+(rel-.5)*fretGap, xs=barre.strings.map(xForString), x1=Math.min(...xs), x2=Math.max(...xs);
       markup += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#111" stroke-width="11.6" stroke-linecap="round"/>`;
       if(barre.finger!=null&&barre.finger!=="") markup += `<text x="${(x1+x2)/2}" y="${y}" font-size="7" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#fff">${FretFlow.escape(barre.finger)}</text>`;
-    });
+    }
     svg.innerHTML=markup; el.appendChild(svg); return el;
   }
 }
@@ -5048,7 +5144,7 @@ FretFlow.renderNativeRecord = function(record, libraryData = {}) {
 FretFlow.renderChordPreview = function(entry) {
   const mount = document.createElement("div");
   mount.className = "chord-editor-preview";
-  const chord = entry ? {name:[entry.code,entry.variantLabel].filter(Boolean).join(" · ") || "Nieuw akkoord", ...(entry.diagram || {})} : {name:"Nieuw akkoord", frets:["x","x","x","x","x","x"]};
+  const chord = entry ? {name:[entry.code,entry.variantLabel].filter(Boolean).join(" · ") || "Nieuw akkoord", ...(entry.diagram || {})} : {name:"Nieuw akkoord", positions:[{string:6,fret:"x",finger:null},{string:5,fret:"x",finger:null},{string:4,fret:"x",finger:null},{string:3,fret:"x",finger:null},{string:2,fret:"x",finger:null},{string:1,fret:"x",finger:null}]};
   mount.appendChild(ChordDiagramRenderer.render(chord));
   return mount;
 };
@@ -5726,7 +5822,7 @@ function chordLibrary(){
 }
 function chordCategories(){projectData.chords=FretFlow.normalizeChordLibrary(projectData.chords||FretFlow.emptyChordData());return projectData.chords.chordCategories}
 function chordById(id){return chordLibrary().find(chord=>chord.id===id)}
-function emptyChord(){return {id:'',code:'',variantLabel:'',category:chordCategories()[0]?.id||'',diagram:{startFret:1,frets:['x','x','x','x','x','x'],fingers:[null,null,null,null,null,null],barres:[]}}}
+function emptyChord(){return {id:'',code:'',variantLabel:'',category:chordCategories()[0]?.id||'',diagram:{startFret:1,positions:[{string:6,fret:'x',finger:null},{string:5,fret:'x',finger:null},{string:4,fret:'x',finger:null},{string:3,fret:'x',finger:null},{string:2,fret:'x',finger:null},{string:1,fret:'x',finger:null}]}}}
 function nextChordId(code){const used=new Set(chordLibrary().map(chord=>chord.id));const base=FretFlow.slug(code)||'chord';let id=base,n=2;while(used.has(id))id=`${base}-${n++}`;return id}
 function openChordLibrary(){if(activeKind!=='chords')return;clearRecordSearch();chordLibraryMode=true;chordCategoryMode=false;current=null;currentChordId='';draftChord=null;chordLibraryMessage='';render()}
 function closeChordLibrary(){activateDataset('chords')}
@@ -5738,27 +5834,16 @@ function filteredChordIds(){const q=(document.getElementById('chordLibrarySearch
 function updateChordLibraryList(){const sel=document.getElementById('chordLibrarySelect');if(!sel)return;const ids=filteredChordIds();sel.innerHTML=ids.map(id=>{const chord=chordById(id);return `<option value="${esc(id)}" ${id===currentChordId?'selected':''}>${esc(FretFlow.chordDisplayLabel(chord,projectData.chords))}</option>`}).join('');if(!ids.length)sel.innerHTML='<option value="">Geen akkoorden gevonden</option>'}
 function renderChordLibraryEditor(){
   if(!draftChord){editor.innerHTML='<div class="empty">Kies een akkoord of maak een nieuw akkoord.</div>';preview.innerHTML='';return}
-  draftChord.diagram=draftChord.diagram||emptyChord().diagram;
+  draftChord.diagram=FretFlow.normalizeChordDiagram(draftChord.diagram||emptyChord().diagram);
   const diagram=draftChord.diagram,stringNames=['Dikke E','A','D','G','B','Hoge E'],stringShort=['E','A','D','G','B','e'];
   const stringHeads=stringShort.map((label,i)=>`<div class="matrix-head"><b>${label}</b><small>${6-i}</small></div>`).join('');
-  const barre=(diagram.barres||[])[0]||null;
-  const barreRange=barre?chordBarreRange(barre):null;
-  const barreCells=stringNames.map((label,i)=>{
-    const active=Boolean(barreRange&&i>=barreRange.start&&i<=barreRange.end);
-    const value=active?String(Number(barre.finger)||1):'';
-    return `<select aria-label="Barré ${label}" onchange="setChordBarreString(${i},this.value)" ${barre?'':'disabled'}><option value="" ${!active?'selected':''}>—</option>${[1,2,3,4].map(n=>`<option value="${n}" ${value===String(n)?'selected':''}>${n}</option>`).join('')}</select>`;
+  const positionColumns=stringNames.map((label,i)=>{
+    const string=6-i;
+    const entries=diagram.positions.map((position,index)=>({position,index})).filter(entry=>entry.position.string===string);
+    const rows=entries.map(({position,index})=>`<div class="chord-position-row"><input class="chord-position-fret" data-position-index="${index}" aria-label="Fret ${label}" value="${esc(position.fret)}" placeholder="x / 0 / fret" oninput="setChordPosition(${index},'fret',this.value)"><select aria-label="Vinger ${label}" onchange="setChordPosition(${index},'finger',this.value)"><option value="" ${position.finger==null||position.finger===''?'selected':''}>—</option>${[1,2,3,4].map(n=>`<option value="${n}" ${Number(position.finger)===n?'selected':''}>${n}</option>`).join('')}</select>${entries.length>1?`<button class="small danger chord-position-remove" aria-label="Positie verwijderen van ${label}" title="Positie verwijderen" onclick="removeChordPosition(${index})">×</button>`:''}</div>`).join('');
+    return `<div class="chord-position-list">${rows}<button class="small secondary chord-position-add" aria-label="Positie toevoegen aan ${label}" title="Positie toevoegen" onclick="addChordPosition(${string})">+</button></div>`;
   }).join('');
-  const fretCells=stringNames.map((label,i)=>{
-    const base=chordStringUsesOnlyBarre(diagram,i,barre);
-    const value=base?'':diagram.frets?.[i]??'x';
-    return `<input aria-label="Fret ${label}" value="${esc(value)}" placeholder="${base?'—':'x / 0 / fret'}" oninput="setChordString(${i},'fret',this.value)">`;
-  }).join('');
-  const fingerCells=stringNames.map((label,i)=>{
-    const base=chordStringUsesOnlyBarre(diagram,i,barre);
-    const value=base?'':diagram.fingers?.[i];
-    return `<select aria-label="Vinger ${label}" onchange="setChordString(${i},'finger',this.value)"><option value="" ${value==null||value===''?'selected':''}>—</option>${[1,2,3,4].map(n=>`<option value="${n}" ${Number(value)===n?'selected':''}>${n}</option>`).join('')}</select>`;
-  }).join('');
-  const strings=`<div class="chord-string-matrix"><div></div>${stringHeads}<div class="matrix-label barre-label"><label><input type="checkbox" ${barre?'checked':''} onchange="toggleChordBarre(this.checked)"> Barré</label><span class="barre-fret">fret <input aria-label="Barré fret" type="number" min="1" max="24" value="${barre?Number(barre.fret)||1:Number(diagram.startFret)||1}" onchange="setBarreField('fret',+this.value)" ${barre?'':'disabled'}></span></div>${barreCells}<div class="matrix-label">Fret</div>${fretCells}<div class="matrix-label">Vinger</div>${fingerCells}</div>`;
+  const strings=`<div class="chord-string-matrix">${stringHeads}${positionColumns}</div>`;
   editor.innerHTML=`<div class="grid chord-meta-grid"><div class="field"><label>Akkoord</label><input value="${esc(draftChord.code||'')}" placeholder="bijv. B5" oninput="setChordField('code',this.value)"></div><div class="field"><label>Variant <span class="label-hint">(optioneel)</span></label><input value="${esc(draftChord.variantLabel||'')}" placeholder="bijv. 7e fret" oninput="setChordField('variantLabel',this.value)"></div><div class="field"><label>Categorie</label><select onchange="setChordField('category',this.value)">${chordCategories().map(category=>`<option value="${esc(category.id)}" ${draftChord.category===category.id?'selected':''}>${esc(category.name)}</option>`).join('')}</select></div><div class="field"><label>Startfret</label><input type="number" min="1" max="24" value="${Number(diagram.startFret)||1}" onchange="setChordDiagramField('startFret',+this.value)"></div></div><h3>Snaren</h3>${strings}<div class="toolbar"><button onclick="saveChord()">Akkoord opslaan</button></div><div id="chordLibraryMessage" class="${chordLibraryMessage?'success':''}">${esc(chordLibraryMessage)}</div>`;
   renderChordEditorPreview();
 }
@@ -5774,98 +5859,23 @@ function deleteChordCategory(id){const categories=chordCategories(),used=chordLi
 function setChordField(k,v){draftChord[k]=v;schedulePreview(120)}
 function setChordDiagramField(k,v){draftChord.diagram=draftChord.diagram||emptyChord().diagram;draftChord.diagram[k]=v;schedulePreview(120)}
 function parseFretValue(v){const t=String(v).trim().toLowerCase();if(t==='x'||t===''||t==='-')return'x';const n=Number(t);return Number.isFinite(n)&&n>=0?n:'x'}
-function chordBarreRange(barre){
-  if(!barre)return null;
-  const a=Math.max(0,Math.min(5,Number(barre.fromString??0))),b=Math.max(0,Math.min(5,Number(barre.toString??5)));
-  return {start:Math.min(a,b),end:Math.max(a,b)};
-}
-function chordStringCoveredByBarre(barre,i){const range=chordBarreRange(barre);return Boolean(range&&i>=range.start&&i<=range.end)}
-function chordStringUsesOnlyBarre(diagram,i,barre=(diagram.barres||[])[0]){
-  if(!barre||!chordStringCoveredByBarre(barre,i))return false;
-  const fret=diagram.frets?.[i],finger=diagram.fingers?.[i],barreFret=Number(barre.fret),barreFinger=Number(barre.finger)||1;
-  return Number(fret)===barreFret&&(finger==null||finger===''||Number(finger)===barreFinger);
-}
-function applyBarreBaseToString(diagram,i,barre){
-  diagram.frets=diagram.frets||['x','x','x','x','x','x'];
-  diagram.fingers=diagram.fingers||[null,null,null,null,null,null];
-  diagram.frets[i]=Number(barre.fret)||1;
-  diagram.fingers[i]=Number(barre.finger)||1;
-}
-function setChordString(i,k,v){
-  const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram);
-  diagram.frets=diagram.frets||['x','x','x','x','x','x'];diagram.fingers=diagram.fingers||[null,null,null,null,null,null];
-  const barre=(diagram.barres||[])[0]||null,covered=chordStringCoveredByBarre(barre,i),wasBase=chordStringUsesOnlyBarre(diagram,i,barre);
-  if(k==='fret'){
-    const raw=String(v??'').trim();
-    if(covered&&(raw===''||raw==='-')){
-      applyBarreBaseToString(diagram,i,barre);
-    }else{
-      const parsed=parseFretValue(raw);
-      diagram.frets[i]=parsed;
-      if(wasBase&&!(typeof parsed==='number'&&Number(parsed)===Number(barre?.fret)))diagram.fingers[i]=null;
-      if(covered&&typeof parsed==='number'&&Number(parsed)===Number(barre.fret)&&diagram.fingers[i]==null)diagram.fingers[i]=Number(barre.finger)||1;
-    }
-  }else{
-    if(covered&&v===''&&Number(diagram.frets[i])===Number(barre.fret))diagram.fingers[i]=Number(barre.finger)||1;
-    else diagram.fingers[i]=v===''?null:Number(v);
-  }
+function setChordPosition(index,k,v){
+  const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram),position=diagram.positions?.[index];
+  if(!position)return;
+  position[k]=k==='fret'?parseFretValue(v):(v===''?null:Number(v));
   schedulePreview(160);
 }
-function toggleChordBarre(on){
-  const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram);
-  diagram.frets=diagram.frets||['x','x','x','x','x','x'];diagram.fingers=diagram.fingers||[null,null,null,null,null,null];
-  if(!on){diagram.barres=[];render();return}
-  const barre={fret:Number(diagram.startFret)||1,fromString:0,toString:5,finger:1};
-  diagram.barres=[barre];
-  for(let i=0;i<6;i++){
-    const fret=diagram.frets[i],finger=diagram.fingers[i];
-    if(String(fret).toLowerCase()==='x'||Number(fret)===0||(Number(fret)===Number(barre.fret)&&(finger==null||finger===''||Number(finger)===Number(barre.finger))))applyBarreBaseToString(diagram,i,barre);
-  }
+function addChordPosition(string){
+  const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram),used=new Set((diagram.positions||[]).filter(position=>position.string===string&&position.finger==null).map(position=>Number(position.fret)).filter(Number.isFinite));
+  let fret=Math.max(1,Number(diagram.startFret)||1);while(used.has(fret))fret++;
+  const index=(diagram.positions||(diagram.positions=[])).push({string,fret,finger:null})-1;
   render();
+  requestAnimationFrame(()=>{const input=editor.querySelector(`.chord-position-fret[data-position-index="${index}"]`);input?.focus();input?.select()});
 }
-function setChordBarreString(i,v){
-  const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram),barre=(diagram.barres||[])[0];
-  if(!barre)return;
-  const old={...barre},oldRange=chordBarreRange(old),oldBase=[];
-  for(let s=0;s<6;s++)if(chordStringUsesOnlyBarre(diagram,s,old))oldBase.push(s);
-  let active=[];
-  if(oldRange)for(let s=oldRange.start;s<=oldRange.end;s++)active.push(s);
-  if(v===''){
-    if(!active.includes(i))return;
-    if(active.length===1){diagram.barres=[];render();return}
-    if(i!==active[0]&&i!==active[active.length-1]){render();return}
-    active=active.filter(s=>s!==i);
-  }else{
-    const finger=Number(v)||1;
-    barre.finger=finger;
-    if(!active.includes(i))active.push(i);
-    const start=Math.min(...active),end=Math.max(...active);
-    active=[];for(let s=start;s<=end;s++)active.push(s);
-  }
-  const start=Math.min(...active),end=Math.max(...active);
-  barre.fromString=start;barre.toString=end;
-  const newFinger=Number(barre.finger)||1;
-  for(const s of oldBase){
-    if(s<start||s>end){diagram.frets[s]='x';diagram.fingers[s]=null}
-    else{diagram.frets[s]=Number(barre.fret)||1;diagram.fingers[s]=newFinger}
-  }
-  for(let s=start;s<=end;s++){
-    const fret=diagram.frets[s],finger=diagram.fingers[s];
-    if(String(fret).toLowerCase()==='x'||Number(fret)===0||(Number(fret)===Number(barre.fret)&&(finger==null||finger===''||Number(finger)===Number(old.finger)||Number(finger)===newFinger)))applyBarreBaseToString(diagram,s,barre);
-  }
-  render();
-}
-function setBarreField(k,v){
-  const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram);
-  diagram.barres=diagram.barres||[];
-  if(!diagram.barres[0])return;
-  const barre=diagram.barres[0],old={...barre},base=[];
-  for(let i=0;i<6;i++)if(chordStringUsesOnlyBarre(diagram,i,old))base.push(i);
-  if(k==='fret')barre.fret=Math.max(1,Number(v)||1);
-  else if(k==='finger')barre.finger=Math.max(1,Math.min(4,Number(v)||1));
-  else barre[k]=v;
-  for(const i of base)applyBarreBaseToString(diagram,i,barre);
-  schedulePreview(0);
+function removeChordPosition(index){
+  const diagram=draftChord.diagram||(draftChord.diagram=emptyChord().diagram),position=diagram.positions?.[index];
+  if(!position||(diagram.positions||[]).filter(item=>item.string===position.string).length<=1)return;
+  diagram.positions.splice(index,1);render();
 }
 function renderChordEditorPreview(){if(!chordLibraryMode||!draftChord)return;preview.replaceChildren(FretFlow.renderChordPreview(structuredClone(draftChord)))}
 function renderChordLibraryPreview(){if(!chordCategoryMode)return;preview.replaceChildren(FretFlow.renderChordLibraryPreview(projectData.chords||{}))}
@@ -5880,11 +5890,7 @@ function saveChord(){
   entry.code=code;
   entry.variantLabel=String(entry.variantLabel||'').trim();
   entry.category=entry.category||chordCategories()[0]?.id||'';
-  entry.diagram=entry.diagram||emptyChord().diagram;
-  entry.diagram.startFret=Math.max(1,Number(entry.diagram.startFret)||1);
-  entry.diagram.frets=(entry.diagram.frets||[]).slice(0,6);while(entry.diagram.frets.length<6)entry.diagram.frets.push('x');
-  entry.diagram.fingers=(entry.diagram.fingers||[]).slice(0,6);while(entry.diagram.fingers.length<6)entry.diagram.fingers.push(null);
-  if(!(entry.diagram.barres||[]).length)delete entry.diagram.barres;
+  entry.diagram=FretFlow.normalizeChordDiagram(entry.diagram||emptyChord().diagram);
   const originalIndex=currentChordId?library.findIndex(chord=>chord.id===currentChordId):-1;
   const filtered=library.filter(chord=>chord.id!==entry.id);
   const insertAt=originalIndex<0?filtered.length:Math.min(originalIndex,filtered.length);
@@ -5912,7 +5918,7 @@ function newNative(){clearRecordSearch();draftRecord={id:'',kind:'native',title:
    BUILDER PROJECT WORKFLOW
    - builder.html is the source of all HTML/CSS/JS and data templates.
    - FretFlow.html contains one integrated project JSON object.
-   - Opening an integrated FretFlow project loads only project data; the active code uses schema 14; legacy 10B, schema 11, schema 12 and schema 13 projects are normalized on load. Chords are linked to stable library IDs; unresolved legacy chord text is preserved.
+   - Opening an integrated FretFlow project loads only project data; the active code uses schema 15; legacy 10B and schemas 11–14 are normalized on load. Chords are linked to stable library IDs; unresolved legacy chord text is preserved.
    ============================================================================= */
 function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 
@@ -6158,8 +6164,6 @@ function migrateLegacyProject10B(raw){
   migrated.nativeTabs=Array.isArray(migrated.nativeTabs)?migrated.nativeTabs:[];
   const library=migrated.chords||FretFlow.emptyChordData();
   for(const record of migrated.nativeTabs)migrateEditableNativeSections(record,library);
-  migrated.schemaVersion=FretFlow.CURRENT_SCHEMA;
-  migrated.builderVersion=FretFlow.BUILDER_VERSION;
   return migrated;
 }
 function legacyStrumToLiteral(pattern){
@@ -6225,11 +6229,15 @@ function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B','11','12','13',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. Builder 3.2 beta ondersteunt schema 10B, 11, 12, 13 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow Builder.`);
+  if(!['10B','11','12','13','14',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. Builder 3.2 beta ondersteunt schema 10B, 11, 12, 13, 14 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow Builder.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);
-  return projectSchema(raw)==='10B'?migrateLegacyProject10B(raw):structuredClone(raw);
+  const schema=projectSchema(raw),migrated=schema==='10B'?migrateLegacyProject10B(raw):structuredClone(raw);
+  if(schema!==CURRENT_SCHEMA&&migrated.chords)migrated.chords=FretFlow.normalizeChordLibrary(migrated.chords);
+  migrated.schemaVersion=CURRENT_SCHEMA;
+  migrated.builderVersion=FretFlow.BUILDER_VERSION;
+  return migrated;
 }
 function loadProject(raw){
   return normalizeCurrentProject(migrateProjectToCurrent(raw));
