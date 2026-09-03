@@ -3245,8 +3245,14 @@ class Viewer {
     this.updateViewModeButton();
   }
 
+  isTabletPortraitViewport() {
+    const w = window.innerWidth;
+    return window.innerHeight > w && w >= 600 && w <= 1100;
+  }
+
   singlePageSideMargin() {
     const w = window.innerWidth;
+    if (this.isTabletPortraitViewport()) return 0;
     if (w < 520) return -18;   // small phones: subtle crop/zoom into the page
     if (w < 900) return 0;     // tablets/large phones: white page fills the viewport width
     return 32;                 // desktop: keep a canvas margin around the A4 sheet
@@ -3280,11 +3286,13 @@ class Viewer {
       mount.style.gap = `${gap}px`;
     } else {
       // Single mode keeps the established responsive fit behavior.
+      const tabletPortrait = this.isTabletPortraitViewport();
       const sideMargin = this.singlePageSideMargin();
       const landscape = window.innerWidth > window.innerHeight;
-      const verticalPadding = landscape ? 0 : (window.innerWidth < 900 ? 26 : 52);
+      const verticalPadding = landscape ? 0 : (tabletPortrait ? 10 : (window.innerWidth < 900 ? 26 : 52));
       const availableWidth = wrap.clientWidth - (sideMargin * 2);
-      baseScale = Math.min(1, availableWidth / pageWidth);
+      const widthScale = availableWidth / pageWidth;
+      baseScale = tabletPortrait ? widthScale : Math.min(1, widthScale);
       wrap.style.padding = `${verticalPadding}px ${Math.max(0, sideMargin)}px`;
       mount.style.gap = "0px";
     }
