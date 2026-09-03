@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FretFlow Amp Knob Prototype v2</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #18191d;
+    --panel: #23252b;
+    --text: #f2f2f2;
+    --muted: #a9abb3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .panel {
+    width: min(720px, calc(100vw - 32px));
+    padding: 24px;
+    border: 1px solid #353842;
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: 0 12px 32px rgba(0,0,0,.28);
+  }
+  h1 { margin: 0 0 4px; font-size: 20px; }
+  .sub { margin: 0 0 22px; color: var(--muted); }
+  .demo {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .knob-wrap { display: grid; place-items: center; gap: 8px; }
+  .label { font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+  .value { color: var(--muted); font-variant-numeric: tabular-nums; }
+  input[type="range"] { width: 100%; }
+  .checks {
+    display: flex;
+    align-items: end;
+    gap: 28px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid #353842;
+    flex-wrap: wrap;
+  }
+  .check { display: grid; justify-items: center; gap: 7px; }
+  .check span { color: var(--muted); font-size: 12px; text-align: center; }
+  .note { margin-top: 18px; color: var(--muted); font-size: 12px; }
+  svg { display: block; overflow: visible; }
+</style>
+</head>
+<body>
+  <main class="panel">
+    <h1>FretFlow amp-knob prototype v2</h1>
+    <p class="sub">Adjusted min/max ticks: closer to the knob, closer to each other, and symmetrical. Only the white pointer rotates.</p>
+
+    <section class="demo">
+      <div class="knob-wrap">
+        <div class="label">GAIN</div>
+
+        <svg width="112" height="112" viewBox="0 0 100 100" aria-label="Amplifier knob">
+          <defs>
+            <radialGradient id="faceGradient" cx="37%" cy="30%" r="72%">
+              <stop offset="0%" stop-color="#565961"/>
+              <stop offset="55%" stop-color="#36383e"/>
+              <stop offset="100%" stop-color="#202126"/>
+            </radialGradient>
+            <linearGradient id="rimGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#50535a"/>
+              <stop offset="50%" stop-color="#292b30"/>
+              <stop offset="100%" stop-color="#15161a"/>
+            </linearGradient>
+            <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="2.5" stdDeviation="2.2" flood-color="#000" flood-opacity=".55"/>
+            </filter>
+          </defs>
+
+          <!-- STATIC: min/max ticks -->
+          <g class="ticks" fill="none" stroke="#f5f5f5" stroke-width="4.2" stroke-linecap="round">
+            <line x1="31" y1="76" x2="27" y2="82"/>
+            <line x1="69" y1="76" x2="73" y2="82"/>
+          </g>
+
+          <!-- STATIC: knob body -->
+          <g filter="url(#shadow)">
+            <circle cx="50" cy="48" r="29" fill="url(#rimGradient)"/>
+            <circle cx="50" cy="48" r="25.5" fill="url(#faceGradient)"/>
+            <path d="M31 35 C38 23, 57 18, 69 28"
+                  fill="none" stroke="#74777f" stroke-width="2.2"
+                  stroke-linecap="round" opacity=".28"/>
+            <path d="M32 64 C40 72, 58 75, 69 66"
+                  fill="none" stroke="#0f1013" stroke-width="3"
+                  stroke-linecap="round" opacity=".45"/>
+          </g>
+
+          <!-- ROTATING: pointer only -->
+          <g class="pointer" transform="rotate(0 50 48)">
+            <line x1="50" y1="47" x2="50" y2="26"
+                  stroke="#f7f7f7"
+                  stroke-width="5"
+                  stroke-linecap="round"/>
+          </g>
+        </svg>
+
+        <div class="value"><span id="value">50</span> / 100</div>
+      </div>
+
+      <div>
+        <input id="slider" type="range" min="0" max="100" value="50" step="1">
+        <p>
+          0 = left stop<br>
+          50 = straight up<br>
+          100 = right stop
+        </p>
+      </div>
+    </section>
+
+    <section class="checks">
+      <div class="check">
+        <div class="label">VIEWER 40 px</div>
+        <svg width="40" height="40" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="faceGradientSmall1" cx="37%" cy="30%" r="72%">
+              <stop offset="0%" stop-color="#565961"/>
+              <stop offset="55%" stop-color="#36383e"/>
+              <stop offset="100%" stop-color="#202126"/>
+            </radialGradient>
+            <linearGradient id="rimGradientSmall1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#50535a"/>
+              <stop offset="50%" stop-color="#292b30"/>
+              <stop offset="100%" stop-color="#15161a"/>
+            </linearGradient>
+          </defs>
+          <g fill="none" stroke="#f5f5f5" stroke-width="4.2" stroke-linecap="round">
+            <line x1="31" y1="76" x2="27" y2="82"/>
+            <line x1="69" y1="76" x2="73" y2="82"/>
+          </g>
+          <circle cx="50" cy="48" r="29" fill="url(#rimGradientSmall1)"/>
+          <circle cx="50" cy="48" r="25.5" fill="url(#faceGradientSmall1)"/>
+          <path d="M31 35 C38 23, 57 18, 69 28"
+                fill="none" stroke="#74777f" stroke-width="2.2"
+                stroke-linecap="round" opacity=".28"/>
+          <path d="M32 64 C40 72, 58 75, 69 66"
+                fill="none" stroke="#0f1013" stroke-width="3"
+                stroke-linecap="round" opacity=".45"/>
+          <g class="pointer" transform="rotate(0 50 48)">
+            <line x1="50" y1="47" x2="50" y2="26"
+                  stroke="#f7f7f7"
+                  stroke-width="5"
+                  stroke-linecap="round"/>
+          </g>
+        </svg>
+        <span>compact Viewer size</span>
+      </div>
+
+      <div class="check">
+        <div class="label">BUILDER 60 px</div>
+        <svg width="60" height="60" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="faceGradientSmall2" cx="37%" cy="30%" r="72%">
+              <stop offset="0%" stop-color="#565961"/>
+              <stop offset="55%" stop-color="#36383e"/>
+              <stop offset="100%" stop-color="#202126"/>
+            </radialGradient>
+            <linearGradient id="rimGradientSmall2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#50535a"/>
+              <stop offset="50%" stop-color="#292b30"/>
+              <stop offset="100%" stop-color="#15161a"/>
+            </linearGradient>
+          </defs>
+          <g fill="none" stroke="#f5f5f5" stroke-width="4.2" stroke-linecap="round">
+            <line x1="31" y1="76" x2="27" y2="82"/>
+            <line x1="69" y1="76" x2="73" y2="82"/>
+          </g>
+          <circle cx="50" cy="48" r="29" fill="url(#rimGradientSmall2)"/>
+          <circle cx="50" cy="48" r="25.5" fill="url(#faceGradientSmall2)"/>
+          <path d="M31 35 C38 23, 57 18, 69 28"
+                fill="none" stroke="#74777f" stroke-width="2.2"
+                stroke-linecap="round" opacity=".28"/>
+          <path d="M32 64 C40 72, 58 75, 69 66"
+                fill="none" stroke="#0f1013" stroke-width="3"
+                stroke-linecap="round" opacity=".45"/>
+          <g class="pointer" transform="rotate(0 50 48)">
+            <line x1="50" y1="47" x2="50" y2="26"
+                  stroke="#f7f7f7"
+                  stroke-width="5"
+                  stroke-linecap="round"/>
+          </g>
+        </svg>
+        <span>editing preview size</span>
+      </div>
+    </section>
+
+    <div class="note">
+      Prototype geometry remains the same: a 270° sweep from the left stop to the right stop. Only the pointer transform changes.
+    </div>
+  </main>
+
+<script>
+  const slider = document.getElementById('slider');
+  const value = document.getElementById('value');
+  const pointers = [...document.querySelectorAll('.pointer')];
+
+  function updateKnob(v) {
+    const angle = -135 + (Number(v) / 100) * 270;
+    for (const pointer of pointers) {
+      pointer.setAttribute('transform', `rotate(${angle} 50 48)`);
+    }
+    value.textContent = v;
+  }
+
+  slider.addEventListener('input', event => updateKnob(event.target.value));
+  updateKnob(slider.value);
+</script>
+</body>
+</html>
