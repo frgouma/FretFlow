@@ -177,9 +177,10 @@ Only uniform whole-page scaling to the available viewport may change.
 * desktop and landscape behaviour do not regress
 * phone behaviour does not become worse
 
-## 3.3-beta — planned features
+## 3.3-beta — current development
 
-Do not implement these while completing 3.2-beta.
+Amp presets are the first 3.3-beta implementation. Practice Player named sections
+remain planned and are outside the Amp presets scope.
 
 ### [ ] 3.3-01 — Practice Player named sections
 
@@ -200,9 +201,11 @@ Requirements:
 * metadata belongs at tab/song level
 * identical functionality for native and PDF tabs
 
-### [ ] 3.3-02 — Amp presets per tab/song
+### [x] 3.3-02 — Amp presets per tab/song
 
-Add one or more amp presets per song/tab.
+FretFlow 3.3-beta introduces one or more amp presets per song/tab as compact,
+offline Viewer reference metadata. Amp presets are not native/PDF page content and
+must not affect the fixed A4 layout.
 
 Examples:
 
@@ -210,13 +213,129 @@ Examples:
 * Solo
 * Clean
 
-Requirements:
+#### Version and schema
 
-* freely named presets
-* practical starting settings, not historical rig reconstruction
-* metadata belongs at tab/song level
-* identical availability for native and PDF tabs
-* Viewer control should remain compact
+* Builder version is `3.3-beta`.
+* Current schema is 16.
+* Schema-15 projects and all older supported schemas continue through the existing
+  detection and deterministic normalization path.
+* Missing amp data normalizes to `ampPresets: []`.
+* After normalization, only the schema-16 representation is used and saved.
+
+#### Current record model
+
+Each native or PDF tab/song record has an `ampPresets` array. A preset contains:
+
+* `label` — free text
+* `ampType` — one of Acoustic, Clean, Crunch, Lead or Brown
+* `gain`, `volume`, `bass`, `middle`, `treble` — integer knob values
+* `boosterType` — one of Off, Clean Boost, Blues Drive, Overdrive, Distortion or Fuzz
+* `boosterLevel`, `delay`, `reverb` — integer knob values
+* `effects` — zero or more compact `{ type, level }` extra-effect settings; type is
+  one of Chorus, Phaser, Flanger, Tremolo, Wah or Octave
+
+All knob values use an internal normalized range of 0–100 and are rounded and
+clamped safely during normalization. Physical angles and clock positions are not
+stored. Missing `effects` data normalizes to an empty array. No effect-specific
+parameters or generic amplifier/effects framework are part of this feature.
+
+New presets start as Clean with the five basic amp/EQ values at 50, Booster Off
+with level 0, and Delay and Reverb at 0. A newly added extra effect starts as
+Chorus at level 50. Existing numeric values and recognized category strings are
+preserved by normalization; unknown unreleased schema-16 category strings fall
+back safely without discarding the surrounding preset.
+
+#### Shared Amp Knob
+
+* Use the authoritative `references/amp/fretflow_amp_knob_v2.svg` and interactive
+  prototype geometry and styling.
+* The dark knob body, min/max ticks, highlight and shadow remain static.
+* Each fixed min/max tick uses a wider dark under-stroke plus the existing light
+  foreground stroke so it remains readable on both light and dark backgrounds.
+* Only the white pointer rotates around `(50, 48)`.
+* Map 0–100 to the 270-degree sweep with
+  `-135 + (value / 100) * 270`, so 0 is the left/lower stop, 50 points straight
+  up and 100 is the right/lower stop.
+* One reusable inline renderer is shared by Builder and Viewer. There is no
+  runtime dependency on files under `references/`.
+
+#### Builder editor
+
+* The shared native/PDF metadata UI contains a compact Amp presets editor.
+* Users can add and remove presets, freely edit the preset label, and choose amp
+  and booster types from the fixed compact category lists.
+* All eight knob values can be edited precisely from 0–100 with ordinary,
+  accessible controls, and the approximately 60 px SVG preview updates live.
+* Each preset offers progressive disclosure through `+ effect`: users can add,
+  edit and individually remove multiple optional effect type/level rows, using
+  the same live knob and precise input controls.
+* Edits update normalized tab/song metadata; settings are never inferred or
+  generated automatically.
+
+#### Viewer tool and popup
+
+* Embed the guitar-and-amplifier silhouette from `references/amp/amp_icon.svg`
+  inline and adapt it to toolbar `currentColor` styling. The approved silhouette
+  is rendered dark and slightly larger without a visible button background,
+  border or shadow; its transparent 40 px button still provides a generous hit
+  area.
+* Show the Amp tool only when the active native or PDF tab has at least one
+  preset. With no presets, the button does not exist/is not visible.
+* Amp and the compact Spotify tool sit beside each other when both are present.
+  Spotify's expanded Practice Player may slide over and obscure Amp; no permanent
+  space is reserved and Spotify is not redesigned.
+* Pressing Amp toggles a compact, non-persistent Viewer overlay which remains
+  within the viewport and does not change page geometry or printing.
+* Show the preset label; for multiple presets provide a compact selector using
+  the free labels. Show amp type prominently and booster type when present.
+* Show eight approximately 40 px knobs in this order: GAIN, VOLUME, BASS, MIDDLE,
+  TREBLE, BOOST, DELAY, REVERB. Prefer a 4×2 grid where space permits.
+* Keep that 4×2 core grid unchanged. When the selected preset has extra effects,
+  show a compact wrapping `EXTRA EFFECTS` section below it with the effect type
+  and the same 40 px knob; omit the section when `effects` is empty.
+* The Viewer normally shows visual knob positions and short labels only. Hover,
+  keyboard focus or a touch tap temporarily reveals the exact normalized value
+  as a compact percentage tooltip for every core and extra-effect knob.
+* Viewer knobs remain read-only focusable meters with an accessible control name
+  and percentage value. A touch tap moves the one visible touch tooltip between
+  knobs, while a tap elsewhere dismisses it without changing any setting.
+* The popup is not draggable, persistent or subject to auto-close timers.
+
+#### Persistence and offline requirements
+
+* Amp presets survive Builder editing, save/export, reopen and Viewer loading for
+  both native and PDF records.
+* Amp UI assets, CSS and JavaScript are embedded in the self-contained output and
+  work fully offline.
+* Amp metadata never enters native components, PDF contents or A4 page data.
+
+#### Acceptance criteria
+
+* Schema 15 without amp data loads as schema 16 with `ampPresets: []`; older
+  supported schemas still normalize.
+* Schema-16 native and PDF records save/reopen without amp data loss, including
+  multiple presets, optional effects and malformed-value clamping.
+* No preset means no Amp button; one or more presets enable the button and popup
+  for both native and PDF tabs.
+* Preset selection updates every displayed setting and the Amp button toggles the
+  popup open/closed.
+* Builder add/edit/remove and all eight values update and persist correctly.
+* Amp and Booster are fixed dropdowns; multiple extra effects can be added,
+  edited, removed and preserved through save/export/reopen.
+* At values 0, 50 and 100, only the pointer rotates to the correct stop/up/stop
+  positions; the rich knob body and ticks stay fixed at Builder and Viewer sizes.
+* Spotify-only behavior remains unchanged; Spotify + Amp tools are adjacent while
+  the expanded Spotify player may cover Amp without reserved space.
+* The Amp tool has no visible badge but retains its 40 px transparent hit area;
+  the original dark silhouette is slightly larger and stays in the same position.
+* Core and extra-effect knob percentages appear only on hover, keyboard focus or
+  touch tap; pointer exit, blur or an outside touch dismisses them, and no Viewer
+  knob is editable.
+* The Amp overlay remains usable on phone, tablet and desktop, does not print and
+  does not affect native/PDF A4 geometry. Extra effects wrap below the core grid
+  and the viewport-contained popup remains internally scrollable when needed.
+* Embedded PDF.js blocks remain byte-identical; runtime syntax checks and
+  `git diff --check` pass.
 
 ## Parked / longer term
 
