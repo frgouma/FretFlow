@@ -337,6 +337,77 @@ back safely without discarding the surrounding preset.
 * Embedded PDF.js blocks remain byte-identical; runtime syntax checks and
   `git diff --check` pass.
 
+## 3.4-beta — final 3.x feature release
+
+This is the final feature release in the current self-contained 3.x architecture.
+Builder version becomes `3.4-beta`; current schema becomes 17. FretFlow 4.0 will
+separate the application from the guitar-book format, but no 4.0 work belongs here.
+Practice Player named sections above are deferred and excluded from this release.
+
+### Note techniques and deterministic migration
+
+* Current techniques: Standard, Legato, Slide up, Slide down, Slide out up,
+  Slide out down, Bend up and Bend up-down. Preserve existing pick strokes.
+* Before setting schema 17, migrate schema 16 and all older supported schemas:
+  `slideUp` → `slideOutUp`, `slideDown` → `slideOutDown`. Preserve their existing
+  short local marks and appearance. Afterwards use only the current model.
+* Schema-17 `slideUp` / `slideDown` connect to the next note on the same string,
+  found from rendered positions without stored target IDs. Draw dynamic SVG paths
+  close to both fret numbers, sloping up/down and scaling with their distance.
+  Connections cross measure boundaries on the same rendered row. No target or a
+  target on another row/page means no connector; never substitute a slide-out.
+* Slide-out techniques remain local marks and never search for a target.
+* `bendUp` is a compact local SVG curve with an upward arrowhead. `bendUpDown`
+  rises and releases downward, with an arrowhead at the descending end.
+* Reuse shared Builder/Viewer rendering and existing note/layout coordinates.
+  Preserve legato's existing next-same-string behavior without redesign.
+* No bend amounts, semitones, target notes/pitches, explicit target selectors,
+  rhythmic durations/length markers or multi-note legato spans.
+
+### Optional YouTube resource per native or PDF song/tab
+
+* Shared record metadata: `youtubeUrl` and optional free-text `youtubeLabel`,
+  both strings defaulting to empty. Add compact shared Builder fields; preserve
+  both through editing, serialization, standalone export and reopen.
+* Parse ordinary HTTP(S) YouTube watch, youtu.be, embed and Shorts URLs; extract
+  the video ID while ignoring tracking parameters. Invalid URLs fail safely.
+  Keep the original user-facing URL for the external fallback.
+* Show an inline SVG YouTube play tool beside Spotify/Amp only for a valid URL.
+  Preserve existing Spotify and Amp behavior.
+* Toggle a compact fixed, non-printing Viewer overlay with a label (or “YouTube”),
+  header close button, standard responsive 16:9 embedded player with playsinline,
+  and an always-visible “Open in YouTube” external link to the original URL.
+* Header-only Pointer Events dragging supports mouse and touch; video controls
+  receive their own events. Clamp the overlay inside the viewport, including on
+  resize. Position is session UI state only; opening may reset upper-right.
+* Tool toggle and × both close and remove the iframe, stopping hidden audio.
+  No timers, external drag library, eager YouTube loading or core dependency.
+* Embedded playback can fail under file:// (including error 153 due to missing
+  Referer/client identity). Always retain the external fallback. No Referer
+  spoofing, proxy, remote FretFlow service or security workaround.
+* No generic media framework, custom transport/rate UI, loops, playlists,
+  timeline integration or Practice Player integration.
+
+### Release validation and invariants
+
+* Verify all supported schema migrations, idempotent schema-17 normalization,
+  preserved Amp presets/effects, old local-slide appearance and all new types.
+* Verify connected-slide direction, position-dependent length, same-row measure
+  crossing, missing/cross-row targets and shared Builder/Viewer output; no bend
+  amount/target metadata is introduced.
+* Verify native/PDF YouTube metadata editing and export/reopen, URL forms and
+  invalid input; conditional tool, both close paths, iframe removal, headings,
+  fallback URL, mouse/touch header dragging and viewport containment.
+* Preserve fixed 794 × 1123 A4 geometry, native/PDF offline use, chords/barres,
+  Amp tool/tooltips, Spotify Practice Player, navigation, single/spread mode,
+  pinch/double-tap zoom and tablet portrait scaling. Overlay must not print.
+* Check runtime and Builder JS syntax, `git diff --check`, exact byte identity
+  of both embedded PDF.js blocks and the final changed-file list.
+* Report automated results and exact remaining browser/device/network checks,
+  including real YouTube playback from local files and HTTP(S).
+* Only `builder.html` and this backlog are in scope. No commits, pushes, merges,
+  release metadata, generated demo/index updates or unrelated refactors.
+
 ## Parked / longer term
 
 Do not implement unless explicitly moved into an active version.
