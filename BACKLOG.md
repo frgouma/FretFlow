@@ -408,6 +408,31 @@ Practice Player named sections above are deferred and excluded from this release
 * Only `builder.html` and this backlog are in scope. No commits, pushes, merges,
   release metadata, generated demo/index updates or unrelated refactors.
 
+## 4.0 — application launcher and Viewer-first startup
+
+FretFlow now starts as one central application with an explicit launcher,
+Viewer and Builder mode. With no guitar map loaded, the launcher shows only
+`Gitaarmap laden` and `Nieuwe gitaarmap`: it has no document search or tag
+filters, and its action tiles are application UI rather than serialized data.
+
+Loading a supported standalone FretFlow HTML file reuses the existing project
+extraction, schema detection, migration and normalization path, then opens the
+existing Viewer on the document home. Creating a new guitar map reuses the
+existing default-project initialization and opens the existing Builder.
+
+The main application runtime uses pinned CDN PDF.js 3.11.174, with local
+reference copies retained under `references/pdfjs/`. Standalone PDF.js
+rebundling remains outside this step.
+
+Application version is `4.0`; the document schema remains 17.
+
+### Staged 4.x direction
+
+Later 4.x work may add Viewer system/editing tiles and direct Viewer-to-Editor
+transitions, followed by `.fret` import/export and save behavior, and finally
+hosted/PWA functionality. Those features are deliberately outside this 4.0
+launcher step.
+
 ## Parked / longer term
 
 Do not implement unless explicitly moved into an active version.

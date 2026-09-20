@@ -6,7 +6,8 @@ FretFlow is a self-contained digital guitar songbook and Builder written in HTML
 
 `builder.html` is the single Builder and the source of truth for application development.
 
-The Builder generates standalone FretFlow HTML files. Generated FretFlow files must remain usable offline, including PDF tabs.
+The Builder generates standalone FretFlow HTML files. Standalone PDF.js
+packaging is a separate concern documented below.
 
 ## Core architecture
 
@@ -22,30 +23,15 @@ Do not introduce parallel legacy code paths after normalization unless explicitl
 
 There is only one Builder: `builder.html`.
 
-PDF.js is embedded in `builder.html` so generated FretFlow files can render PDF tabs offline.
-
-Treat these embedded PDF.js sections as immutable vendor code:
-
-* `#fretflow-pdfjs`
-* `#fretflow-pdfjs-worker-source`
-
-Do not:
-
-* edit them
-* reformat them
-* regenerate them
-* move them
-* include them in broad formatting operations
-
-Make targeted edits only to FretFlow-owned HTML, CSS and JavaScript.
-
-When practical, verify after significant Builder changes that the embedded PDF.js blocks are unchanged.
+The main Builder application loads pinned PDF.js CDN URLs at runtime. Local
+reference/source copies live in `references/pdfjs/`; do not inspect or edit them
+unless the task specifically concerns PDF.js itself or standalone export.
 
 ## Offline behaviour
 
-Core FretFlow functionality must not require an internet connection.
-
-Native tabs and PDF tabs must continue to work offline.
+Native tabs remain usable offline. PDF tabs in the main Builder application
+currently require the pinned PDF.js CDN runtime. Standalone PDF.js bundling is a
+separate concern and must not be changed unless explicitly requested.
 
 Optional online integrations, such as Spotify, may be unavailable offline and must not prevent normal FretFlow use.
 
