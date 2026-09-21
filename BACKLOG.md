@@ -408,6 +408,35 @@ Practice Player named sections above are deferred and excluded from this release
 * Only `builder.html` and this backlog are in scope. No commits, pushes, merges,
   release metadata, generated demo/index updates or unrelated refactors.
 
+## 4.2 — Viewer editing entry points and unified overflow menu
+
+Viewer editing actions reuse the active Builder's existing in-memory state:
+`activeKind`, `current`, `currentChordId`, `activateDataset`, `select`,
+`newChord`, `newNative` and `newPdf`. They do not re-import, clone or serialize
+the active guitar map.
+
+On the loaded-map Viewer home, `Gitaarmap wijzigen` is the first application
+tile, before the chord-library and ordinary group tiles. The chord library shows
+a compact `Akkoord toevoegen` action directly above its category filter. Every
+ordinary Viewer category starts with non-serialized `PDF Tab toevoegen` and
+`Native Tab toevoegen` system tiles; creation retains the originating group when
+the Builder record model supports assignment.
+
+Builder entry points retain a small return state (`launcher`, Viewer home,
+chord library, category id or tab id). Its Back control restores that location
+without replacing the active project; tab returns use the existing Viewer tab
+opening path and retain the readable content hash.
+
+For an open native or PDF tab, the unified Viewer `⋮` menu offers `Tab aanpassen`
+and switches to the matching Builder dataset with the same record id selected.
+The readable content hash remains unchanged; Viewer versus Builder is application
+state, not a route. The same menu contains the existing toolbar lock action
+(`Menubalk vastzetten` / `Menubalk losmaken`) and print action on all viewport
+sizes. Lock and print have no separate visible toolbar buttons.
+
+Application version is `4.2`; the document schema remains 18. Standalone PDF.js
+packaging remains out of scope.
+
 ## 4.1 — active guitar-map application flow
 
 FretFlow Home is the central application page. It has exactly four application
