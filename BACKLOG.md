@@ -408,30 +408,46 @@ Practice Player named sections above are deferred and excluded from this release
 * Only `builder.html` and this backlog are in scope. No commits, pushes, merges,
   release metadata, generated demo/index updates or unrelated refactors.
 
-## 4.0 — application launcher and Viewer-first startup
+## 4.1 — active guitar-map application flow
 
-FretFlow now starts as one central application with an explicit launcher,
-Viewer and Builder mode. With no guitar map loaded, the launcher shows only
-`Gitaarmap laden` and `Nieuwe gitaarmap`: it has no document search or tag
-filters, and its action tiles are application UI rather than serialized data.
+FretFlow Home is the central application page. It has exactly four application
+tiles: `Gitaarmap laden`, `Nieuwe gitaarmap`, `Gitaarmap openen` and
+`Gitaarmap aanpassen`; it has no document search or tag filters. The Home page
+shows a subtle active-map status. These controls and status are application UI
+and are never serialized into a guitar-map document.
 
-Loading a supported standalone FretFlow HTML file reuses the existing project
-extraction, schema detection, migration and normalization path, then opens the
-existing Viewer on the document home. Creating a new guitar map reuses the
-existing default-project initialization and opens the existing Builder.
+Loading a supported standalone FretFlow HTML reuses project extraction, schema
+detection, migration and normalization, makes that result the active in-memory
+guitar map, and remains on Home. Opening shows that same active map in the
+Viewer; adjusting it shows the same active map in the Builder. Neither action
+reloads, imports, clones or recreates the project. With no active map, Open and
+Adjust instruct the user to load one first. A new map becomes active and opens
+the Builder directly.
+
+The Viewer Home icon beside `#homeFullscreen` and the Builder Home icon both
+return to FretFlow Home without clearing the active project or its in-memory
+edits. Unsaved-change protection remains for actions that replace a project
+(loading another map or creating a new map), but not for returning Home.
+
+Project metadata has one editable guitar-map identity: `Naam gitaarmap`
+(`project.title`). Viewer Home always has the fixed title `FretFlow`; its
+existing GitHub-linked badge and the FretFlow Home active-map status both use
+the guitar-map name. The former `project.homepage.badge` and
+`project.homepage.title` fields are retired. Schema 18 normalization preserves
+the legacy project name, retains only `project.homepage.intro`, and drops the
+two retired fields before the current model is used or serialized.
 
 The main application runtime uses pinned CDN PDF.js 3.11.174, with local
 reference copies retained under `references/pdfjs/`. Standalone PDF.js
 rebundling remains outside this step.
 
-Application version is `4.0`; the document schema remains 17.
+Application version is `4.1`; the document schema is 18.
 
 ### Staged 4.x direction
 
-Later 4.x work may add Viewer system/editing tiles and direct Viewer-to-Editor
-transitions, followed by `.fret` import/export and save behavior, and finally
-hosted/PWA functionality. Those features are deliberately outside this 4.0
-launcher step.
+Later 4.x work may add `.fret` import/export and save behavior, followed by
+hosted/PWA functionality. Those features are deliberately outside this 4.1
+active-project flow step.
 
 ## Parked / longer term
 
