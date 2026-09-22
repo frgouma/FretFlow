@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FretFlow 4.3</title>
+<title>FretFlow 4.4</title>
 <script id="fretflow-pdfjs-loader">
 /* PDF.js 3.11.174: prefer the pinned CDN and fall back to the colocated copy. */
 (function(global){
@@ -985,18 +985,19 @@ header button{white-space:nowrap}.dev-only{display:none!important}
 </style>
 </head>
 <body data-application-mode="launcher">
-<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.3</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een bestaande zelfstandige FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
-<input hidden type="file" id="standaloneFile" accept=".html,text/html">
+<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.4</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een .fret-werkdocument of importeer een bestaande FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
+<input hidden type="file" id="projectFile" accept=".fret,application/json,.html,text/html">
 <div id="applicationViewer" hidden></div>
 <div id="builderApp" hidden>
 <header>
   <button class="secondary builder-home" id="builderHome" type="button" aria-label="Terug" title="Terug"></button>
   <button class="secondary" id="openApp">Andere gitaarmap laden</button>
   <button id="buildApp">Gitaarmap opslaan</button>
+  <button class="secondary" id="saveAsApp">Gitaarmap opslaan als</button>
   <button class="secondary" id="newProject">Nieuwe gitaarmap</button>
   <button class="secondary dev-only" id="toggleUnits" title="Interne ontwikkeloptie: toon of verberg de vaste layout-units in de live preview">Toon layout-units</button>
   <span class="spacer"></span>
-  <h1>FretFlow Editor 4.3</h1>
+  <h1>FretFlow Editor 4.4</h1>
 </header>
 <div class="quicklook-warning builder-quicklook-warning" id="builderQuicklookWarning"><b>Beste iCrap gebruiker,</b> helaas werkt FretFlow Editor niet in deze voorvertoning. Open FretFlow Editor in <a href="https://apps.apple.com/us/app/sitecase/id6762896369" target="_blank" rel="noopener noreferrer">Sitecase</a> voor een goed werkende app, of koop een Samsung.</div>
 <div class="layout">
@@ -1010,7 +1011,7 @@ header button{white-space:nowrap}.dev-only{display:none!important}
         <select id="recordSelect"><option value="">Kies een tab…</option></select>
       </div>
       <div class="toolbar" id="libraryActions"></div>
-      <div id="editor"><div class="empty">Kies <b>Nieuwe gitaarmap</b> of open een bestaande gitaarmap, zoals <b>FretFlow.html</b>, om muziek toe te voegen.</div></div>
+      <div id="editor"><div class="empty">Kies <b>Nieuwe gitaarmap</b> of open een bestaand <b>.fret</b>-werkdocument om muziek toe te voegen.</div></div>
     </div>
   </section>
   <section class="panel" data-builder-panel="SharedRendererPreview">
@@ -1453,7 +1454,7 @@ FretFlow.starterChordData = () => {
   return FretFlow.normalizeChordLibrary(library);
 };
 FretFlow.CURRENT_SCHEMA = "18";
-FretFlow.BUILDER_VERSION = "4.3";
+FretFlow.BUILDER_VERSION = "4.4";
 FretFlow.youtubeVideoId = function(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -5870,7 +5871,7 @@ FretFlow.initApp();
      ======================================================================= -->
 <script id="fretflow-builder-runtime">
 /* ============================================================================
-   FRETFLOW 4.3 BUILDER — SOURCE INDEX
+   FRETFLOW 4.4 BUILDER — SOURCE INDEX
 
    1. Integrated project state and dataset registry
    2. Project metadata, groups and system-page editor
@@ -5899,6 +5900,9 @@ let recordMetadataSavedKey='';
 let applicationMode='launcher';
 let viewerApplication=null;
 let activeProjectSourceName='';
+// This is application-session storage state, deliberately separate from projectData.
+// projectData is always the normalized document contents.
+let projectDocument={sourceType:'none',fileHandle:null,fileName:''};
 let builderReturnState=null;
 const $=s=>document.querySelector(s),esc=FretFlow.escape;
 document.getElementById('builderQuicklookWarning')?.remove();
@@ -5909,8 +5913,8 @@ function setApplicationMode(mode){
   applicationLauncher.hidden=mode!=='launcher';
   applicationViewer.hidden=mode!=='viewer';
   builderApp.hidden=mode!=='builder';
-  if(mode==='launcher'){document.title='FretFlow 4.3';updateLauncherProjectStatus()}
-  if(mode==='builder')document.title='FretFlow Editor 4.3';
+  if(mode==='launcher'){document.title='FretFlow 4.4';updateLauncherProjectStatus()}
+  if(mode==='builder')document.title='FretFlow Editor 4.4';
 }
 function activeProjectName(){return projectData?.project?.title||activeProjectSourceName||'FretFlow'}
 function updateLauncherProjectStatus(){
@@ -5945,6 +5949,7 @@ function resetApplicationProject(){
   applicationViewer.replaceChildren();
   projectData=null;
   activeProjectSourceName='';
+  projectDocument={sourceType:'none',fileHandle:null,fileName:''};
   activeKind='project';current=null;draftRecord=null;
   chordLibraryMode=false;chordCategoryMode=false;currentChordId='';draftChord=null;chordLibraryMessage='';
   projectBaselineJson='';projectMetadataSaved=false;recordMetadataSavedKey='';
@@ -6116,7 +6121,7 @@ function render(){
   list();renderActions();renderDatasetSwitch();
   if(!projectData){
     $('#status').textContent='Nog geen gitaarmap geopend.';
-    editor.innerHTML='<div class="empty">Kies <b>Nieuwe gitaarmap</b> of open een bestaande gitaarmap, zoals <b>FretFlow.html</b>, om muziek toe te voegen.</div>';
+    editor.innerHTML='<div class="empty">Kies <b>Nieuwe gitaarmap</b> of open een bestaand <b>.fret</b>-werkdocument om muziek toe te voegen.</div>';
     preview.innerHTML='';return;
   }
   $('#status').textContent=`${projectData.project.title||'FretFlow'} · ${projectData.nativeTabs.length} native · ${projectData.pdfTabs.length} PDF · ${projectData.chords.chords.length} akkoorden`;
@@ -7022,7 +7027,7 @@ function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.3 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
+  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.4 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);
@@ -7069,11 +7074,81 @@ function readProjectFromStandalone(html){
   const doc=new DOMParser().parseFromString(html,'text/html');
   const current=jsonFromNode(doc,'fretflow-project-json');
   if(!current)throw new Error('Geen geïntegreerde FretFlow-projectdata gevonden.');
-  return loadProject(current);
+  return current;
 }
-function setProject(data,kind='project',sourceName=''){projectData=loadProject(data);activeProjectSourceName=sourceName;projectMetadataSaved=false;recordMetadataSavedKey='';activateDataset(kind);rememberProjectBaseline();updateLauncherProjectStatus()}
-function createNewProject(returnState={view:'launcher'}){if(!confirmReplaceCurrentProject('Nieuwe gitaarmap starten?'))return;builderReturnState=returnState;setProject(FretFlow.createEmptyProject(),'project');setApplicationMode('builder')}
-async function openStandaloneFile(file){const loaded=readProjectFromStandalone(await file.text());builderReturnState=null;setProject(loaded,'project',file.name||'')}
+function readProjectFromFret(text){
+  let raw;
+  try{raw=JSON.parse(text)}catch{throw new Error('Dit .fret-bestand bevat geen geldige JSON.')}
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Error('Dit .fret-bestand bevat geen geldig FretFlow-project.');
+  return raw;
+}
+function setProject(data,kind='project',documentState={}){
+  projectData=loadProject(data);
+  projectDocument={sourceType:documentState.sourceType||'new',fileHandle:documentState.fileHandle||null,fileName:documentState.fileName||''};
+  activeProjectSourceName=projectDocument.fileName;
+  projectMetadataSaved=false;recordMetadataSavedKey='';activateDataset(kind);rememberProjectBaseline();updateLauncherProjectStatus();
+}
+function createNewProject(returnState={view:'launcher'}){if(!confirmReplaceCurrentProject('Nieuwe gitaarmap starten?'))return;builderReturnState=returnState;setProject(FretFlow.createEmptyProject(),'project',{sourceType:'new'});setApplicationMode('builder')}
+function projectFileKind(file){const name=String(file?.name||'').toLowerCase();if(name.endsWith('.fret'))return'fret';if(name.endsWith('.html')||name.endsWith('.htm'))return'html';return''}
+async function openProjectFile(file,fileHandle=null){
+  const kind=projectFileKind(file);
+  if(!kind)throw new Error('Kies een .fret-werkdocument of een bestaande FretFlow HTML-gitaarmap.');
+  const raw=kind==='fret'?readProjectFromFret(await file.text()):readProjectFromStandalone(await file.text());
+  // Validation and migration happen before this assignment, so an invalid file leaves the current map intact.
+  setProject(raw,'project',{sourceType:kind==='fret'?'fret':'legacy-html',fileHandle:kind==='fret'?fileHandle:null,fileName:file.name||''});
+  builderReturnState=null;
+}
+function defaultFretFilename(){
+  let stem=String(projectData?.project?.title||'').trim().replace(/(?:\.fret)+$/i,'');
+  stem=stem.replace(/[<>:"/\\|?*\x00-\x1f]/g,'_').replace(/\s+/g,'_').replace(/_+/g,'_').replace(/^[._]+|[._]+$/g,'');
+  return `${stem||'FretFlow'}.fret`;
+}
+function fretSerialization(){projectData=normalizeCurrentProject(projectData);return JSON.stringify(projectData,null,2)+'\n'}
+function saveFretDownload(serialized,name){downloadBlob(new Blob([serialized],{type:'application/json'}),name);projectDocument={sourceType:'fret',fileHandle:null,fileName:name};activeProjectSourceName=name;rememberProjectBaseline();updateLauncherProjectStatus()}
+async function writeFretHandle(handle,serialized){const writable=await handle.createWritable();await writable.write(serialized);await writable.close()}
+function isPickerCancellation(error){return error?.name==='AbortError'}
+async function saveProjectAs(){
+  if(!projectData)return;
+  const suggestedName=defaultFretFilename();
+  let handle=null;
+  if(typeof window.showSaveFilePicker==='function'){
+    try{handle=await window.showSaveFilePicker({suggestedName,types:[{description:'FretFlow werkdocument',accept:{'application/json':['.fret']}}]})}
+    catch(error){if(isPickerCancellation(error))return;handle=null}
+  }
+  const serialized=fretSerialization();
+  if(handle){
+    try{await writeFretHandle(handle,serialized);projectDocument={sourceType:'fret',fileHandle:handle,fileName:handle.name||suggestedName};activeProjectSourceName=projectDocument.fileName;rememberProjectBaseline();updateLauncherProjectStatus();return}
+    catch(error){alert('Opslaan naar de gekozen locatie is niet beschikbaar. Er wordt een .fret-download gemaakt.')}
+  }
+  saveFretDownload(serialized,suggestedName);
+}
+async function saveProjectDocument(){
+  if(!projectData)return;
+  if(!projectDocument.fileHandle){await saveProjectAs();return}
+  const serialized=fretSerialization();
+  try{await writeFretHandle(projectDocument.fileHandle,serialized);rememberProjectBaseline()}
+  catch(error){
+    // A rejected or revoked handle is no longer a trustworthy backing document.
+    const name=projectDocument.fileName||defaultFretFilename();
+    projectDocument.fileHandle=null;
+    alert('Direct opslaan is niet beschikbaar. Er wordt een .fret-download gemaakt.');
+    saveFretDownload(serialized,name);
+  }
+}
+async function requestProjectOpen(destination){
+  openDestination=destination;
+  if(typeof window.showOpenFilePicker==='function'){
+    let handles;
+    try{handles=await window.showOpenFilePicker({multiple:false,types:[{description:'FretFlow documenten',accept:{'application/json':['.fret'],'text/html':['.html','.htm']}}]})}
+    catch(error){if(isPickerCancellation(error))return;handles=null}
+    if(handles?.[0]){
+      try{await openProjectFile(await handles[0].getFile(),handles[0]);if(destination==='builder')setApplicationMode('builder');else setApplicationMode('launcher')}
+      catch(error){alert(`Openen mislukt: ${error.message}`)}
+      return;
+    }
+  }
+  projectFile.value='';projectFile.click();
+}
 
 /* =============================================================================
    BUILDER UI BINDINGS
@@ -7085,13 +7160,14 @@ newProject.onclick=()=>createNewProject();
 builderHome.innerHTML=FretFlow.viewerIcon('previous');
 builderHome.onclick=()=>{const state=builderReturnState||{view:'launcher'};builderReturnState=null;if(state.view==='launcher')returnToLauncher();else showProjectInViewer(state)};
 let openDestination='builder';
-launcherLoad.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap laden?'))return;openDestination='launcher';standaloneFile.value='';standaloneFile.click()};
+launcherLoad.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap laden?'))return;requestProjectOpen('launcher')};
 launcherNew.onclick=()=>createNewProject({view:'launcher'});
 launcherOpen.onclick=()=>{if(!projectData){alert('Laad eerst een gitaarmap.');return}showProjectInViewer()};
 launcherEdit.onclick=()=>{if(!projectData){alert('Laad eerst een gitaarmap.');return}openBuilderProjectEditor({view:'launcher'})};
-openApp.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap openen?'))return;openDestination='builder';standaloneFile.value='';standaloneFile.click()};
-standaloneFile.onchange=async e=>{try{const file=e.target.files[0];if(!file)return;await openStandaloneFile(file);if(openDestination==='builder')setApplicationMode('builder');else setApplicationMode('launcher')}catch(err){alert(`Openen mislukt: ${err.message}`)}finally{e.target.value=''}};
-buildApp.onclick=()=>{if(!confirmDiscardUnsavedMetadata())return;try{buildAndDownload()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
+openApp.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap openen?'))return;requestProjectOpen('builder')};
+projectFile.onchange=async e=>{try{const file=e.target.files[0];if(!file)return;await openProjectFile(file);if(openDestination==='builder')setApplicationMode('builder');else setApplicationMode('launcher')}catch(err){alert(`Openen mislukt: ${err.message}`)}finally{e.target.value=''}};
+buildApp.onclick=async()=>{if(!confirmDiscardUnsavedMetadata())return;try{await saveProjectDocument()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
+saveAsApp.onclick=async()=>{if(!confirmDiscardUnsavedMetadata())return;try{await saveProjectAs()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
 // Buttons inside editor/library can rerender or navigate; protect unsaved metadata first.
 document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(['metadataSave','projectMetadataSave','createTab'].includes(button.id)||button.matches('[data-amp-action]'))return;if(!(editor.contains(button)||libraryActions.contains(button)))return;if(!confirmDiscardUnsavedMetadata()){event.preventDefault();event.stopImmediatePropagation()}},true);
 document.addEventListener('input',event=>resetSavedMetadataState(event.target));

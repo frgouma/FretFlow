@@ -5,9 +5,14 @@
 FretFlow is a self-contained digital guitar songbook and Viewer + Editor application written in HTML, CSS and JavaScript.
 
 `FretFlow.html` is the central application and the source of truth for application development.
+`.fret` files are editable, data-only guitar-map working documents. Project
+data is separate from application-session filesystem-handle/source state.
 
-The Editor generates standalone FretFlow HTML files. Standalone PDF.js
-packaging is a separate concern documented below.
+Normal Save and Save As create `.fret` documents. Legacy standalone FretFlow
+HTML files remain importable but must never be overwritten by normal Save.
+Standalone HTML is a separate export concern. Storage behaviour is based on
+available browser capabilities, not platform names. Standalone PDF.js packaging
+is a separate concern documented below.
 
 ## Core architecture
 

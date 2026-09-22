@@ -1,6 +1,6 @@
 # FretFlow
 
-**FretFlow 4.3** is a browser-based Viewer + Editor for creating standalone digital guitar songbooks.
+**FretFlow 4.4** is a browser-based Viewer + Editor for editable digital guitar songbooks.
 
 It combines guitar tabs, chord diagrams, shapeboxes, text, PDF sheet music and song metadata in a single self-contained `FretFlow.html` file that can be opened locally in a modern browser — no server, database or installation required.
 
@@ -8,7 +8,7 @@ It combines guitar tabs, chord diagrams, shapeboxes, text, PDF sheet music and s
 
 ## What it does
 
-FretFlow is built around a simple idea: keep an entire personal guitar songbook in one portable HTML file.
+FretFlow is built around a simple idea: keep an entire personal guitar songbook in one portable `.fret` working document.
 
 The Editor supports:
 
@@ -26,7 +26,7 @@ The Editor supports:
 - tags, search and filtering
 - song metadata and source references
 - editing existing FretFlow songbooks
-- saving the complete songbook as a single standalone HTML file
+- saving the complete songbook as a data-only `.fret` working document
 - fully offline use once the file has been created
 
 A new songbook also starts with a small set of common guitar chords that can be edited or removed.
@@ -47,11 +47,11 @@ From there you can:
 2. Add native components, PDFs, chords and metadata.
 3. Organize songs into groups and tags.
 4. Preview the result inside the Editor.
-5. Choose **Save Guitar Map** to generate `FretFlow.html`.
+5. Choose **Save Guitar Map** to save a `.fret` working document.
 
-The generated `FretFlow.html` contains both the application and the songbook data, including embedded PDF data where applicable, so it can be copied to another computer, tablet or phone and opened without FretFlow itself being installed.
+The `.fret` file contains the complete songbook data, including embedded PDF data where applicable. Open it with `FretFlow.html` to continue editing or viewing it. Where the browser provides writable file handles, later Save overwrites the same selected `.fret`; otherwise FretFlow downloads a new `.fret` file.
 
-Existing FretFlow files can be opened again in the Editor and edited further.
+Existing standalone FretFlow HTML files can still be imported; saving an imported map creates a new `.fret` and does not overwrite the HTML source.
 
 ## Apple / iOS compatibility
 

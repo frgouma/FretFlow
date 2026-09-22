@@ -425,6 +425,31 @@ outside this release.
 
 Application version is `4.3`; the document schema remains 18.
 
+## 4.4 — `.fret` working documents and normal Save / Save As
+
+`FretFlow.html` is the application. A `.fret` file is the editable, data-only
+JSON working document containing the complete normalized schema-18 project:
+metadata, groups, native tabs, embedded PDF tab data, chord library/categories,
+Amp, Spotify, YouTube and all other project content. It never contains
+application code, PDF.js, runtime/UI state, file handles or navigation state.
+
+The application keeps compact non-serialized backing-document state separate
+from `projectData`: source type (new, `.fret`, or legacy HTML import), an
+optional writable File System Access handle, and a filename. `.fret` loading and
+legacy HTML importing both use schema detection followed by the established
+migration/normalization path. An HTML import is never a normal Save target.
+
+Save writes the same `.fret` through its retained writable handle when that
+capability actually works. A new project or legacy HTML import first uses Save
+As semantics. Save As always selects a new `.fret` destination and becomes the
+active backing document only when a writable handle is obtained. Without a
+writable handle, Save/Save As downloads `.fret` JSON without claiming in-place
+overwrite capability. Default names derive from `project.title`, independently
+of the title stored in document data. Successful saves refresh the existing
+dirty baseline; HTML export remains a separate future feature.
+
+Application version is `4.4`; the document schema remains 18.
+
 ## 4.2 — Viewer editing entry points and unified overflow menu
 
 Viewer editing actions reuse the active Editor's existing in-memory state:
@@ -491,9 +516,9 @@ Application version is `4.1`; the document schema is 18.
 
 ### Staged 4.x direction
 
-Later 4.x work may add `.fret` import/export and save behavior, followed by
-hosted/PWA functionality. Those features are deliberately outside this 4.1
-active-project flow step.
+FretFlow 4.4 completed `.fret` import and normal Save/Save As behavior. Hosted
+and PWA work remain later capability-based concerns outside this 4.1 active-
+project flow step.
 
 ## Parked / longer term
 
