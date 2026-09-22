@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FretFlow 4.4</title>
+<title>FretFlow 4.5</title>
 <script id="fretflow-pdfjs-loader">
 /* PDF.js 3.11.174: prefer the pinned CDN and fall back to the colocated copy. */
 (function(global){
@@ -51,7 +51,7 @@
 
 <!-- =======================================================================
      APP SOURCE: CSS
-     This exact readable CSS is copied into every generated FretFlow.html.
+     This exact readable CSS is copied into every standalone HTML export.
      ======================================================================= -->
 <style id="fretflow-app-css">
 
@@ -270,7 +270,7 @@
 .back-label{display:inline-block;}
 .back{gap:6px;}
 .print-btn[aria-busy="true"]{opacity:.55;cursor:wait;}
-.toolbar-lock-btn,.print-btn{display:none!important}.viewer-overflow{position:relative}.viewer-overflow-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:80;min-width:210px;padding:6px;border:1px solid #5c483055;border-radius:10px;background:#fffaf1;color:#21170f;box-shadow:0 10px 28px #0004}.viewer-overflow-menu[hidden]{display:none}.viewer-overflow-menu button{display:block;width:100%;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:inherit;text-align:left;font-weight:700;cursor:pointer}.viewer-overflow-menu button:hover,.viewer-overflow-menu button:focus-visible{background:#eadbc9}
+.toolbar-lock-btn,.print-btn{display:none!important}.viewer-overflow{position:relative}.viewer-overflow-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:80;min-width:210px;padding:6px;border:1px solid #5c483055;border-radius:10px;background:#fffaf1;color:#21170f;box-shadow:0 10px 28px #0004}.viewer-overflow-menu[hidden]{display:none}.viewer-overflow-menu button{display:block;width:100%;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:inherit;text-align:left;font-weight:700;cursor:pointer}.viewer-overflow-menu button:hover,.viewer-overflow-menu button:focus-visible{background:#eadbc9}.builder-overflow{position:relative}.builder-overflow-menu{position:absolute;left:0;top:calc(100% + 6px);z-index:80;min-width:210px;padding:6px;border:1px solid #5c483055;border-radius:10px;background:#fffaf1;color:#21170f;box-shadow:0 10px 28px #0004}.builder-overflow-menu[hidden]{display:none}.builder-overflow-menu button{display:block;width:100%;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:inherit;text-align:left;font-weight:700;cursor:pointer}.builder-overflow-menu button:hover,.builder-overflow-menu button:focus-visible{background:#eadbc9}#buildApp[aria-busy="true"]{opacity:.55;cursor:wait}
 
 /* Viewer toolbar final overrides */
 #viewerTitle{
@@ -985,19 +985,25 @@ header button{white-space:nowrap}.dev-only{display:none!important}
 </style>
 </head>
 <body data-application-mode="launcher">
-<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.4</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een .fret-werkdocument of importeer een bestaande FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
+<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.5</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een .fret-werkdocument of importeer een bestaande FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
 <input hidden type="file" id="projectFile" accept=".fret,application/json,.html,text/html">
 <div id="applicationViewer" hidden></div>
 <div id="builderApp" hidden>
 <header>
   <button class="secondary builder-home" id="builderHome" type="button" aria-label="Terug" title="Terug"></button>
-  <button class="secondary" id="openApp">Andere gitaarmap laden</button>
-  <button id="buildApp">Gitaarmap opslaan</button>
-  <button class="secondary" id="saveAsApp">Gitaarmap opslaan als</button>
-  <button class="secondary" id="newProject">Nieuwe gitaarmap</button>
+  <button id="buildApp" type="button">Opslaan</button>
+  <div class="builder-overflow">
+    <button aria-label="Meer opties" aria-expanded="false" aria-controls="builderOverflowMenu" class="secondary" id="builderOverflow" title="Meer opties" type="button">⋮</button>
+    <div class="builder-overflow-menu" id="builderOverflowMenu" hidden>
+      <button id="openApp" type="button">Andere gitaarmap laden</button>
+      <button id="saveAsApp" type="button">Opslaan als…</button>
+      <button id="exportStandaloneApp" type="button">Standalone HTML exporteren</button>
+      <button id="newProject" type="button">Nieuwe gitaarmap</button>
+    </div>
+  </div>
   <button class="secondary dev-only" id="toggleUnits" title="Interne ontwikkeloptie: toon of verberg de vaste layout-units in de live preview">Toon layout-units</button>
   <span class="spacer"></span>
-  <h1>FretFlow Editor 4.4</h1>
+  <h1>FretFlow Editor 4.5</h1>
 </header>
 <div class="quicklook-warning builder-quicklook-warning" id="builderQuicklookWarning"><b>Beste iCrap gebruiker,</b> helaas werkt FretFlow Editor niet in deze voorvertoning. Open FretFlow Editor in <a href="https://apps.apple.com/us/app/sitecase/id6762896369" target="_blank" rel="noopener noreferrer">Sitecase</a> voor een goed werkende app, of koop een Samsung.</div>
 <div class="layout">
@@ -1454,7 +1460,7 @@ FretFlow.starterChordData = () => {
   return FretFlow.normalizeChordLibrary(library);
 };
 FretFlow.CURRENT_SCHEMA = "18";
-FretFlow.BUILDER_VERSION = "4.4";
+FretFlow.BUILDER_VERSION = "4.5";
 FretFlow.youtubeVideoId = function(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -5871,7 +5877,7 @@ FretFlow.initApp();
      ======================================================================= -->
 <script id="fretflow-builder-runtime">
 /* ============================================================================
-   FRETFLOW 4.4 BUILDER — SOURCE INDEX
+   FRETFLOW 4.5 BUILDER — SOURCE INDEX
 
    1. Integrated project state and dataset registry
    2. Project metadata, groups and system-page editor
@@ -5913,8 +5919,8 @@ function setApplicationMode(mode){
   applicationLauncher.hidden=mode!=='launcher';
   applicationViewer.hidden=mode!=='viewer';
   builderApp.hidden=mode!=='builder';
-  if(mode==='launcher'){document.title='FretFlow 4.4';updateLauncherProjectStatus()}
-  if(mode==='builder')document.title='FretFlow Editor 4.4';
+  if(mode==='launcher'){document.title='FretFlow 4.5';updateLauncherProjectStatus()}
+  if(mode==='builder')document.title='FretFlow Editor 4.5';
 }
 function activeProjectName(){return projectData?.project?.title||activeProjectSourceName||'FretFlow'}
 function updateLauncherProjectStatus(){
@@ -6776,7 +6782,7 @@ ${appBody}
      ======================================================================= -->
 <script id="fretflow-project-json" type="application/json">${safeJson(projectCopy)}<\/script>
 
-<!-- PDF.js 3.11.174 — embedded; generated FretFlow.html has no external runtime dependency. -->
+<!-- PDF.js 3.11.174 — embedded; generated standalone HTML has no external runtime dependency. -->
 <script id="fretflow-pdfjs">
 ${safePdfJs}
 <\/script>
@@ -7013,21 +7019,46 @@ function normalizeCurrentProject(data){
 
 function deleteCurrent(){if(!get()||!confirm('Tab verwijderen?'))return;const target=records();const index=target.findIndex(r=>r.id===current);if(index>=0)target.splice(index,1);current=null;render()}
 function appSource(id){const node=document.getElementById(id);if(!node)throw new Error(`Interne Builder-bron ontbreekt: ${id}`);return node.textContent}
-function validateSpotifyProjectConfiguration(){
-  const linked=[...(projectData?.nativeTabs||[]),...(projectData?.pdfTabs||[])].filter(record=>String(record.spotifyUrl||'').trim());
-  if(linked.length&&!String(projectData?.project?.spotifyClientId||'').trim()){
+function validateSpotifyProjectConfiguration(data=projectData){
+  const linked=[...(data?.nativeTabs||[]),...(data?.pdfTabs||[])].filter(record=>String(record.spotifyUrl||'').trim());
+  if(linked.length&&!String(data?.project?.spotifyClientId||'').trim()){
     throw new Error('Deze gitaarmap bevat Spotify-links maar geen Spotify Client ID. Voeg die eerst toe bij Projectmetadata.');
   }
 }
-function buildStandalone(){if(!projectData)throw new Error('Open eerst een gitaarmap of maak een nieuwe.');validateSpotifyProjectConfiguration();projectData=normalizeCurrentProject(projectData);const appBody=standaloneAppBody(document.getElementById('fretflow-app-shell-template').innerHTML.trim(),projectData);return exportStandalone({appBody,js:appSource('fretflow-runtime'),css:appSource('fretflow-app-css'),projectData,pdfJs:appSource('fretflow-pdfjs'),pdfWorker:appSource('fretflow-pdfjs-worker-source')})}
-function buildAndDownload(){downloadBlob(new Blob([buildStandalone()],{type:'text/html'}),'FretFlow.html');rememberProjectBaseline()}
+let standalonePdfJsSourcesPromise=null;
+function loadStandalonePdfJsSources(){
+  const ready=window.FretFlowStandalonePdfJsSources;
+  if(ready?.version===FretFlow.PDFJS_VERSION&&ready.pdfJs&&ready.pdfWorker)return Promise.resolve(ready);
+  if(standalonePdfJsSourcesPromise)return standalonePdfJsSourcesPromise;
+  standalonePdfJsSourcesPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='assets/js/pdfjs/fretflow-standalone-pdfjs-sources.js';
+    script.onload=()=>{
+      const sources=window.FretFlowStandalonePdfJsSources;
+      if(sources?.version===FretFlow.PDFJS_VERSION&&sources.pdfJs&&sources.pdfWorker)resolve(sources);
+      else reject(new Error(`De standalone PDF.js-bron is niet de vereiste versie ${FretFlow.PDFJS_VERSION}.`));
+    };
+    script.onerror=()=>reject(new Error('De exportondersteuning voor PDF.js kon niet worden geladen. Bewaar FretFlow.html samen met de map assets.'));
+    document.head.appendChild(script);
+  });
+  return standalonePdfJsSourcesPromise;
+}
+async function buildStandalone(){
+  if(!projectData)throw new Error('Open eerst een gitaarmap of maak een nieuwe.');
+  // Export is a snapshot: normalize a clone and leave document data and its dirty baseline untouched.
+  const projectSnapshot=normalizeCurrentProject(projectData);
+  validateSpotifyProjectConfiguration(projectSnapshot);
+  const pdfSources=await loadStandalonePdfJsSources();
+  const appBody=standaloneAppBody(document.getElementById('fretflow-app-shell-template').innerHTML.trim(),projectSnapshot);
+  return exportStandalone({appBody,js:appSource('fretflow-runtime'),css:appSource('fretflow-app-css'),projectData:projectSnapshot,pdfJs:pdfSources.pdfJs,pdfWorker:pdfSources.pdfWorker});
+}
 function jsonFromNode(doc,id){const node=doc.getElementById(id);if(!node)return null;return JSON.parse(node.textContent)}
 const CURRENT_SCHEMA=FretFlow.CURRENT_SCHEMA;
 function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.4 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
+  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.5 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);
@@ -7098,15 +7129,22 @@ async function openProjectFile(file,fileHandle=null){
   setProject(raw,'project',{sourceType:kind==='fret'?'fret':'legacy-html',fileHandle:kind==='fret'?fileHandle:null,fileName:file.name||''});
   builderReturnState=null;
 }
-function defaultFretFilename(){
-  let stem=String(projectData?.project?.title||'').trim().replace(/(?:\.fret)+$/i,'');
+function defaultProjectFilename(extension){
+  let stem=String(projectData?.project?.title||'').trim().replace(new RegExp(`(?:\\.${extension})+$`,'i'),'');
   stem=stem.replace(/[<>:"/\\|?*\x00-\x1f]/g,'_').replace(/\s+/g,'_').replace(/_+/g,'_').replace(/^[._]+|[._]+$/g,'');
-  return `${stem||'FretFlow'}.fret`;
+  return `${stem||'FretFlow'}.${extension}`;
 }
+function defaultFretFilename(){return defaultProjectFilename('fret')}
+function defaultStandaloneFilename(){return defaultProjectFilename('html')}
 function fretSerialization(){projectData=normalizeCurrentProject(projectData);return JSON.stringify(projectData,null,2)+'\n'}
 function saveFretDownload(serialized,name){downloadBlob(new Blob([serialized],{type:'application/json'}),name);projectDocument={sourceType:'fret',fileHandle:null,fileName:name};activeProjectSourceName=name;rememberProjectBaseline();updateLauncherProjectStatus()}
 async function writeFretHandle(handle,serialized){const writable=await handle.createWritable();await writable.write(serialized);await writable.close()}
 function isPickerCancellation(error){return error?.name==='AbortError'}
+let saveFeedbackTimer=null;
+function setWorkingDocumentSaveFeedback(label,busy=false){if(!buildApp)return;buildApp.textContent=label;buildApp.setAttribute('aria-busy',String(busy))}
+function beginWorkingDocumentSave(){if(saveFeedbackTimer){clearTimeout(saveFeedbackTimer);saveFeedbackTimer=null}setWorkingDocumentSaveFeedback('Opslaan…',true)}
+function completeWorkingDocumentSave(){if(saveFeedbackTimer)clearTimeout(saveFeedbackTimer);setWorkingDocumentSaveFeedback('Opgeslagen');saveFeedbackTimer=setTimeout(()=>{setWorkingDocumentSaveFeedback('Opslaan');saveFeedbackTimer=null},1750)}
+function resetWorkingDocumentSaveFeedback(){if(saveFeedbackTimer){clearTimeout(saveFeedbackTimer);saveFeedbackTimer=null}setWorkingDocumentSaveFeedback('Opslaan')}
 async function saveProjectAs(){
   if(!projectData)return;
   const suggestedName=defaultFretFilename();
@@ -7116,24 +7154,48 @@ async function saveProjectAs(){
     catch(error){if(isPickerCancellation(error))return;handle=null}
   }
   const serialized=fretSerialization();
+  let handleWriteFailed=false;
   if(handle){
-    try{await writeFretHandle(handle,serialized);projectDocument={sourceType:'fret',fileHandle:handle,fileName:handle.name||suggestedName};activeProjectSourceName=projectDocument.fileName;rememberProjectBaseline();updateLauncherProjectStatus();return}
-    catch(error){alert('Opslaan naar de gekozen locatie is niet beschikbaar. Er wordt een .fret-download gemaakt.')}
+    beginWorkingDocumentSave();
+    try{await writeFretHandle(handle,serialized);projectDocument={sourceType:'fret',fileHandle:handle,fileName:handle.name||suggestedName};activeProjectSourceName=projectDocument.fileName;rememberProjectBaseline();updateLauncherProjectStatus();completeWorkingDocumentSave();return true}
+    catch(error){handleWriteFailed=true;alert('Opslaan naar de gekozen locatie is niet beschikbaar. Er wordt een .fret-download gemaakt.')}
   }
+  if(!handleWriteFailed)beginWorkingDocumentSave();
   saveFretDownload(serialized,suggestedName);
+  if(handleWriteFailed){resetWorkingDocumentSaveFeedback();return false}
+  completeWorkingDocumentSave();
+  return true;
 }
 async function saveProjectDocument(){
   if(!projectData)return;
   if(!projectDocument.fileHandle){await saveProjectAs();return}
   const serialized=fretSerialization();
-  try{await writeFretHandle(projectDocument.fileHandle,serialized);rememberProjectBaseline()}
+  beginWorkingDocumentSave();
+  try{await writeFretHandle(projectDocument.fileHandle,serialized);rememberProjectBaseline();completeWorkingDocumentSave();return true}
   catch(error){
     // A rejected or revoked handle is no longer a trustworthy backing document.
     const name=projectDocument.fileName||defaultFretFilename();
     projectDocument.fileHandle=null;
     alert('Direct opslaan is niet beschikbaar. Er wordt een .fret-download gemaakt.');
     saveFretDownload(serialized,name);
+    resetWorkingDocumentSaveFeedback();
+    return false;
   }
+}
+async function exportStandaloneDocument(){
+  if(!projectData)return;
+  const suggestedName=defaultStandaloneFilename();
+  let handle=null;
+  if(typeof window.showSaveFilePicker==='function'){
+    try{handle=await window.showSaveFilePicker({suggestedName,types:[{description:'FretFlow standalone Viewer',accept:{'text/html':['.html']}}]})}
+    catch(error){if(isPickerCancellation(error))return;handle=null}
+  }
+  const standalone=await buildStandalone();
+  if(handle){
+    try{await writeFretHandle(handle,standalone);return}
+    catch(error){alert('Opslaan naar de gekozen locatie is niet beschikbaar. Er wordt een standalone HTML-download gemaakt.')}
+  }
+  downloadBlob(new Blob([standalone],{type:'text/html'}),suggestedName);
 }
 async function requestProjectOpen(destination){
   openDestination=destination;
@@ -7159,6 +7221,12 @@ datasetKind.onchange=()=>{const next=datasetKind.value;if(!confirmDiscardUnsaved
 newProject.onclick=()=>createNewProject();
 builderHome.innerHTML=FretFlow.viewerIcon('previous');
 builderHome.onclick=()=>{const state=builderReturnState||{view:'launcher'};builderReturnState=null;if(state.view==='launcher')returnToLauncher();else showProjectInViewer(state)};
+function closeBuilderOverflowMenu(){builderOverflowMenu.hidden=true;builderOverflow.setAttribute('aria-expanded','false')}
+function toggleBuilderOverflowMenu(){const opening=builderOverflowMenu.hidden;builderOverflowMenu.hidden=!opening;builderOverflow.setAttribute('aria-expanded',String(opening))}
+builderOverflow.onclick=event=>{event.stopPropagation();toggleBuilderOverflowMenu()};
+document.addEventListener('click',event=>{if(!event.target.closest('.builder-overflow'))closeBuilderOverflowMenu()});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeBuilderOverflowMenu()});
+builderOverflowMenu.addEventListener('click',()=>closeBuilderOverflowMenu());
 let openDestination='builder';
 launcherLoad.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap laden?'))return;requestProjectOpen('launcher')};
 launcherNew.onclick=()=>createNewProject({view:'launcher'});
@@ -7168,6 +7236,7 @@ openApp.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap open
 projectFile.onchange=async e=>{try{const file=e.target.files[0];if(!file)return;await openProjectFile(file);if(openDestination==='builder')setApplicationMode('builder');else setApplicationMode('launcher')}catch(err){alert(`Openen mislukt: ${err.message}`)}finally{e.target.value=''}};
 buildApp.onclick=async()=>{if(!confirmDiscardUnsavedMetadata())return;try{await saveProjectDocument()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
 saveAsApp.onclick=async()=>{if(!confirmDiscardUnsavedMetadata())return;try{await saveProjectAs()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
+exportStandaloneApp.onclick=async()=>{if(!confirmDiscardUnsavedMetadata())return;try{await exportStandaloneDocument()}catch(err){alert(`Standalone export mislukt: ${err.message}`)}};
 // Buttons inside editor/library can rerender or navigate; protect unsaved metadata first.
 document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(['metadataSave','projectMetadataSave','createTab'].includes(button.id)||button.matches('[data-amp-action]'))return;if(!(editor.contains(button)||libraryActions.contains(button)))return;if(!confirmDiscardUnsavedMetadata()){event.preventDefault();event.stopImmediatePropagation()}},true);
 document.addEventListener('input',event=>resetSavedMetadataState(event.target));

@@ -8,11 +8,10 @@ FretFlow is a self-contained digital guitar songbook and Viewer + Editor applica
 `.fret` files are editable, data-only guitar-map working documents. Project
 data is separate from application-session filesystem-handle/source state.
 
-Normal Save and Save As create `.fret` documents. Legacy standalone FretFlow
+Save and Save As create `.fret` working documents. **Standalone HTML export**
+creates a self-contained, read-only Viewer snapshot. Legacy standalone FretFlow
 HTML files remain importable but must never be overwritten by normal Save.
-Standalone HTML is a separate export concern. Storage behaviour is based on
-available browser capabilities, not platform names. Standalone PDF.js packaging
-is a separate concern documented below.
+Storage behaviour is based on available browser capabilities, not platform names.
 
 ## Core architecture
 
@@ -32,6 +31,12 @@ The application prefers pinned PDF.js CDN URLs at runtime and automatically
 falls back to matching local copies in `assets/js/pdfjs/`. This directory is
 vendored third-party code; do not inspect, search or edit its large files unless
 the task specifically concerns PDF.js itself or standalone export.
+
+PDF.js must remain external to compact `FretFlow.html`. Standalone HTML export
+bundles the matching PDF.js main library and worker into the generated file so
+its PDF tabs work offline without `assets/` or a CDN. The export-only source
+cache under `assets/js/pdfjs/` is lazy-loaded only when an export is requested;
+keep it synchronized with the pinned vendor pair.
 
 ## Offline behaviour
 

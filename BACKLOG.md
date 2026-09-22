@@ -425,6 +425,29 @@ outside this release.
 
 Application version is `4.3`; the document schema remains 18.
 
+## 4.5 — self-contained standalone HTML export
+
+The Editor action **Standalone HTML exporteren** is separate from Save and Save
+As. It exports `normalizeCurrentProject(projectData)` as one portable,
+read-only Viewer HTML snapshot while leaving the active `.fret` backing handle,
+project-document source state and dirty baseline untouched. Its proposed
+filename derives from `project.title` and ends in exactly one `.html`.
+
+The output uses the current Viewer shell/runtime and carries its normalized
+schema-18 project JSON, native and PDF tabs (including PDF data), chords and
+categories, Amp presets, Spotify/YouTube metadata, inline UI/CSS resources, and
+the matching PDF.js 3.11.174 main library and worker. It has no core runtime
+dependency on `FretFlow.html`, `assets/`, a CDN or a server, and remains
+importable through the established legacy HTML project-data extraction path.
+
+To support export from a direct `file://` application open without making the
+central application large, `assets/js/pdfjs/fretflow-standalone-pdfjs-sources.js`
+is a lazy export-only source cache generated from the canonical vendor pair.
+It is not loaded during normal startup. The existing Apple local-HTML warning
+remains unchanged.
+
+Application version is `4.5`; the document schema remains 18.
+
 ## 4.4 — `.fret` working documents and normal Save / Save As
 
 `FretFlow.html` is the application. A `.fret` file is the editable, data-only
@@ -446,7 +469,7 @@ active backing document only when a writable handle is obtained. Without a
 writable handle, Save/Save As downloads `.fret` JSON without claiming in-place
 overwrite capability. Default names derive from `project.title`, independently
 of the title stored in document data. Successful saves refresh the existing
-dirty baseline; HTML export remains a separate future feature.
+dirty baseline. Standalone HTML export was restored separately in 4.5.
 
 Application version is `4.4`; the document schema remains 18.
 

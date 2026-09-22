@@ -1,6 +1,6 @@
 # FretFlow
 
-**FretFlow 4.4** is a browser-based Viewer + Editor for editable digital guitar songbooks.
+**FretFlow 4.5** is a browser-based Viewer + Editor for editable digital guitar songbooks.
 
 It combines guitar tabs, chord diagrams, shapeboxes, text, PDF sheet music and song metadata in a single self-contained `FretFlow.html` file that can be opened locally in a modern browser — no server, database or installation required.
 
@@ -27,6 +27,7 @@ The Editor supports:
 - song metadata and source references
 - editing existing FretFlow songbooks
 - saving the complete songbook as a data-only `.fret` working document
+- exporting a self-contained, read-only standalone HTML Viewer snapshot
 - fully offline use once the file has been created
 
 A new songbook also starts with a small set of common guitar chords that can be edited or removed.
@@ -47,11 +48,15 @@ From there you can:
 2. Add native components, PDFs, chords and metadata.
 3. Organize songs into groups and tags.
 4. Preview the result inside the Editor.
-5. Choose **Save Guitar Map** to save a `.fret` working document.
+5. Choose **Save Guitar Map** to save a `.fret` working document, or **Standalone HTML exporteren** for a portable read-only Viewer snapshot.
 
 The `.fret` file contains the complete songbook data, including embedded PDF data where applicable. Open it with `FretFlow.html` to continue editing or viewing it. Where the browser provides writable file handles, later Save overwrites the same selected `.fret`; otherwise FretFlow downloads a new `.fret` file.
 
 Existing standalone FretFlow HTML files can still be imported; saving an imported map creates a new `.fret` and does not overwrite the HTML source.
+
+The standalone export includes the Viewer runtime, project data, embedded PDFs
+and PDF.js, so it opens directly with `file://` without `assets/`, a CDN or a
+web server. It is a snapshot for viewing, not an editable working document.
 
 ## Apple / iOS compatibility
 
