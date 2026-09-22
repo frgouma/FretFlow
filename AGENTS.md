@@ -2,11 +2,11 @@
 
 ## Project
 
-FretFlow is a self-contained digital guitar songbook and Builder written in HTML, CSS and JavaScript.
+FretFlow is a self-contained digital guitar songbook and Viewer + Editor application written in HTML, CSS and JavaScript.
 
-`builder.html` is the single Builder and the source of truth for application development.
+`FretFlow.html` is the central application and the source of truth for application development.
 
-The Builder generates standalone FretFlow HTML files. Standalone PDF.js
+The Editor generates standalone FretFlow HTML files. Standalone PDF.js
 packaging is a separate concern documented below.
 
 ## Core architecture
@@ -19,19 +19,20 @@ Older FretFlow songbooks must remain backwards compatible whenever their data ca
 
 Do not introduce parallel legacy code paths after normalization unless explicitly required.
 
-## Builder and PDF.js
+## Editor and PDF.js
 
-There is only one Builder: `builder.html`.
+There is one central application: `FretFlow.html`.
 
-The main Builder application loads pinned PDF.js CDN URLs at runtime. Local
-reference/source copies live in `references/pdfjs/`; do not inspect or edit them
-unless the task specifically concerns PDF.js itself or standalone export.
+The application prefers pinned PDF.js CDN URLs at runtime and automatically
+falls back to matching local copies in `assets/js/pdfjs/`. This directory is
+vendored third-party code; do not inspect, search or edit its large files unless
+the task specifically concerns PDF.js itself or standalone export.
 
 ## Offline behaviour
 
-Native tabs remain usable offline. PDF tabs in the main Builder application
-currently require the pinned PDF.js CDN runtime. Standalone PDF.js bundling is a
-separate concern and must not be changed unless explicitly requested.
+Core FretFlow functionality, including native and PDF tabs, must remain usable
+offline when `FretFlow.html` is opened directly with `file://`. Standalone PDF.js
+bundling is a separate concern and must not be changed unless explicitly requested.
 
 Optional online integrations, such as Spotify, may be unavailable offline and must not prevent normal FretFlow use.
 
@@ -74,7 +75,7 @@ Responsive Viewer behaviour must use uniform scaling of the complete page. Do no
 
 ## Shared rendering
 
-Where Builder preview and Viewer display the same musical element, prefer shared rendering logic so both remain visually and functionally consistent.
+Where Editor preview and Viewer display the same musical element, prefer shared rendering logic so both remain visually and functionally consistent.
 
 ## Working practice
 

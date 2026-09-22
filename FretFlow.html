@@ -3,8 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FretFlow 4.2</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<title>FretFlow 4.3</title>
+<script id="fretflow-pdfjs-loader">
+/* PDF.js 3.11.174: prefer the pinned CDN and fall back to the colocated copy. */
+(function(global){
+  "use strict";
+  const FretFlow = global.FretFlow || (global.FretFlow = {});
+  const version = "3.11.174";
+  const sources = {
+    cdn: {
+      library: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+      worker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+    },
+    local: {
+      library: "assets/js/pdfjs/pdf.min.js",
+      worker: "assets/js/pdfjs/pdf.worker.min.js"
+    }
+  };
+  FretFlow.PDFJS_VERSION = version;
+  FretFlow.PDFJS_CDN_URL = sources.cdn.library;
+  FretFlow.PDFJS_CDN_WORKER_URL = sources.cdn.worker;
+  FretFlow.PDFJS_LOCAL_URL = sources.local.library;
+  FretFlow.PDFJS_LOCAL_WORKER_URL = sources.local.worker;
+  FretFlow.pdfJsReady = new Promise((resolve, reject) => {
+    const load = (source, fallback) => {
+      const script = document.createElement("script");
+      script.src = source.library;
+      script.onload = () => {
+        if (!global.pdfjsLib || global.pdfjsLib.version !== version) {
+          if (fallback) return load(sources.local, false);
+          return reject(new Error("PDF.js 3.11.174 kon niet worden geladen."));
+        }
+        FretFlow.pdfJsSource = source;
+        FretFlow.PDFJS_WORKER_URL = source.worker;
+        global.pdfjsLib.GlobalWorkerOptions.workerSrc = source.worker;
+        resolve(global.pdfjsLib);
+      };
+      script.onerror = () => fallback ? load(sources.local, false) : reject(new Error("Lokale PDF.js 3.11.174 kon niet worden geladen."));
+      document.head.appendChild(script);
+    };
+    load(navigator.onLine === false ? sources.local : sources.cdn, navigator.onLine !== false);
+  });
+  // The application can start without PDF.js; PDF tabs surface a normal render error only if both sources fail.
+  FretFlow.pdfJsReady.catch(() => {});
+})(window);
+</script>
 
 <!-- =======================================================================
      APP SOURCE: CSS
@@ -15,7 +58,7 @@
 /* ==========================================================================
    FRETFLOW APP CSS — COMPONENT INDEX
 
-   Views and renderers remain searchable by these names in builder.html and
+   Views and renderers remain searchable by these names in FretFlow.html and
    every generated FretFlow.html:
    - HomeView / HomeSystemTile / HomeGroupTile / HomeRecordTile
    - ViewerView / RecordPage / PdfPage
@@ -942,7 +985,7 @@ header button{white-space:nowrap}.dev-only{display:none!important}
 </style>
 </head>
 <body data-application-mode="launcher">
-<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.2</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een bestaande zelfstandige FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Builder.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Builder.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
+<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.3</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een bestaande zelfstandige FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
 <input hidden type="file" id="standaloneFile" accept=".html,text/html">
 <div id="applicationViewer" hidden></div>
 <div id="builderApp" hidden>
@@ -953,9 +996,9 @@ header button{white-space:nowrap}.dev-only{display:none!important}
   <button class="secondary" id="newProject">Nieuwe gitaarmap</button>
   <button class="secondary dev-only" id="toggleUnits" title="Interne ontwikkeloptie: toon of verberg de vaste layout-units in de live preview">Toon layout-units</button>
   <span class="spacer"></span>
-  <h1>FretFlow Builder 4.2</h1>
+  <h1>FretFlow Editor 4.3</h1>
 </header>
-<div class="quicklook-warning builder-quicklook-warning" id="builderQuicklookWarning"><b>Beste iCrap gebruiker,</b> helaas werkt FretFlow Builder niet in deze voorvertoning. Open FretFlow Builder in <a href="https://apps.apple.com/us/app/sitecase/id6762896369" target="_blank" rel="noopener noreferrer">Sitecase</a> voor een goed werkende app, of koop een Samsung.</div>
+<div class="quicklook-warning builder-quicklook-warning" id="builderQuicklookWarning"><b>Beste iCrap gebruiker,</b> helaas werkt FretFlow Editor niet in deze voorvertoning. Open FretFlow Editor in <a href="https://apps.apple.com/us/app/sitecase/id6762896369" target="_blank" rel="noopener noreferrer">Sitecase</a> voor een goed werkende app, of koop een Samsung.</div>
 <div class="layout">
   <section class="panel" data-builder-panel="LibraryEditor">
     <h2>Bibliotheek en invoer</h2>
@@ -1001,12 +1044,21 @@ header button{white-space:nowrap}.dev-only{display:none!important}
 (function(global){
 "use strict";
 const FretFlow = global.FretFlow || (global.FretFlow = {});
-FretFlow.PDFJS_VERSION = "3.11.174";
-FretFlow.PDFJS_CDN_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-FretFlow.PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 FretFlow.configurePdfJsWorker = function() {
   if (!global.pdfjsLib) return false;
-  global.pdfjsLib.GlobalWorkerOptions.workerSrc = FretFlow.PDFJS_WORKER_URL;
+  if (FretFlow.PDFJS_WORKER_URL) {
+    global.pdfjsLib.GlobalWorkerOptions.workerSrc = FretFlow.PDFJS_WORKER_URL;
+    return true;
+  }
+  if (FretFlow._pdfWorkerUrl) {
+    global.pdfjsLib.GlobalWorkerOptions.workerSrc = FretFlow._pdfWorkerUrl;
+    return true;
+  }
+  const sourceNode = document.getElementById("fretflow-pdfjs-worker-source");
+  const workerSource = sourceNode ? sourceNode.textContent : "";
+  if (!workerSource.trim()) return false;
+  FretFlow._pdfWorkerUrl = URL.createObjectURL(new Blob([workerSource], {type:"text/javascript"}));
+  global.pdfjsLib.GlobalWorkerOptions.workerSrc = FretFlow._pdfWorkerUrl;
   return true;
 };
 FretFlow.escape = s => String(s ?? "").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1401,7 +1453,7 @@ FretFlow.starterChordData = () => {
   return FretFlow.normalizeChordLibrary(library);
 };
 FretFlow.CURRENT_SCHEMA = "18";
-FretFlow.BUILDER_VERSION = "4.2";
+FretFlow.BUILDER_VERSION = "4.3";
 FretFlow.youtubeVideoId = function(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -1908,7 +1960,7 @@ class SpotifyPractice {
   ensureClientId() {
     const clientId = this.clientId();
     if (!clientId) {
-      throw new Error("Spotify is niet ingesteld. Voeg eerst de Spotify Client ID toe aan de Projectmetadata in de Builder.");
+      throw new Error("Spotify is niet ingesteld. Voeg eerst de Spotify Client ID toe aan de Projectmetadata in de Editor.");
     }
     return clientId;
   }
@@ -4083,7 +4135,7 @@ class FretFlowApp {
     }
 
     cards.innerHTML = "";
-    if (this.actions.editProject) cards.appendChild(this.systemTile("Gitaarmap wijzigen", "Pas de actieve gitaarmap aan in de Builder.", () => this.actions.editProject()));
+    if (this.actions.editProject) cards.appendChild(this.systemTile("Gitaarmap wijzigen", "Pas de actieve gitaarmap aan in de Editor.", () => this.actions.editProject()));
     const page = this.systemPages()[0];
     if (page) {
       const b = this.createElement("button");
@@ -4390,7 +4442,9 @@ class FretFlowApp {
   }
 
   async getPdfDocument(tab) {
+    if (FretFlow.pdfJsReady) await FretFlow.pdfJsReady;
     if (!window.pdfjsLib) throw new Error("PDF.js kon niet worden geladen.");
+    FretFlow.configurePdfJsWorker();
     const recordId = tab && tab.id;
     if (!recordId) throw new Error("Geen PDF-tab-ID beschikbaar.");
     if (!this.pdfDocuments.has(recordId)) {
@@ -5816,7 +5870,7 @@ FretFlow.initApp();
      ======================================================================= -->
 <script id="fretflow-builder-runtime">
 /* ============================================================================
-   FRETFLOW 4.2 BUILDER — SOURCE INDEX
+   FRETFLOW 4.3 BUILDER — SOURCE INDEX
 
    1. Integrated project state and dataset registry
    2. Project metadata, groups and system-page editor
@@ -5855,8 +5909,8 @@ function setApplicationMode(mode){
   applicationLauncher.hidden=mode!=='launcher';
   applicationViewer.hidden=mode!=='viewer';
   builderApp.hidden=mode!=='builder';
-  if(mode==='launcher'){document.title='FretFlow 4.2';updateLauncherProjectStatus()}
-  if(mode==='builder')document.title='FretFlow Builder 4.2';
+  if(mode==='launcher'){document.title='FretFlow 4.3';updateLauncherProjectStatus()}
+  if(mode==='builder')document.title='FretFlow Editor 4.3';
 }
 function activeProjectName(){return projectData?.project?.title||activeProjectSourceName||'FretFlow'}
 function updateLauncherProjectStatus(){
@@ -6655,7 +6709,7 @@ function defaultRecordGroups(){return [...pendingNewRecordGroups]}
 function newNative(){clearRecordSearch();draftRecord={id:'',kind:'native',title:'',artist:'',groups:defaultRecordGroups(),tuning:'Standard',tags:['native'],description:'',spotifyUrl:'',youtubeUrl:'',youtubeLabel:'',ampPresets:[],footer:'',sections:[]};pendingNewRecordGroups=[];current='__new__';render();requestAnimationFrame(()=>metaTitle?.focus())}function newPdf(){clearRecordSearch();const base='nieuwe-pdf',existing=new Set(projectData.pdfTabs.map(r=>r.id));let id=base,n=2;while(existing.has(id))id=`${base}-${n++}`;const r={id,kind:'pdf',title:'Nieuwe PDF',artist:'',groups:defaultRecordGroups(),tags:['pdf'],description:'',spotifyUrl:'',youtubeUrl:'',youtubeLabel:'',ampPresets:[],footer:'',pageCount:1,data:'',fileName:''};pendingNewRecordGroups=[];projectData.pdfTabs.push(r);select(r.id)}async function readPdf(f){if(!f)return;const pending=preserveRecordMetadataForm(),r=get(),buf=await f.arrayBuffer(),bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));r.data=btoa(bin);r.fileName=f.name||r.fileName||'';render();restoreRecordMetadataForm(pending)}
 /* =============================================================================
    BUILDER PROJECT WORKFLOW
-   - builder.html is the source of all HTML/CSS/JS and data templates.
+   - FretFlow.html is the source of all HTML/CSS/JS and data templates.
    - FretFlow.html contains one integrated project JSON object.
    - Opening an integrated FretFlow project loads only project data; the active code uses schema 18; legacy 10B and schemas 11–17 are normalized on load. Chords are linked to stable library IDs; unresolved legacy chord text is preserved.
    ============================================================================= */
@@ -6700,7 +6754,7 @@ function exportStandalone({appBody, js, css, projectData, pdfJs, pdfWorker}) {
 <title>${pageTitle}</title>
 
 <!-- =======================================================================
-     FRETFLOW APP CSS — readable component rules from builder.html
+     FRETFLOW APP CSS — readable component rules from FretFlow.html
      ======================================================================= -->
 <style id="fretflow-app-css">
 ${css}
@@ -6968,7 +7022,7 @@ function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.2 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
+  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.3 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);

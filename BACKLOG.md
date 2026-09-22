@@ -247,7 +247,7 @@ back safely without discarding the surrounding preset.
 
 #### Shared Amp Knob
 
-* Use the authoritative `references/amp/fretflow_amp_knob_v2.svg` and interactive
+* Use the authoritative `assets/amp/fretflow_amp_knob_v2.svg` and interactive
   prototype geometry and styling.
 * The dark knob body, min/max ticks, highlight and shadow remain static.
 * Each fixed min/max tick uses a wider dark under-stroke plus the existing light
@@ -257,7 +257,7 @@ back safely without discarding the surrounding preset.
   `-135 + (value / 100) * 270`, so 0 is the left/lower stop, 50 points straight
   up and 100 is the right/lower stop.
 * One reusable inline renderer is shared by Builder and Viewer. There is no
-  runtime dependency on files under `references/`.
+  runtime dependency on files under `assets/`.
 
 #### Builder editor
 
@@ -274,7 +274,7 @@ back safely without discarding the surrounding preset.
 
 #### Viewer tool and popup
 
-* Embed the guitar-and-amplifier silhouette from `references/amp/amp_icon.svg`
+* Embed the guitar-and-amplifier silhouette from `assets/amp/amp_icon.svg`
   inline and adapt it to toolbar `currentColor` styling. The approved silhouette
   is rendered dark and slightly larger without a visible button background,
   border or shadow; its transparent 40 px button still provides a generous hit
@@ -405,12 +405,29 @@ Practice Player named sections above are deferred and excluded from this release
   of both embedded PDF.js blocks and the final changed-file list.
 * Report automated results and exact remaining browser/device/network checks,
   including real YouTube playback from local files and HTTP(S).
-* Only `builder.html` and this backlog are in scope. No commits, pushes, merges,
+* Only `FretFlow.html` and this backlog are in scope. No commits, pushes, merges,
   release metadata, generated demo/index updates or unrelated refactors.
+
+## 4.3 — central application rename and hybrid PDF.js runtime
+
+The central Viewer + Editor application is `FretFlow.html`; there is no
+`builder.html` compatibility copy. Development/reference material lives in
+`assets/`, with the unchanged PDF.js 3.11.174 vendor pair at
+`assets/js/pdfjs/pdf.min.js` and `assets/js/pdfjs/pdf.worker.min.js` and the
+existing amp material retained at `assets/amp/`.
+
+At runtime, FretFlow prefers the pinned CDN PDF.js 3.11.174 library and worker.
+When clearly offline it selects the local pair immediately; when the CDN library
+fails it retries with the local pair. The selected library always configures its
+matching worker source. This must work from a direct `file://` open without a
+local web server. Standalone HTML PDF.js embedding and future PWA work remain
+outside this release.
+
+Application version is `4.3`; the document schema remains 18.
 
 ## 4.2 — Viewer editing entry points and unified overflow menu
 
-Viewer editing actions reuse the active Builder's existing in-memory state:
+Viewer editing actions reuse the active Editor's existing in-memory state:
 `activeKind`, `current`, `currentChordId`, `activateDataset`, `select`,
 `newChord`, `newNative` and `newPdf`. They do not re-import, clone or serialize
 the active guitar map.
@@ -420,16 +437,16 @@ tile, before the chord-library and ordinary group tiles. The chord library shows
 a compact `Akkoord toevoegen` action directly above its category filter. Every
 ordinary Viewer category starts with non-serialized `PDF Tab toevoegen` and
 `Native Tab toevoegen` system tiles; creation retains the originating group when
-the Builder record model supports assignment.
+the Editor record model supports assignment.
 
-Builder entry points retain a small return state (`launcher`, Viewer home,
+Editor entry points retain a small return state (`launcher`, Viewer home,
 chord library, category id or tab id). Its Back control restores that location
 without replacing the active project; tab returns use the existing Viewer tab
 opening path and retain the readable content hash.
 
 For an open native or PDF tab, the unified Viewer `⋮` menu offers `Tab aanpassen`
-and switches to the matching Builder dataset with the same record id selected.
-The readable content hash remains unchanged; Viewer versus Builder is application
+and switches to the matching Editor dataset with the same record id selected.
+The readable content hash remains unchanged; Viewer versus Editor is application
 state, not a route. The same menu contains the existing toolbar lock action
 (`Menubalk vastzetten` / `Menubalk losmaken`) and print action on all viewport
 sizes. Lock and print have no separate visible toolbar buttons.
@@ -448,12 +465,12 @@ and are never serialized into a guitar-map document.
 Loading a supported standalone FretFlow HTML reuses project extraction, schema
 detection, migration and normalization, makes that result the active in-memory
 guitar map, and remains on Home. Opening shows that same active map in the
-Viewer; adjusting it shows the same active map in the Builder. Neither action
+Viewer; adjusting it shows the same active map in the Editor. Neither action
 reloads, imports, clones or recreates the project. With no active map, Open and
 Adjust instruct the user to load one first. A new map becomes active and opens
-the Builder directly.
+the Editor directly.
 
-The Viewer Home icon beside `#homeFullscreen` and the Builder Home icon both
+The Viewer Home icon beside `#homeFullscreen` and the Editor Home icon both
 return to FretFlow Home without clearing the active project or its in-memory
 edits. Unsaved-change protection remains for actions that replace a project
 (loading another map or creating a new map), but not for returning Home.
@@ -466,9 +483,9 @@ the guitar-map name. The former `project.homepage.badge` and
 the legacy project name, retains only `project.homepage.intro`, and drops the
 two retired fields before the current model is used or serialized.
 
-The main application runtime uses pinned CDN PDF.js 3.11.174, with local
-reference copies retained under `references/pdfjs/`. Standalone PDF.js
-rebundling remains outside this step.
+The main application runtime now prefers pinned CDN PDF.js 3.11.174 with a
+matching local fallback under `assets/js/pdfjs/`. Standalone PDF.js rebundling
+remains outside this step.
 
 Application version is `4.1`; the document schema is 18.
 
