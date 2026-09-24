@@ -464,7 +464,7 @@ Application toolbar containers and their open overflow menus form a layer above
 Spotify, YouTube and Amp controls. Floating media tools remain above document
 content and behave normally while menus are closed.
 
-Application version is `4.7`; the document schema remains 18.
+Application version is `4.7.1`; the document schema remains 18.
 
 ## 4.3 — central application rename and hybrid PDF.js runtime
 
