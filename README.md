@@ -1,6 +1,6 @@
 # FretFlow
 
-**FretFlow 4.5** is a browser-based Viewer + Editor for editable digital guitar songbooks.
+**FretFlow 4.7** is a browser-based Viewer + Editor for editable digital guitar songbooks.
 
 It combines guitar tabs, chord diagrams, shapeboxes, text, PDF sheet music and song metadata in a single self-contained `FretFlow.html` file that can be opened locally in a modern browser — no server, database or installation required.
 
@@ -18,6 +18,7 @@ The Editor supports:
 - **Chord charts** and reusable **chord diagrams**
 - a central chord library with editable categories
 - embedded PDF sheet music
+- a unified Editor / Live View workspace with one-page and two-page presentation
 - PDF and native-page viewing with single-page and two-page spread modes
 - fullscreen viewing, page navigation and printing
 - printable PDF overlay footers, including inline formatting and markers
@@ -47,7 +48,7 @@ From there you can:
 1. Create a **New Guitar Map**.
 2. Add native components, PDFs, chords and metadata.
 3. Organize songs into groups and tags.
-4. Preview the result inside the Editor.
+4. Edit and preview in the one-page or two-page Editor / Live View workspace.
 5. Choose **Save Guitar Map** to save a `.fret` working document, or **Standalone HTML exporteren** for a portable read-only Viewer snapshot.
 
 The `.fret` file contains the complete songbook data, including embedded PDF data where applicable. Open it with `FretFlow.html` to continue editing or viewing it. Where the browser provides writable file handles, later Save overwrites the same selected `.fret`; otherwise FretFlow downloads a new `.fret` file.
@@ -70,7 +71,7 @@ This limitation is specific to the iPhone and iPad preview environment and does 
 
 FretFlow keeps application code and songbook content conceptually separate.
 
-FretFlow 2.0.0 uses **schema 11**. When an older FretFlow songbook is opened, the Editor recognizes and normalizes supported legacy structures to the current internal model before editing continues.
+FretFlow 4.7 uses **schema 18**. When an older FretFlow songbook is opened, the Editor recognizes and normalizes supported legacy structures to the current internal model before editing continues.
 
 This includes migrations introduced during the 2.0 development cycle, such as:
 
@@ -80,9 +81,9 @@ This includes migrations introduced during the 2.0 development cycle, such as:
 
 The goal is backwards compatibility: existing FretFlow songbooks should remain usable as the data model evolves, without requiring them to be rebuilt manually.
 
-## FretFlow 2.0.0
+## Component architecture
 
-Version 2.0.0 is the current complete release of the Editor and introduces the main component architecture used by FretFlow going forward.
+FretFlow 2.0.0 introduced the main component architecture that later releases continue to use.
 
 Compared with the 1.0 baseline, the release adds or consolidates:
 

@@ -408,6 +408,64 @@ Practice Player named sections above are deferred and excluded from this release
 * Only `FretFlow.html` and this backlog are in scope. No commits, pushes, merges,
   release metadata, generated demo/index updates or unrelated refactors.
 
+## 4.7 — unified Editor workspace and navigation polish
+
+The Editor is one persistent workspace with exactly two logical panes: Editor
+and Live View. It uses the Viewer one-page/two-page preference and the same
+`responsivePageMode` effective spread-availability rule on every viewport,
+while its preference and active pane remain independent from Viewer paging
+state. A preferred spread downgrades to one page when the Viewer would and is
+restored when sufficient space returns. In one-page mode the Viewer-style
+previous, tappable page indicator and next controls switch panes, with a
+direction-locked horizontal swipe as an additional option; vertical gestures
+keep scrolling the active pane.
+
+The Editor pane is ordinary full-width application UI rather than an A4 page.
+Editor and Live View retain separate vertical scroll positions across pane and
+mode changes. Live View remains one logical pane: it uniformly fits the shared
+fixed 794 × 1123 page rendering to the pane width and lists every generated
+preview page vertically. Preview replacement, including asynchronous PDF
+preview work, preserves the Live View scroll position and rejects stale render
+completion.
+
+Narrow Editor layouts use the practical viewport width with smaller outer
+spacing, single-column form grids, wrapping actions, constrained form controls
+and overflow-safe rows. Back and Save stay at the left of the Editor toolbar;
+page navigation, presentation mode, fullscreen and the right-anchored,
+viewport-safe overflow menu form one compact cluster at the far right.
+
+The final 4.7 polish keeps the sticky native block-type toolbar as the only
+block insertion route; the duplicate bottom toolbar and per-block insertion
+picker are removed. Native block headers use a stable identity row (collapse,
+primary title and subdued type) followed by one touch-friendly row for move up,
+move down, duplicate and delete in both collapsed and expanded states.
+
+Viewer and Editor right-side controls share the same toolbar cluster and count
+styling for previous, page indicator, next, presentation, fullscreen and
+overflow. Both presentation toggles derive availability from the shared
+`responsivePageMode` criteria, expose the same disabled semantics when spread
+is unavailable and restore a retained spread preference when space returns.
+Live View discoverability remains deliberately unchanged for this release.
+
+Forward navigation starts a new Launcher, Viewer-home, category, tab or Editor
+context at the top. Back restores the exact saved vertical position of the
+previous context, including category-to-tab and Viewer-to-Editor returns.
+Local Editor/Live View changes remain outside that return stack and preserve
+the two pane scroll positions independently. Launcher and Editor reuse the
+existing Viewer fullscreen helper and icon semantics.
+
+Global Save and Save As commit valid visible Project Meta fields to
+`projectData` before normal `.fret` serialization. The redundant
+`Projectmetadata opslaan` action is removed. Other Editor datasets retain their
+existing explicit metadata-save behavior, and Save cancellation/error feedback
+semantics remain unchanged.
+
+Application toolbar containers and their open overflow menus form a layer above
+Spotify, YouTube and Amp controls. Floating media tools remain above document
+content and behave normally while menus are closed.
+
+Application version is `4.7`; the document schema remains 18.
+
 ## 4.3 — central application rename and hybrid PDF.js runtime
 
 The central Viewer + Editor application is `FretFlow.html`; there is no

@@ -41,6 +41,35 @@ its PDF tabs work offline without `assets/` or a CDN. The export-only source
 cache under `assets/js/pdfjs/` is lazy-loaded only when an export is requested;
 keep it synchronized with the pinned vendor pair.
 
+## Editor workspace and application navigation
+
+The Editor is one persistent two-pane workspace: Editor and Live View. It uses
+the same one-page/two-page preference and effective availability rule as Viewer
+content, without sharing Viewer paging state. A preferred two-page presentation
+must downgrade and restore at exactly the same viewport conditions in both
+places. The Editor pane is normal application UI; only Live View contains fixed
+A4 pages, with all generated preview pages arranged vertically inside that pane.
+
+Editor and Live View own independent vertical scroll positions. Switching pane
+or workspace mode must preserve those positions and must not recreate the
+Editor DOM merely to change presentation. Forward navigation starts the new
+destination at its top; Back restores the prior view's saved vertical position.
+Editor/Live View switching is local navigation and must not trigger either
+behavior. The Editor toolbar keeps Back and Save at the left and uses the
+Viewer-style page navigation, presentation, fullscreen and overflow cluster at
+the far right. Viewer and Editor share the visual layout grammar for that
+right-side cluster, and the Editor presentation toggle must mirror Viewer
+spread availability, disabled interaction and preference restoration exactly.
+
+For native tabs, the sticky block-type controls at the top are the single block
+insertion route. Individual block headers keep identity (collapse control,
+title and subdued type) separate from the move, duplicate and delete action row
+so the same predictable two-row structure works when collapsed or expanded.
+
+Global `.fret` Save includes valid current Project Meta form state before
+serialization. Application toolbar containers and opened dropdowns must remain
+above floating Spotify, YouTube and Amp controls in the stacking hierarchy.
+
 ## Offline behaviour
 
 Core FretFlow functionality, including native and PDF tabs, must remain usable
