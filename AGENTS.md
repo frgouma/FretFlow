@@ -23,6 +23,9 @@ Older FretFlow songbooks must remain backwards compatible whenever their data ca
 
 Do not introduce parallel legacy code paths after normalization unless explicitly required.
 
+The project-document picker may be permissive for portability; validate supported
+`.fret`, `.html`, and `.htm` filenames inside FretFlow before routing to an importer.
+
 ## Editor and PDF.js
 
 There is one central application: `FretFlow.html`.

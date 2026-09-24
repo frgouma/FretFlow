@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FretFlow 4.5</title>
+<title>FretFlow 4.6</title>
 <script id="fretflow-pdfjs-loader">
 /* PDF.js 3.11.174: prefer the pinned CDN and fall back to the colocated copy. */
 (function(global){
@@ -985,8 +985,8 @@ header button{white-space:nowrap}.dev-only{display:none!important}
 </style>
 </head>
 <body data-application-mode="launcher">
-<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.5</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een .fret-werkdocument of importeer een bestaande FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
-<input hidden type="file" id="projectFile" accept=".fret,application/json,.html,text/html">
+<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.6</span><h1>FretFlow</h1><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een .fret-werkdocument of importeer een bestaande FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
+<input hidden type="file" id="projectFile">
 <div id="applicationViewer" hidden></div>
 <div id="builderApp" hidden>
 <header>
@@ -1460,7 +1460,7 @@ FretFlow.starterChordData = () => {
   return FretFlow.normalizeChordLibrary(library);
 };
 FretFlow.CURRENT_SCHEMA = "18";
-FretFlow.BUILDER_VERSION = "4.5";
+FretFlow.BUILDER_VERSION = "4.6";
 FretFlow.youtubeVideoId = function(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -5877,7 +5877,7 @@ FretFlow.initApp();
      ======================================================================= -->
 <script id="fretflow-builder-runtime">
 /* ============================================================================
-   FRETFLOW 4.5 BUILDER — SOURCE INDEX
+   FRETFLOW 4.6 BUILDER — SOURCE INDEX
 
    1. Integrated project state and dataset registry
    2. Project metadata, groups and system-page editor
@@ -5919,8 +5919,8 @@ function setApplicationMode(mode){
   applicationLauncher.hidden=mode!=='launcher';
   applicationViewer.hidden=mode!=='viewer';
   builderApp.hidden=mode!=='builder';
-  if(mode==='launcher'){document.title='FretFlow 4.5';updateLauncherProjectStatus()}
-  if(mode==='builder')document.title='FretFlow Editor 4.5';
+  if(mode==='launcher'){document.title='FretFlow 4.6';updateLauncherProjectStatus()}
+  if(mode==='builder')document.title='FretFlow Editor 4.6';
 }
 function activeProjectName(){return projectData?.project?.title||activeProjectSourceName||'FretFlow'}
 function updateLauncherProjectStatus(){
@@ -7058,7 +7058,7 @@ function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.5 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
+  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.6 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);
@@ -7123,7 +7123,7 @@ function createNewProject(returnState={view:'launcher'}){if(!confirmReplaceCurre
 function projectFileKind(file){const name=String(file?.name||'').toLowerCase();if(name.endsWith('.fret'))return'fret';if(name.endsWith('.html')||name.endsWith('.htm'))return'html';return''}
 async function openProjectFile(file,fileHandle=null){
   const kind=projectFileKind(file);
-  if(!kind)throw new Error('Kies een .fret-werkdocument of een bestaande FretFlow HTML-gitaarmap.');
+  if(!kind)throw new Error('Dit is geen ondersteund FretFlow-bestand. Kies een .fret-werkdocument of een bestaande FretFlow HTML-gitaarmap.');
   const raw=kind==='fret'?readProjectFromFret(await file.text()):readProjectFromStandalone(await file.text());
   // Validation and migration happen before this assignment, so an invalid file leaves the current map intact.
   setProject(raw,'project',{sourceType:kind==='fret'?'fret':'legacy-html',fileHandle:kind==='fret'?fileHandle:null,fileName:file.name||''});
@@ -7201,7 +7201,7 @@ async function requestProjectOpen(destination){
   openDestination=destination;
   if(typeof window.showOpenFilePicker==='function'){
     let handles;
-    try{handles=await window.showOpenFilePicker({multiple:false,types:[{description:'FretFlow documenten',accept:{'application/json':['.fret'],'text/html':['.html','.htm']}}]})}
+    try{handles=await window.showOpenFilePicker({multiple:false})}
     catch(error){if(isPickerCancellation(error))return;handles=null}
     if(handles?.[0]){
       try{await openProjectFile(await handles[0].getFile(),handles[0]);if(destination==='builder')setApplicationMode('builder');else setApplicationMode('launcher')}
