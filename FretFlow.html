@@ -945,6 +945,7 @@ body[data-application-mode="launcher"],body[data-application-mode="viewer"]{heig
 .application-launcher .launcher-status{margin:-8px auto 22px;color:#6f6256;font-size:13px;text-align:center}
 .application-launcher .category-grid{grid-template-columns:repeat(2,minmax(238px,1fr));max-width:720px;margin:0 auto}
 .application-launcher .category-card{width:100%}
+.application-launcher a.category-card{text-decoration:none}
 #applicationViewer{min-height:100vh}
 .builder-home{display:inline-flex;align-items:center;justify-content:center}
 .builder-home .toolbar-icon{width:1em;height:1em}
@@ -1119,7 +1120,7 @@ header button{white-space:nowrap}.dev-only{display:none!important}
 </style>
 </head>
 <body data-application-mode="launcher">
-<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.7.1</span><div class="hero-title-row"><h1>FretFlow</h1><button class="hero-fullscreen" id="launcherFullscreen" type="button" aria-label="Volledig scherm" title="Volledig scherm"></button></div><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een .fret-werkdocument of importeer een bestaande FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
+<main class="home application-launcher" data-view="ApplicationLauncher" id="applicationLauncher"><div class="shell"><section class="hero"><span class="badge">FretFlow 4.7.1</span><div class="hero-title-row"><h1>FretFlow</h1><button class="hero-fullscreen" id="launcherFullscreen" type="button" aria-label="Volledig scherm" title="Volledig scherm"></button></div><p>Laad, open of pas een gitaarmap aan.</p></section><p class="launcher-status" id="launcherProjectStatus">Geen gitaarmap geladen</p><section class="category-grid" id="launcherActions"><button class="category-card system-card" data-component="HomeSystemTile" id="launcherLoad" type="button"><h2>Gitaarmap laden</h2><p>Laad een .fret-werkdocument of importeer een bestaande FretFlow HTML-gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherOpen" type="button"><h2>Gitaarmap openen</h2><p>Bekijk de geladen gitaarmap.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherEdit" type="button"><h2>Gitaarmap aanpassen</h2><p>Pas de geladen gitaarmap aan in de Editor.</p></button><button class="category-card system-card" data-component="HomeSystemTile" id="launcherNew" type="button"><h2>Nieuwe gitaarmap</h2><p>Maak een nieuwe gitaarmap in de Editor.</p></button><a class="category-card system-card" data-component="HomeSystemTile" href="https://frgouma.github.io/FretFlow/#faq"><h2>Hulp &amp; FAQ</h2><p>Vind hulp en antwoorden op veelgestelde vragen over FretFlow.</p></a></section><div class="hint">FretFlow — vibecoded by Cunyo with GPT-5.6 Sol · © 2026 Cunyo</div></div></main>
 <input hidden type="file" id="projectFile">
 <div id="applicationViewer" hidden></div>
 <div id="builderApp" hidden>
@@ -4410,7 +4411,6 @@ class FretFlowApp {
     }
 
     cards.innerHTML = "";
-    if (this.actions.editProject) cards.appendChild(this.systemTile("Gitaarmap wijzigen", "Pas de actieve gitaarmap aan in de Editor.", () => this.actions.editProject()));
     const page = this.systemPages()[0];
     if (page) {
       const b = this.createElement("button");
