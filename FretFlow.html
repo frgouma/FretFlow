@@ -6173,7 +6173,6 @@ let projectData=null;
 let activeKind='project',current=null,draftRecord=null,pendingNewRecordGroups=[];
 let chordLibraryMode=false,chordCategoryMode=false,currentChordId='',draftChord=null,chordLibraryMessage='';
 let projectBaselineJson='';
-let recordMetadataSavedKey='';
 let applicationMode='launcher';
 let viewerApplication=null;
 let activeProjectSourceName='';
@@ -6353,7 +6352,7 @@ function resetApplicationProject(){
   projectDocument={sourceType:'none',fileHandle:null,fileName:''};
   activeKind='project';current=null;draftRecord=null;
   chordLibraryMode=false;chordCategoryMode=false;currentChordId='';draftChord=null;chordLibraryMessage='';
-  projectBaselineJson='';recordMetadataSavedKey='';
+  projectBaselineJson='';
   render();
 }
 function returnToLauncher(scrollTop=viewerLauncherScrollTop){
@@ -6414,12 +6413,6 @@ function confirmReplaceCurrentProject(action){
   if(!projectData)return true;
   if(!hasUnsavedMetadata()&&!hasProjectChanges())return true;
   return confirm(`Er zijn niet-opgeslagen wijzigingen in de huidige gitaarmap. ${action} Deze wijzigingen gaan verloren.`);
-}
-function currentRecordMetadataKey(){return ['native','pdf'].includes(activeKind)&&current&&current!=='__new__'?`${activeKind}:${current}`:''}
-function savedButton(label,saved,id,onclick){return `<button id="${id}" onclick="${onclick}" ${saved?'disabled':''}>${saved?'✓ Opgeslagen':label}</button>`}
-function resetSavedMetadataState(target){
-  if(!target)return;
-  if(target.id?.startsWith('meta')||target.name==='metaGroups'){recordMetadataSavedKey='';const button=document.getElementById('metadataSave');if(button){button.textContent='Metadata opslaan';button.disabled=false}}
 }
 function preserveRecordMetadataForm(){return recordMetadataFormValue()}
 function restoreRecordMetadataForm(values){if(!values||!document.getElementById('metaTitle'))return;metaTitle.value=values.title??'';metaArtist.value=values.artist??'';for(const input of document.querySelectorAll('input[name="metaGroups"]'))input.checked=(values.groups||[]).includes(input.value);metaTags.value=(values.tags||[]).join(', ');metaDescription.value=values.description??'';if(document.getElementById('metaSpotifyUrl'))metaSpotifyUrl.value=values.spotifyUrl??'';if(document.getElementById('metaYoutubeUrl'))metaYoutubeUrl.value=values.youtubeUrl??'';if(document.getElementById('metaYoutubeLabel'))metaYoutubeLabel.value=values.youtubeLabel??'';if(document.getElementById('metaFooter'))metaFooter.value=values.footer??'';if(document.getElementById('metaTuning'))metaTuning.value=values.tuning??'Standard'}
@@ -6612,11 +6605,6 @@ function addProjectGroup(){const pending=preserveProjectMetadataForm(),input=doc
 function deleteProjectGroup(index){const pending=preserveProjectMetadataForm(),group=projectGroups()[index];if(!group)return;const used=[...projectData.nativeTabs,...projectData.pdfTabs].filter(record=>(record.groups||[]).includes(group.id)).length;if(!confirm(`Groep “${group.title}” verwijderen?${used?` De koppeling wordt bij ${used} tab(s) verwijderd.`:''}`))return;for(const record of [...projectData.nativeTabs,...projectData.pdfTabs])record.groups=(record.groups||[]).filter(id=>id!==group.id);projectGroups().splice(index,1);render();restoreProjectMetadataForm(pending)}
 function updateChordLibrarySystemPage(key,value){const page=chordLibrarySystemPage();page[key]=value;renderProjectPreview()}
 function groupAssignmentEditor(selected=[]){const set=new Set(selected||[]);const groups=projectGroups();return groups.length?`<div class="group-assignment">${groups.map(group=>`<label class="group-check"><input type="checkbox" name="metaGroups" value="${esc(group.id)}" ${set.has(group.id)?'checked':''}><span>${esc(group.title)}</span></label>`).join('')}</div>`:'<div class="hint">Maak eerst onder Project een groep aan.</div>'}
-function markAmpMetadataChanged(){
-  recordMetadataSavedKey='';
-  const button=document.getElementById('metadataSave');
-  if(button){button.textContent='Metadata opslaan';button.disabled=false}
-}
 function ampPresetValueEditor(preset,presetIndex,field){
   const value=FretFlow.normalizeAmpValue(preset[field.key]);
   const labelId=`amp-value-label-${presetIndex}-${field.key}`;
@@ -6647,7 +6635,6 @@ function setAmpPresetText(index,key,value){
     : key==='boosterType'
       ? FretFlow.normalizeAmpCategory(value,FretFlow.AMP_BOOSTER_TYPES,'Off')
       : String(value??'');
-  markAmpMetadataChanged();
 }
 function syncAmpValueControl(origin,normalized){
   const control=origin?.closest('.amp-value-control');
@@ -6660,26 +6647,23 @@ function setAmpPresetValue(index,key,value,origin){
   const normalized=FretFlow.normalizeAmpValue(value);
   preset[key]=normalized;
   syncAmpValueControl(origin,normalized);
-  markAmpMetadataChanged();
 }
 function setAmpEffectType(presetIndex,effectIndex,value){
   const effect=get()?.ampPresets?.[presetIndex]?.effects?.[effectIndex];if(!effect)return;
   effect.type=FretFlow.normalizeAmpCategory(value,FretFlow.AMP_EFFECT_TYPES,'Chorus');
-  markAmpMetadataChanged();
 }
 function setAmpEffectValue(presetIndex,effectIndex,value,origin){
   const effect=get()?.ampPresets?.[presetIndex]?.effects?.[effectIndex];if(!effect)return;
   const normalized=FretFlow.normalizeAmpValue(value);
   effect.level=normalized;
   syncAmpValueControl(origin,normalized);
-  markAmpMetadataChanged();
 }
 function addAmpEffect(presetIndex){
   const r=get();if(!r)return;
   captureMetadataForm();
   const preset=r.ampPresets?.[presetIndex];if(!preset)return;
   preset.effects.push({type:'Chorus',level:50});
-  markAmpMetadataChanged();render();
+  render();
   requestAnimationFrame(()=>document.querySelectorAll('.amp-preset-block')[presetIndex]?.querySelector('.amp-effect-row:last-child select')?.focus());
 }
 function removeAmpEffect(presetIndex,effectIndex){
@@ -6687,7 +6671,7 @@ function removeAmpEffect(presetIndex,effectIndex){
   captureMetadataForm();
   const effects=r.ampPresets?.[presetIndex]?.effects;if(!effects?.[effectIndex])return;
   effects.splice(effectIndex,1);
-  markAmpMetadataChanged();render();
+  render();
 }
 function addAmpPreset(){
   const r=get();if(!r)return;
@@ -6697,7 +6681,7 @@ function addAmpPreset(){
   let number=r.ampPresets.length+1;
   while(usedLabels.has(`preset ${number}`))number++;
   r.ampPresets.push(FretFlow.normalizeAmpPreset({label:`Preset ${number}`,ampType:'Clean',gain:50,volume:50,bass:50,middle:50,treble:50,boosterType:'Off',boosterLevel:0,delay:0,reverb:0,effects:[]}));
-  markAmpMetadataChanged();render();
+  render();
   requestAnimationFrame(()=>document.querySelector('.amp-preset-block:last-of-type .amp-label-field input')?.focus());
 }
 function removeAmpPreset(index){
@@ -6705,11 +6689,11 @@ function removeAmpPreset(index){
   if(!confirm(`Amp-preset “${String(preset.label||'').trim()||`Preset ${index+1}`}” verwijderen?`))return;
   captureMetadataForm();
   r.ampPresets.splice(index,1);
-  markAmpMetadataChanged();render();
+  render();
 }
-function common(r,{creating=false,includeTuning=false,includeFooter=true}={}){const collapsed=!creating&&editorCollapsed('metadata',r);const body=`<div class="grid"><div class="field"><label>Titel</label><input id="metaTitle" value="${esc(r.title||'')}"></div><div class="field"><label>Artiest</label><input id="metaArtist" value="${esc(r.artist||'')}"></div>${includeTuning?`<div class="field"><label>Tuning</label><input id="metaTuning" value="${esc(r.tuning||'Standard')}"></div>`:''}<div class="field"><label>Tags</label><input id="metaTags" value="${esc((r.tags||[]).join(', '))}"></div><div class="field full"><label>Groepen <span class="label-hint">(optioneel; meerdere mogelijk; iedere groep verschijnt op de homepage)</span></label>${groupAssignmentEditor(r.groups||[])}</div><div class="field full"><label>Beschrijving <span class="label-hint">(wordt gebruikt op de tegel en als korte intro onder de titel)</span></label><textarea id="metaDescription">${esc(r.description||'')}</textarea></div><div class="field full"><label>Spotify-link <span class="label-hint">(optioneel; specifieke track voor oefenbediening)</span></label><input id="metaSpotifyUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://open.spotify.com/track/…" value="${esc(r.spotifyUrl||'')}"><div class="hint" style="text-align:left">Koppel één specifieke Spotify-track aan dit muziekblad. Delay en Start zijn alleen Viewer-instellingen en worden niet opgeslagen.</div></div><div class="field"><label for="metaYoutubeUrl">YouTube URL</label><input id="metaYoutubeUrl" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=…" value="${esc(r.youtubeUrl||'')}"></div><div class="field"><label for="metaYoutubeLabel">YouTube label (optional)</label><input id="metaYoutubeLabel" value="${esc(r.youtubeLabel||'')}"></div>${ampPresetsEditor(r)}${includeFooter?`<div class="field full"><label>Footer op muziekblad <span class="label-hint">(verschijnt op iedere pagina)</span></label><div class="text-format-toolbar" role="toolbar" aria-label="Footeropmaak"><button type="button" class="format-bold" title="Vet" onclick="formatFooterSelection('bold')">B</button><button type="button" class="format-italic" title="Cursief" onclick="formatFooterSelection('italic')">I</button><button type="button" class="marker-tool" title="Zwarte marker" onclick="formatFooterSelection('black')"><span class="inline-shape-marker black">A</span></button><button type="button" class="marker-tool" title="Omlijnde marker" onclick="formatFooterSelection('outline')"><span class="inline-shape-marker outline">C</span></button><button type="button" class="marker-tool" title="Lichte/contextmarker" onclick="formatFooterSelection('ghost')"><span class="inline-shape-marker ghost">8</span></button></div><textarea id="metaFooter">${esc(r.footer||'')}</textarea><div class="hint" style="text-align:left">Selecteer tekst en gebruik B, I of een markerknop. Dezelfde veilige inline opmaak als in een Tekst-component wordt gebruikt.</div></div>`:''}</div><div class="toolbar">${creating?'<button id="createTab" onclick="applyMetadata(true)">Tab aanmaken</button>':savedButton('Metadata opslaan',recordMetadataSavedKey===currentRecordMetadataKey(),'metadataSave','applyMetadata(false)')}</div>${creating?'<div class="hint">Vul eerst de metadata in en maak de tab aan. Daarna kun je inhoud toevoegen.</div>':'<div class="hint" style="text-align:left">Alleen bovenstaande metadata gebruikt deze knop. Tabinhoud, componenten en PDF-data worden automatisch opgeslagen.</div>'}`;return `<div class="block editor-collapse-node metadata-collapse ${collapsed?'is-collapsed':''}" data-collapse-level="metadata"><div class="block-head">${collapseToggleHtml('metadata',-1,-1,-1,r)}<span class="editor-heading"><b>Metadata</b></span><span class="spacer"></span></div><div class="collapse-body" ${collapsed?'hidden':''}>${body}</div></div>`;}
+function common(r,{creating=false,includeTuning=false,includeFooter=true}={}){const collapsed=!creating&&editorCollapsed('metadata',r);const body=`<div class="grid"><div class="field"><label>Titel</label><input id="metaTitle" value="${esc(r.title||'')}"></div><div class="field"><label>Artiest</label><input id="metaArtist" value="${esc(r.artist||'')}"></div>${includeTuning?`<div class="field"><label>Tuning</label><input id="metaTuning" value="${esc(r.tuning||'Standard')}"></div>`:''}<div class="field"><label>Tags</label><input id="metaTags" value="${esc((r.tags||[]).join(', '))}"></div><div class="field full"><label>Groepen <span class="label-hint">(optioneel; meerdere mogelijk; iedere groep verschijnt op de homepage)</span></label>${groupAssignmentEditor(r.groups||[])}</div><div class="field full"><label>Beschrijving <span class="label-hint">(wordt gebruikt op de tegel en als korte intro onder de titel)</span></label><textarea id="metaDescription">${esc(r.description||'')}</textarea></div><div class="field full"><label>Spotify-link <span class="label-hint">(optioneel; specifieke track voor oefenbediening)</span></label><input id="metaSpotifyUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://open.spotify.com/track/…" value="${esc(r.spotifyUrl||'')}"><div class="hint" style="text-align:left">Koppel één specifieke Spotify-track aan dit muziekblad. Delay en Start zijn alleen Viewer-instellingen en worden niet opgeslagen.</div></div><div class="field"><label for="metaYoutubeUrl">YouTube URL</label><input id="metaYoutubeUrl" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=…" value="${esc(r.youtubeUrl||'')}"></div><div class="field"><label for="metaYoutubeLabel">YouTube label (optional)</label><input id="metaYoutubeLabel" value="${esc(r.youtubeLabel||'')}"></div>${ampPresetsEditor(r)}${includeFooter?`<div class="field full"><label>Footer op muziekblad <span class="label-hint">(verschijnt op iedere pagina)</span></label><div class="text-format-toolbar" role="toolbar" aria-label="Footeropmaak"><button type="button" class="format-bold" title="Vet" onclick="formatFooterSelection('bold')">B</button><button type="button" class="format-italic" title="Cursief" onclick="formatFooterSelection('italic')">I</button><button type="button" class="marker-tool" title="Zwarte marker" onclick="formatFooterSelection('black')"><span class="inline-shape-marker black">A</span></button><button type="button" class="marker-tool" title="Omlijnde marker" onclick="formatFooterSelection('outline')"><span class="inline-shape-marker outline">C</span></button><button type="button" class="marker-tool" title="Lichte/contextmarker" onclick="formatFooterSelection('ghost')"><span class="inline-shape-marker ghost">8</span></button></div><textarea id="metaFooter">${esc(r.footer||'')}</textarea><div class="hint" style="text-align:left">Selecteer tekst en gebruik B, I of een markerknop. Dezelfde veilige inline opmaak als in een Tekst-component wordt gebruikt.</div></div>`:''}</div>${creating?'<div class="toolbar"><button id="createTab" onclick="commitCurrentRecordMetadata(true)">Tab aanmaken</button></div><div class="hint">Vul eerst de metadata in en maak de tab aan. Daarna kun je inhoud toevoegen.</div>':'<div class="hint" style="text-align:left">Metadata wordt samen met de rest van de tab opgeslagen via Opslaan of Opslaan als…</div>'}`;return `<div class="block editor-collapse-node metadata-collapse ${collapsed?'is-collapsed':''}" data-collapse-level="metadata"><div class="block-head">${collapseToggleHtml('metadata',-1,-1,-1,r)}<span class="editor-heading"><b>Metadata</b></span><span class="spacer"></span></div><div class="collapse-body" ${collapsed?'hidden':''}>${body}</div></div>`;}
 function captureMetadataForm(){const r=get();if(!r||!document.getElementById('metaTitle'))return;r.title=metaTitle.value;r.artist=metaArtist.value;r.groups=[...document.querySelectorAll('input[name="metaGroups"]:checked')].map(input=>input.value);const rawTags=metaTags.value.split(',').map(x=>x.trim()).filter(Boolean);const systemTag=activeKind==='pdf'?'pdf':activeKind==='native'?'native':'';r.tags=FretFlow.normalizeTags(rawTags,FretFlow.tagCanonicalMap(projectData),systemTag);r.description=metaDescription.value;r.spotifyUrl=document.getElementById('metaSpotifyUrl')?metaSpotifyUrl.value.trim():'';r.youtubeUrl=document.getElementById('metaYoutubeUrl')?.value.trim()||'';r.youtubeLabel=document.getElementById('metaYoutubeLabel')?.value||'';r.ampPresets=FretFlow.normalizeAmpPresets(r.ampPresets);if(document.getElementById('metaFooter'))r.footer=metaFooter.value;if(document.getElementById('metaTuning'))r.tuning=metaTuning.value.trim()||'Standard'}
-function applyMetadata(creating=false){const r=get();if(!r)return;const spotifyInput=(document.getElementById('metaSpotifyUrl')?.value||'').trim();if(spotifyInput&&!String(projectData?.project?.spotifyClientId||'').trim()){alert('Spotify is nog niet ingesteld voor deze gitaarmap. Voeg eerst een Spotify Client ID toe bij Projectmetadata en sla die projectmetadata op.');document.getElementById('metaSpotifyUrl')?.focus();return}captureMetadataForm();if(current!=='__new__')FretFlow.canonicalizeProjectTags(projectData);const title=r.title.trim();if(!title){alert('Vul eerst een titel in.');metaTitle.focus();return}r.title=title;const id=FretFlow.slug(`${r.title}-${r.artist||''}`)||'nieuwe-tab';if(creating){let unique=id,n=2;while(records().some(x=>x.id===unique))unique=`${id}-${n++}`;r.id=unique;records().push(r);draftRecord=null;current=r.id;initializeEditorOverview(r)}else{const old=current;r.id=id;if(old!==r.id&&records().some(x=>x!==r&&x.id===r.id)){alert('Er bestaat al een tab met dit ID. Pas titel of artiest aan.');r.id=old;return}current=r.id}if(!creating)recordMetadataSavedKey=currentRecordMetadataKey();render()}
+function commitCurrentRecordMetadata(creating=false){const r=get();if(!r)return true;const spotifyInput=(document.getElementById('metaSpotifyUrl')?.value||'').trim();if(spotifyInput&&!String(projectData?.project?.spotifyClientId||'').trim()){alert('Spotify is nog niet ingesteld voor deze gitaarmap. Voeg eerst een Spotify Client ID toe bij Projectmetadata en sla die projectmetadata op.');document.getElementById('metaSpotifyUrl')?.focus();return false}captureMetadataForm();if(current!=='__new__')FretFlow.canonicalizeProjectTags(projectData);const title=r.title.trim();if(!title){alert('Vul eerst een titel in.');metaTitle.focus();return false}r.title=title;const id=FretFlow.slug(`${r.title}-${r.artist||''}`)||'nieuwe-tab';if(creating){let unique=id,n=2;while(records().some(x=>x.id===unique))unique=`${id}-${n++}`;r.id=unique;records().push(r);draftRecord=null;current=r.id;initializeEditorOverview(r)}else{const old=current;r.id=id;if(old!==r.id&&records().some(x=>x!==r&&x.id===r.id)){alert('Er bestaat al een tab met dit ID. Pas titel of artiest aan.');r.id=old;return false}current=r.id}render();return true}
 function pdfEditor(r){return common(r,{creating:current==='__new__',includeFooter:true})+`<div class="field"><label>Pagina's</label><input type="number" value="${r.pageCount||1}" oninput="get().pageCount=+this.value;schedulePreview(0)"></div><div class="field"><label>PDF toevoegen/vervangen</label><input type="file" accept="application/pdf" onchange="readPdf(this.files[0])"><div class="hint">${r.data?`Geladen${r.fileName?`: ${esc(r.fileName)}`:''}`:'Nog geen PDF geladen.'}</div></div><div class="hint">De PDF wordt als Base64-data onderdeel van deze gitaarmap en komt mee in FretFlow.html.</div>`}
 
 const editorCollapseState={metadata:new WeakMap(),component:new WeakMap(),line:new WeakMap(),measure:new WeakMap()};
@@ -7529,7 +7513,7 @@ function setProject(data,kind='project',documentState={}){
   projectData=loadProject(data);
   projectDocument={sourceType:documentState.sourceType||'new',fileHandle:documentState.fileHandle||null,fileName:documentState.fileName||''};
   activeProjectSourceName=projectDocument.fileName;
-  recordMetadataSavedKey='';activateDataset(kind);rememberProjectBaseline();updateLauncherProjectStatus();
+  activateDataset(kind);rememberProjectBaseline();updateLauncherProjectStatus();
 }
 function createNewProject(returnState={view:'launcher'}){if(!confirmReplaceCurrentProject('Nieuwe gitaarmap starten?'))return;builderReturnState=returnState;setProject(FretFlow.createEmptyProject(),'project',{sourceType:'new'});setApplicationMode('builder')}
 function projectFileKind(file){const name=String(file?.name||'').toLowerCase();if(name.endsWith('.fret'))return'fret';if(name.endsWith('.html')||name.endsWith('.htm'))return'html';return''}
@@ -7663,13 +7647,16 @@ launcherOpen.onclick=()=>{if(!projectData){alert('Laad eerst een gitaarmap.');re
 launcherEdit.onclick=()=>{if(!projectData){alert('Laad eerst een gitaarmap.');return}openBuilderProjectEditor({view:'launcher',scrollTop:window.scrollY||0})};
 openApp.onclick=()=>{if(!confirmReplaceCurrentProject('Een andere gitaarmap openen?'))return;requestProjectOpen('builder')};
 projectFile.onchange=async e=>{try{const file=e.target.files[0];if(!file)return;await openProjectFile(file);if(openDestination==='builder')setApplicationMode('builder');else setApplicationMode('launcher')}catch(err){alert(`Openen mislukt: ${err.message}`)}finally{e.target.value=''}};
-buildApp.onclick=async()=>{if(activeKind==='project'){if(!commitCurrentProjectMetadata())return}else if(!confirmDiscardUnsavedMetadata())return;try{await saveProjectDocument()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
-saveAsApp.onclick=async()=>{if(activeKind==='project'){if(!commitCurrentProjectMetadata())return}else if(!confirmDiscardUnsavedMetadata())return;try{await saveProjectAs()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
+function commitCurrentEditorMetadata(){
+  if(activeKind==='project')return commitCurrentProjectMetadata();
+  if(['native','pdf'].includes(activeKind))return current==='__new__'?confirmDiscardUnsavedMetadata():commitCurrentRecordMetadata();
+  return true;
+}
+buildApp.onclick=async()=>{if(!commitCurrentEditorMetadata())return;try{await saveProjectDocument()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
+saveAsApp.onclick=async()=>{if(!commitCurrentEditorMetadata())return;try{await saveProjectAs()}catch(err){alert(`Opslaan mislukt: ${err.message}`)}};
 exportStandaloneApp.onclick=async()=>{if(!confirmDiscardUnsavedMetadata())return;try{await exportStandaloneDocument()}catch(err){alert(`Standalone export mislukt: ${err.message}`)}};
 // Buttons inside editor/library can rerender or navigate; protect unsaved metadata first.
-document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(['metadataSave','createTab'].includes(button.id)||button.matches('[data-amp-action]'))return;if(!(editor.contains(button)||libraryActions.contains(button)))return;if(!confirmDiscardUnsavedMetadata()){event.preventDefault();event.stopImmediatePropagation()}},true);
-document.addEventListener('input',event=>resetSavedMetadataState(event.target));
-document.addEventListener('change',event=>resetSavedMetadataState(event.target));
+document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.id==='createTab'||button.matches('[data-amp-action]'))return;if(!(editor.contains(button)||libraryActions.contains(button)))return;if(!confirmDiscardUnsavedMetadata()){event.preventDefault();event.stopImmediatePropagation()}},true);
 window.addEventListener('beforeunload',event=>{if(!hasUnsavedMetadata()&&!hasProjectChanges())return;event.preventDefault();event.returnValue=''});
 setApplicationMode('launcher');
 render();
