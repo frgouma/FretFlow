@@ -1,6 +1,6 @@
 # FretFlow
 
-**FretFlow 2.0.0** is a browser-based builder for creating standalone digital guitar songbooks.
+**FretFlow 4.7** is a browser-based Viewer + Editor for editable digital guitar songbooks.
 
 It combines guitar tabs, chord diagrams, shapeboxes, text, PDF sheet music and song metadata in a single self-contained `FretFlow.html` file that can be opened locally in a modern browser — no server, database or installation required.
 
@@ -8,9 +8,9 @@ It combines guitar tabs, chord diagrams, shapeboxes, text, PDF sheet music and s
 
 ## What it does
 
-FretFlow is built around a simple idea: keep an entire personal guitar songbook in one portable HTML file.
+FretFlow is built around a simple idea: keep an entire personal guitar songbook in one portable `.fret` working document.
 
-The Builder supports:
+The Editor supports:
 
 - native **Tab / riff** notation with measures, note positions, bar lines, techniques and annotations
 - editable **Shapeboxes** for fretboard shapes, transitions, root maps, markers, arrows and slashes
@@ -18,6 +18,7 @@ The Builder supports:
 - **Chord charts** and reusable **chord diagrams**
 - a central chord library with editable categories
 - embedded PDF sheet music
+- a unified Editor / Live View workspace with one-page and two-page presentation
 - PDF and native-page viewing with single-page and two-page spread modes
 - fullscreen viewing, page navigation and printing
 - printable PDF overlay footers, including inline formatting and markers
@@ -26,32 +27,37 @@ The Builder supports:
 - tags, search and filtering
 - song metadata and source references
 - editing existing FretFlow songbooks
-- saving the complete songbook as a single standalone HTML file
+- saving the complete songbook as a data-only `.fret` working document
+- exporting a self-contained, read-only standalone HTML Viewer snapshot
 - fully offline use once the file has been created
 
 A new songbook also starts with a small set of common guitar chords that can be edited or removed.
 
 ## How it works
 
-The repository contains the Builder:
+The repository contains the central FretFlow application:
 
 ```text
-builder.html
+FretFlow.html
 ```
 
-Open it directly in a modern web browser.
+Open it directly in a modern web browser. Its PDF tabs prefer the pinned CDN PDF.js runtime and automatically fall back to the vendored `assets/js/pdfjs/` copy for offline use.
 
 From there you can:
 
 1. Create a **New Guitar Map**.
 2. Add native components, PDFs, chords and metadata.
 3. Organize songs into groups and tags.
-4. Preview the result inside the Builder.
-5. Choose **Save Guitar Map** to generate `FretFlow.html`.
+4. Edit and preview in the one-page or two-page Editor / Live View workspace.
+5. Choose **Save Guitar Map** to save a `.fret` working document, or **Standalone HTML exporteren** for a portable read-only Viewer snapshot.
 
-The generated `FretFlow.html` contains both the application and the songbook data, including embedded PDF data where applicable, so it can be copied to another computer, tablet or phone and opened without FretFlow itself being installed.
+The `.fret` file contains the complete songbook data, including embedded PDF data where applicable. Open it with `FretFlow.html` to continue editing or viewing it. Where the browser provides writable file handles, later Save overwrites the same selected `.fret`; otherwise FretFlow downloads a new `.fret` file.
 
-Existing FretFlow files can be opened again in the Builder and edited further.
+Existing standalone FretFlow HTML files can still be imported; saving an imported map creates a new `.fret` and does not overwrite the HTML source.
+
+The standalone export includes the Viewer runtime, project data, embedded PDFs
+and PDF.js, so it opens directly with `file://` without `assets/`, a CDN or a
+web server. It is a snapshot for viewing, not an editable working document.
 
 ## Apple / iOS compatibility
 
@@ -65,7 +71,7 @@ This limitation is specific to the iPhone and iPad preview environment and does 
 
 FretFlow keeps application code and songbook content conceptually separate.
 
-FretFlow 2.0.0 uses **schema 11**. When an older FretFlow songbook is opened, the Builder recognizes and normalizes supported legacy structures to the current internal model before editing continues.
+FretFlow 4.7 uses **schema 18**. When an older FretFlow songbook is opened, the Editor recognizes and normalizes supported legacy structures to the current internal model before editing continues.
 
 This includes migrations introduced during the 2.0 development cycle, such as:
 
@@ -75,9 +81,9 @@ This includes migrations introduced during the 2.0 development cycle, such as:
 
 The goal is backwards compatibility: existing FretFlow songbooks should remain usable as the data model evolves, without requiring them to be rebuilt manually.
 
-## FretFlow 2.0.0
+## Component architecture
 
-Version 2.0.0 is the current complete release of the Builder and introduces the main component architecture used by FretFlow going forward.
+FretFlow 2.0.0 introduced the main component architecture that later releases continue to use.
 
 Compared with the 1.0 baseline, the release adds or consolidates:
 

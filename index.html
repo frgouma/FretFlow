@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FretFlow 2.0.0</title>
+<title>FretFlow 4.7.1</title>
 
 <style>
 :root{
@@ -90,7 +90,7 @@ h1{
 
 .category-grid{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:18px;
 }
 
@@ -123,6 +123,10 @@ h1{
 
 .category-card:nth-child(2):after{
   background:#536d8c;
+}
+
+.category-card:nth-child(3):after{
+  background:#6f7f59;
 }
 
 .category-card:hover{
@@ -239,11 +243,60 @@ h1{
   color:#20170f;
 }
 
+.link-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:16px;
+}
+
+.button-link{
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  background:#221812;
+  color:#fff !important;
+  padding:9px 13px;
+  font-size:12px;
+  font-weight:700;
+  text-decoration:none;
+}
+
+.button-link.secondary{
+  background:#fff8eb;
+  color:#8f4f1b !important;
+  border:1px solid #c47a2c55;
+}
+
+.url-line{
+  overflow-wrap:anywhere;
+}
+
+.faq-item + .faq-item{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid #5c483020;
+}
+
+.faq-item h3{
+  margin:0 0 6px;
+  color:#20170f;
+  font-size:15px;
+}
+
+#faq{
+  scroll-margin-top:16px;
+}
+
 .hint{
   margin-top:24px;
   text-align:center;
   color:#6f6256;
   font-size:13px;
+}
+
+@media(max-width:900px){
+  .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 @media(max-width:700px){
@@ -267,76 +320,197 @@ h1{
       >Digitale gitaarmap</a>
 
       <h1>FretFlow</h1>
-      <div class="version">Versie 2.0.0</div>
+      <div class="version">Versie 4.7.1</div>
       <p>
-        Maak je eigen digitale gitaarmap of bekijk eerst een voorbeeld.
-        FretFlow werkt rechtstreeks in de browser.
+        Bekijk, bewerk en beheer je digitale gitaarmap rechtstreeks in de browser.
+        FretFlow 4 combineert Viewer en Editor in één applicatie.
       </p>
     </section>
 
     <section class="category-grid">
-      <a class="category-card" href="builder.html?v=2.0.0b">
-        <h2>FretFlow Builder</h2>
+      <a class="category-card" href="FretFlow.html">
+        <h2>FretFlow openen</h2>
         <p>
-          Maak een nieuwe gitaarmap, open een bestaande FretFlow-map
-          en voeg tabs/riffs, shapeboxes, akkoorden, tekst en PDF-bladen toe.
+          Maak een nieuwe gitaarmap of open een bestaand <strong>.fret</strong>-werkdocument.
+          Bekijk en bewerk native tabs, PDF-bladen, akkoorden, shapeboxes en meer.
         </p>
-        <span class="action">Open Builder</span>
+        <span class="action">Open FretFlow</span>
       </a>
 
-      <a class="category-card" href="demo.html?v=2.0.0b">
-        <h2>Voorbeeld gitaarmap</h2>
+      <a class="category-card" href="demo.fret" download="demo.fret" id="demo-fret-download">
+        <h2>Demo bewerken</h2>
         <p>
-          Bekijk hoe een FretFlow-gitaarmap eruitziet en hoe de
-          verschillende onderdelen werken.
+          Download <strong>demo.fret</strong> en laad het bestand daarna in FretFlow.
+          Zo kun je de voorbeeldgitaarmap zelf bekijken én aanpassen met de Editor.
         </p>
-        <span class="action">Bekijk voorbeeld</span>
+        <span class="action">Download demo.fret</span>
+      </a>
+
+      <a class="category-card" href="demo.html?v=4.7.1">
+        <h2>Voorbeeld bekijken</h2>
+        <p>
+          Open dezelfde demo direct als standalone gitaarmap. Deze versie bevat de Viewer
+          en werkt zelfstandig, maar heeft bewust geen Editor.
+        </p>
+        <span class="action">Bekijk standalone demo</span>
       </a>
     </section>
 
-    <section class="info">
-      <h2>Over deze demo</h2>
-      <p>
-        De Builder en voorbeeldgitaarmap op deze pagina laten zien hoe FretFlow werkt.
-        FretFlow is ontworpen om gitaarmappen als één zelfstandig HTML-bestand te maken,
-        dat ook volledig offline gebruikt kan worden.
-      </p>
-      <p>
-        Op iPhone en iPad werken lokale HTML-bestanden niet volledig interactief in de
-        standaard voorvertoning. Open een lokale FretFlow-map daarom in
-        <a href="https://apps.apple.com/us/app/sitecase/id6762896369"
-           target="_blank"
-           rel="noopener noreferrer">Sitecase</a>,
-        of gebruik de online voorbeelden op deze pagina.
-      </p>
-      <p>
-        Je eigen gitaarmappen en toegevoegde PDF-bestanden blijven lokaal op je apparaat
-        en worden niet naar deze website geüpload.
-      </p>
-    </section>
-
-    <details class="changes">
-      <summary>Aanpassingen FretFlow 2.0.0</summary>
+    <details class="changes" open>
+      <summary>Hoe werkt FretFlow?</summary>
       <div class="changes-content">
         <p>
-          FretFlow 2.0.0 breidt de Builder en viewer uit met een vernieuwde
-          componentarchitectuur en een aantal nieuwe bewerkings- en weergavemogelijkheden.
+          <strong>FretFlow.html</strong> is de centrale applicatie met Viewer én Editor.
+          Je gitaarmap wordt opgeslagen als een compact <strong>.fret</strong>-werkdocument,
+          dat je later opnieuw kunt openen en verder kunt bewerken.
+        </p>
+        <p>
+          Wil je de demonstratie zelf bewerken, download dan <strong>demo.fret</strong> en laad
+          dat bestand via <strong>Gitaarmap laden</strong> in FretFlow. Het standalone
+          <strong>demo.html</strong> is bedoeld om de Viewer direct uit te proberen en bevat
+          bewust geen Editor.
+        </p>
+        <p>
+          Vanuit FretFlow kun je ook een <strong>standalone HTML</strong> exporteren. Zo'n
+          export bevat de Viewer, projectdata en PDF-ondersteuning in één bestand en kan
+          volledig offline worden gebruikt. De Editor zit bewust niet in deze export.
+        </p>
+        <p>
+          De centrale FretFlow-app kan ook lokaal worden gebruikt. Voor de offline
+          PDF-fallback moet de map <strong>assets/</strong> dan naast
+          <strong>FretFlow.html</strong> blijven staan. Een standalone HTML-export heeft die
+          map niet nodig.
+        </p>
+        <p>
+          <strong>iPhone en iPad:</strong> FretFlow is daar minder geschikt voor offline
+          gebruik met lokale HTML-bestanden, omdat de standaard bestandsvoorvertoning van
+          iOS/iPadOS JavaScript in lokale HTML niet volledig kan uitvoeren. Dit geldt zowel
+          voor een lokale <strong>FretFlow.html</strong> als voor standalone gitaarmappen.
+          Deze beperking geldt niet voor online gebruik via HTTPS in de browser.
+        </p>
+        <p class="url-line">
+          FretFlow online: <a href="https://frgouma.github.io/FretFlow/FretFlow.html">https://frgouma.github.io/FretFlow/FretFlow.html</a><br>
+          GitHub repository: <a href="https://github.com/frgouma/FretFlow" target="_blank" rel="noopener noreferrer">https://github.com/frgouma/FretFlow</a>
+        </p>
+        <div class="link-row">
+          <a class="button-link" href="FretFlow.html">Open FretFlow online</a>
+          <a class="button-link secondary" href="https://github.com/frgouma/FretFlow" target="_blank" rel="noopener noreferrer">Open GitHub repository</a>
+        </div>
+        <p>
+          Gitaarmapbestanden en toegevoegde PDF-bestanden worden door FretFlow in de browser
+          verwerkt en niet naar deze website geüpload.
+        </p>
+      </div>
+    </details>
+
+    <details class="changes">
+      <summary>Nieuwe features in FretFlow 4.7.1</summary>
+      <div class="changes-content">
+        <p>
+          FretFlow 4 maakt van de vroegere losse Builder en Viewer één centrale applicatie
+          voor dagelijks gebruik op desktop, tablet en telefoon.
         </p>
         <ul>
-          <li><strong>Tab / riff</strong> is één algemene editor voor tabs en riffs, met maten, maatstrepen, technieken en annotaties.</li>
-          <li><strong>Shapebox</strong> maakt fretboard-shapes, overgangen en grondtoonkaarten volledig bewerkbaar.</li>
-          <li>Native componenten ondersteunen gedeelde breedtes van <strong>100%, 70%, 50% en 30%</strong> en kunnen waar passend naast elkaar staan.</li>
-          <li>Tekst en footers ondersteunen <strong>vet, cursief en inline fretboard-markers</strong>.</li>
-          <li>De akkoordenbibliotheek en akkoorddiagrammen zijn verder geïntegreerd in de Builder.</li>
-          <li>De viewer heeft een consistente SVG-toolbar met <strong>single-page, spread, fullscreen en print</strong>.</li>
-          <li>Native bladen en PDF's kunnen volledig worden afgedrukt, inclusief FretFlow-overlayfooters op PDF-pagina's.</li>
+          <li><strong>Viewer + Editor:</strong> bekijken en bewerken gebeurt vanuit dezelfde FretFlow-app.</li>
+          <li><strong>.fret-werkdocumenten:</strong> kleine, data-only bestanden met Save en Save As voor verder bewerken.</li>
+          <li><strong>Standalone HTML-export:</strong> maak een zelfvoorzienende, read-only Viewer die ook offline werkt.</li>
+          <li><strong>Native en PDF-tabs:</strong> beide blijven onderdeel van dezelfde gitaarmap en PDF-tabs werken ook offline.</li>
+          <li><strong>Mobiele Editor:</strong> Editor en Live View vormen een compacte tweepagina-workspace met single/spread-weergave.</li>
+          <li><strong>Sneller navigeren:</strong> terugkeren uit een tab herstelt de eerdere positie in het overzicht.</li>
+          <li><strong>Akkoorden en notatie:</strong> vernieuwde akkoorddiagrammen, shapeboxes en uitgebreidere tab/riff-technieken.</li>
+          <li><strong>Amp-presets:</strong> bewaar meerdere instellingen per tab en schakel tijdens het spelen snel tussen presets.</li>
+          <li><strong>Spotify en YouTube:</strong> media kunnen rechtstreeks vanuit de gitaarmap worden gekoppeld en bediend.</li>
+          <li><strong>Backwards compatible:</strong> ondersteunde oudere FretFlow-bestanden worden bij openen naar het huidige schema genormaliseerd.</li>
         </ul>
         <p>
-          <strong>Backwards compatible:</strong> de FretFlow 2.0.0 Builder kan bestaande
-          FretFlow 1.0-gitaarmappen openen. Ondersteunde oudere datastructuren worden bij
-          het openen automatisch naar het huidige model genormaliseerd, zodat bestaande
-          gitaarmappen niet opnieuw hoeven te worden opgebouwd.
+          Versie 4.7.1 bevat daarnaast portability-verbeteringen voor <strong>.fret</strong>-bestanden,
+          waaronder Android-bestandsselectie en consistente Save As-bestandsnamen.
         </p>
+      </div>
+    </details>
+
+    <details class="changes" id="faq">
+      <summary>FAQ / Problemen oplossen</summary>
+      <div class="changes-content">
+        <div class="faq-item">
+          <h3>Hoe krijg ik Spotify werkend?</h3>
+          <p>
+            Voor Spotify-integratie heb je een Spotify Developer-app nodig. Registreer als
+            redirect-URL <strong>https://frgouma.github.io/FretFlow/spotify-auth.html</strong>,
+            gebruik Authorization Code met PKCE en plaats geen Client Secret in FretFlow.
+            Vul de Spotify Client ID in bij de projectmetadata en voeg daarna per tab de
+            gewenste Spotify-link toe.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Wat is het verschil tussen .fret en standalone HTML?</h3>
+          <p>
+            Een <strong>.fret</strong>-bestand is het bewerkbare werkdocument. Open het in
+            FretFlow om verder te werken en sla wijzigingen opnieuw als .fret op. Een
+            standalone <strong>.html</strong>-export is een zelfstandige, read-only Viewer
+            die je kunt delen of offline kunt openen, maar die geen Editor bevat.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Werkt FretFlow offline?</h3>
+          <p>
+            Ja. Lokaal gebruik je <strong>FretFlow.html</strong> samen met de map
+            <strong>assets/</strong>; die bevat onder andere de lokale PDF.js-fallback.
+            Een geëxporteerde standalone HTML bevat zijn benodigde Viewer- en PDF-code zelf
+            en heeft de assets-map niet nodig. Spotify en YouTube blijven uiteraard
+            internetdiensten.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Waarom werkt een lokale HTML minder goed op iPhone of iPad?</h3>
+          <p>
+            De standaard bestandsvoorvertoning van iOS/iPadOS kan JavaScript in lokale HTML
+            niet volledig uitvoeren. Gebruik daarom bij voorkeur de
+            <a href="FretFlow.html">online HTTPS-versie van FretFlow</a> en de online demo.
+            Het probleem geldt specifiek voor lokale HTML-bestanden; de HTTPS-versie draait
+            in de browser.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Waarom kan FretFlow soms niet rechtstreeks over een bestaand .fret-bestand opslaan?</h3>
+          <p>
+            Direct overschrijven hangt af van de bestands- en browsermogelijkheden van het
+            apparaat. Als FretFlow geen bruikbare schrijfhandle krijgt, valt het veilig terug
+            op het downloaden van een nieuw <strong>.fret</strong>-bestand. Save As blijft
+            daarom ook beschikbaar.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Waarom werkt YouTube soms niet vanuit een lokaal HTML-bestand?</h3>
+          <p>
+            YouTube-embeds kunnen een lokale <strong>file://</strong>-context weigeren of
+            beperken. Gebruik in dat geval de externe YouTube-link of open FretFlow via de
+            HTTPS-versie. Daar heeft de pagina een normale web-origin.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Hoe kan ik de demo bewerken?</h3>
+          <p>
+            Gebruik bovenaan <strong>Demo bewerken</strong> om <strong>demo.fret</strong> te
+            downloaden. Open daarna FretFlow en kies <strong>Gitaarmap laden</strong>. De
+            tegel <strong>Voorbeeld bekijken</strong> opent dezelfde gitaarmap als standalone
+            Viewer en is niet bedoeld om te bewerken.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Waar vind ik de broncode?</h3>
+          <p class="url-line">
+            De repository staat op
+            <a href="https://github.com/frgouma/FretFlow" target="_blank" rel="noopener noreferrer">https://github.com/frgouma/FretFlow</a>.
+          </p>
+        </div>
       </div>
     </details>
 
@@ -345,5 +519,38 @@ h1{
     </div>
   </div>
 </main>
+
+<script>
+(() => {
+  const link = document.getElementById("demo-fret-download");
+  if (!link) return;
+
+  link.addEventListener("click", async (event) => {
+    // On GitHub Pages/HTTP(S), fetch the project file as data and force a
+    // download. This prevents browsers from opening the JSON payload inline.
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+
+    event.preventDefault();
+    try {
+      const response = await fetch("demo.fret", { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const bytes = await response.arrayBuffer();
+      const blob = new Blob([bytes], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const download = document.createElement("a");
+      download.href = url;
+      download.download = "demo.fret";
+      document.body.appendChild(download);
+      download.click();
+      download.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error("Kon demo.fret niet downloaden:", error);
+      location.href = "demo.fret";
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
