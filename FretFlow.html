@@ -4039,46 +4039,58 @@ class Viewer {
   }
 
   scalePages() {
+    const viewer = this.app.root.querySelector("#viewer");
+    const wrap = viewer?.querySelector(".frame-wrap");
+    const mount = viewer?.querySelector("#pageMount");
+    const shells = mount?.querySelectorAll(".page-shell");
+    if (!viewer || !wrap || !mount || !shells?.length) return;
+    if (!viewer.isConnected || !viewer.getClientRects().length || !wrap.getClientRects().length) return;
+
+    const sourceWidth = wrap.clientWidth;
+    if (!Number.isFinite(sourceWidth) || sourceWidth <= 0) return;
+
     this.updateMode();
-    const wrap = document.querySelector(".frame-wrap");
-    const mount = document.getElementById("pageMount");
-    const shells = document.querySelectorAll(".page-shell");
-    if (!wrap || !mount || !shells.length) return;
-
-    mount.className = this.mode;
-
     const pageWidth = 794;
     const pageHeight = 1123;
     const spreadMargins = this.spreadMargins();
     const gap = this.mode === "spread" && shells.length > 1 ? spreadMargins.gap : 0;
-    const topbar = document.querySelector(".topbar");
+    const topbar = viewer.querySelector(".topbar");
     const topbarVisible = topbar && !topbar.classList.contains("toolbar-hidden");
     const topbarHeight = topbarVisible ? topbar.offsetHeight : 0;
 
-    let baseScale;
+    let baseScale,availableWidth,wrapPadding,mountGap;
     if (this.mode === "spread") {
       // Spread mode keeps both pages fully visible at zoom factor 1.
-      const availableWidth = wrap.clientWidth - (spreadMargins.side * 2);
+      availableWidth = sourceWidth - (spreadMargins.side * 2);
       const availableHeight = window.innerHeight - topbarHeight - (spreadMargins.vertical * 2);
       const totalWidth = (pageWidth * shells.length) + gap;
+      if (!Number.isFinite(availableWidth) || availableWidth <= 0 ||
+          !Number.isFinite(availableHeight) || availableHeight <= 0) return;
       baseScale = Math.min(1, availableWidth / totalWidth, availableHeight / pageHeight);
-      wrap.style.padding = `${spreadMargins.vertical}px ${spreadMargins.side}px`;
-      mount.style.gap = `${gap}px`;
+      wrapPadding = `${spreadMargins.vertical}px ${spreadMargins.side}px`;
+      mountGap = `${gap}px`;
     } else {
       // Single mode keeps the established responsive fit behavior.
       const tabletPortrait = this.isTabletPortraitViewport();
       const sideMargin = this.singlePageSideMargin();
       const landscape = window.innerWidth > window.innerHeight;
       const verticalPadding = landscape ? 0 : (tabletPortrait ? 10 : (window.innerWidth < 900 ? 26 : 52));
-      const availableWidth = wrap.clientWidth - (sideMargin * 2);
+      availableWidth = sourceWidth - (sideMargin * 2);
+      if (!Number.isFinite(availableWidth) || availableWidth <= 0) return;
       const widthScale = availableWidth / pageWidth;
       baseScale = tabletPortrait ? widthScale : Math.min(1, widthScale);
-      wrap.style.padding = `${verticalPadding}px ${Math.max(0, sideMargin)}px`;
-      mount.style.gap = "0px";
+      wrapPadding = `${verticalPadding}px ${Math.max(0, sideMargin)}px`;
+      mountGap = "0px";
     }
 
     const zoomed = this.isZoomed();
     const scale = baseScale * this.userZoom;
+    if (!Number.isFinite(baseScale) || baseScale <= 0 ||
+        !Number.isFinite(scale) || scale <= 0) return;
+
+    mount.className = this.mode;
+    wrap.style.padding = wrapPadding;
+    mount.style.gap = mountGap;
     const scaledContentWidth = (pageWidth * scale * shells.length) + gap;
     const horizontalPadding = this.mode === "spread"
       ? spreadMargins.side * 2
