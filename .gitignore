@@ -1,0 +1,11 @@
+# Personal guitar library
+/Digitale_Gitaarmap_Reitze_Gouma.fret
+
+# IDE/editor
+*.swp
+*~
+.DS_Store
+
+# Python (if used for development)
+__pycache__/
+*.pyc
