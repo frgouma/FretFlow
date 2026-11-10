@@ -888,10 +888,10 @@
 }
 .component-row.single>.component-full{width:100%;flex-basis:100%}
 .chordsection .song-measure-row{width:100%}
-.chordsection .measure-box{flex:0 0 calc(100% / var(--measure-count, 4));width:calc(100% / var(--measure-count, 4));min-width:0}
-.component-wide.chordsection .measure-box{font-size:18px;padding-left:10px;padding-right:10px}
-.component-half.chordsection .measure-box{font-size:16px;padding-left:8px;padding-right:8px}
-.component-narrow.chordsection .measure-box{font-size:13px;padding-left:5px;padding-right:5px}
+.chordsection .measure-box{flex:0 0 var(--measure-width);width:var(--measure-width);min-width:0;padding-left:min(18px, var(--measure-padding));padding-right:min(18px, var(--measure-padding))}
+.component-wide.chordsection .measure-box{font-size:18px;padding-left:min(10px, var(--measure-padding));padding-right:min(10px, var(--measure-padding))}
+.component-half.chordsection .measure-box{font-size:16px;padding-left:min(8px, var(--measure-padding));padding-right:min(8px, var(--measure-padding))}
+.component-narrow.chordsection .measure-box{font-size:13px;padding-left:min(5px, var(--measure-padding));padding-right:min(5px, var(--measure-padding))}
 .simple-riff-canvas{max-width:100%}
 .chordgrid-block .chord-grid{justify-content:start}
 .shape-marker,.inline-shape-marker{
@@ -962,6 +962,9 @@
 .chord-marker-row .field{margin:0;min-width:0}
 .chord-marker-row :is(input,select){width:100%;min-width:0}
 .chord-marker-row button{height:34px}
+.chord-measure-editor .chord-bar-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:7px;align-items:end}
+.chord-measure-editor .chord-bar-fields .field{margin:0;min-width:0}
+.chord-measure-editor .chord-bar-fields :is(input,select){width:100%;min-width:0}
 .chord-optional-row{display:flex;gap:5px;align-items:end}.chord-optional-row .field{flex:1;min-width:0;margin:0}.chord-optional-row input{width:100%;min-width:0}.chord-optional-row button{height:34px}.chord-strum-help{font-size:12px;color:#6b5e52}
 .measure-editor-section{margin:12px 0}.measure-editor-section h4{margin:0 0 6px;font-size:12px;color:#5c5148}.riff-group-editor{position:sticky;top:calc(var(--component-toolbar-height, 0px) - 12px);z-index:3}.riff-group-editor.sticky-unavailable{position:static}.riff-measure-box .collapse-body :is(input,select,button){scroll-margin-top:calc(var(--component-toolbar-height, 0px) + var(--riff-group-height, 0px) + 8px)}
 .riff-group-editor.block-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0;padding:7px}.riff-group-editor>b{font-size:12px}.riff-toolbar-content{flex-basis:100%;display:flex;flex-direction:column;align-items:stretch;gap:7px;min-width:0}.is-collapsed>.riff-group-editor .riff-toolbar-content{display:none}.riff-toolbar-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}.riff-group-editor .riff-group-control{width:100%;margin:0;grid-template-columns:58px 30px minmax(0,1fr) 30px;gap:6px}.riff-group-editor .riff-group-feedback{margin:0}.riff-note-row .field:first-of-type label{white-space:nowrap}
@@ -1563,6 +1566,44 @@ FretFlow.ampKnobSvg = function(value,{size=40,className="",ariaLabel=""}={}) {
     : 'aria-hidden="true" focusable="false"';
   return `<svg class="amp-knob-svg ${FretFlow.escape(className)}" width="${pixelSize}" height="${pixelSize}" viewBox="0 0 100 100" ${accessibility}><defs><radialGradient id="${faceId}" cx="37%" cy="30%" r="72%"><stop offset="0%" stop-color="#565961"/><stop offset="55%" stop-color="#36383e"/><stop offset="100%" stop-color="#202126"/></radialGradient><linearGradient id="${rimId}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#50535a"/><stop offset="50%" stop-color="#292b30"/><stop offset="100%" stop-color="#15161a"/></linearGradient><filter id="${shadowId}" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2.5" stdDeviation="2.2" flood-color="#000" flood-opacity=".55"/></filter></defs><g class="amp-knob-tick-outline" fill="none" stroke="#2b2d32" stroke-width="7.2" stroke-linecap="round"><line x1="31" y1="76" x2="27" y2="82"/><line x1="69" y1="76" x2="73" y2="82"/></g><g class="amp-knob-ticks" fill="none" stroke="#f5f5f5" stroke-width="4.2" stroke-linecap="round"><line x1="31" y1="76" x2="27" y2="82"/><line x1="69" y1="76" x2="73" y2="82"/></g><g class="amp-knob-body" filter="url(#${shadowId})"><circle cx="50" cy="48" r="29" fill="url(#${rimId})"/><circle cx="50" cy="48" r="25.5" fill="url(#${faceId})"/><path d="M31 35 C38 23, 57 18, 69 28" fill="none" stroke="#74777f" stroke-width="2.2" stroke-linecap="round" opacity=".28"/><path d="M32 64 C40 72, 58 75, 69 66" fill="none" stroke="#0f1013" stroke-width="3" stroke-linecap="round" opacity=".45"/></g><g class="amp-knob-pointer" data-amp-pointer transform="rotate(${angle} 50 48)"><line x1="50" y1="47" x2="50" y2="26" stroke="#f7f7f7" stroke-width="5" stroke-linecap="round"/></g></svg>`;
 };
+// Chord boundaries use the same cumulative percentage strings as Tab/Riff.
+// Keep three decimals when possible, increasing precision for very narrow intervals.
+FretFlow.chordBoundary = function(value, left, right) {
+  for (let digits = 3; digits <= 14; digits++) {
+    const rounded = Number(value.toFixed(digits));
+    if (rounded > left && rounded < right) return `${rounded}%`;
+  }
+  return `${value}%`;
+};
+FretFlow.equalChordBoundaries = function(measures) {
+  const count = measures.length;
+  measures.forEach((measure, index) => {
+    measure.end = index === count - 1 ? "100%" : FretFlow.chordBoundary(100 * (index + 1) / count, 100 * (index + .5) / count, 100 * (index + 1.5) / count);
+  });
+};
+FretFlow.normalizeChordBoundaries = function(measures) {
+  const count = measures.length;
+  if (!count) return;
+  // Keep ordered valid anchors; interpolate missing or invalid positions between them.
+  const anchors = [{index:-1, value:0}];
+  measures.slice(0, -1).forEach((measure, index) => {
+    const raw = String(measure.end ?? "").trim();
+    const value = /^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?%?$/i.test(raw) ? Number(raw.replace(/%$/, "")) : NaN;
+    if (Number.isFinite(value) && value > anchors.at(-1).value && value < 100) anchors.push({index, value});
+  });
+  anchors.push({index:count - 1, value:100});
+  for (let a = 1; a < anchors.length; a++) {
+    const left = anchors[a - 1], right = anchors[a], span = right.index - left.index;
+    for (let index = left.index + 1; index < right.index; index++) {
+      const value = left.value + (right.value - left.value) * (index - left.index) / span;
+      const before = left.value + (right.value - left.value) * (index - left.index - .5) / span;
+      const after = left.value + (right.value - left.value) * (index - left.index + .5) / span;
+      measures[index].end = FretFlow.chordBoundary(value, before, after);
+    }
+    if (right.index < count - 1) measures[right.index].end = `${right.value}%`;
+  }
+  measures[count - 1].end = "100%";
+};
 FretFlow.normalizeNativeData = function(data = {}) {
   data.library = FretFlow.normalizeChordLibrary(data.library || {});
   data.tabs = Array.isArray(data.tabs) ? data.tabs : [];
@@ -1591,6 +1632,7 @@ FretFlow.normalizeNativeData = function(data = {}) {
             delete obj.startBar;
             return obj;
           });
+          FretFlow.normalizeChordBoundaries(line.measures);
         }
       }
     }
@@ -5272,10 +5314,15 @@ class ChordSectionComponent extends MusicSectionComponent {
     row.className = "song-measure-row";
 
     const measures = line.measures || [];
-    row.style.setProperty("--measure-count", Math.max(1, measures.length));
+    let previousEnd = 0;
     measures.forEach((measure, index) => {
+      const end = parseFloat(measure.end);
       const data = index === measures.length - 1 && line.belowRight && !measure.belowRight ? {...measure, belowRight:line.belowRight} : measure;
-      row.appendChild(new ChordMeasure(data, index === measures.length - 1, this.app).render());
+      const box = new ChordMeasure(data, index === measures.length - 1, this.app).render();
+      box.style.setProperty("--measure-width", `${end - previousEnd}%`);
+      box.style.setProperty("--measure-padding", `${(end - previousEnd) / 2}%`);
+      row.appendChild(box);
+      previousEnd = end;
     });
 
     if (measures.length && line.startBar !== "none") row.appendChild(new TabCanvas({width:168, top:15, gap:11, leftPad:0, rightPad:0}).barElement("start", line.startBar));
@@ -6110,7 +6157,7 @@ FretFlow.renderNativeRecord = function(record, libraryData = {}) {
       chordCategories: libraryData.chordCategories || FretFlow.defaultChordCategories(),
       chords: libraryData.chords || []
     },
-    tabs: [record]
+    tabs: [structuredClone(record)]
   };
   const app = Object.create(FretFlowApp.prototype);
   app.data = FretFlow.normalizeNativeData(data);
@@ -6988,7 +7035,7 @@ function chordSectionEditor(s,si){
 }
 function chordLineEditor(si,li,line){
   const measures=line.measures||[],collapsed=editorCollapsed('line',line);
-  return `<div class="subbox editor-collapse-node editor-line ${collapsed?'is-collapsed':''}" data-collapse-level="line" data-si="${si}" data-li="${li}"><div class="block-head">${collapseToggleHtml('line',si,li,-1,line)}<b>Regel ${li+1}</b><span class="collapse-meta">${measures.length} ${measures.length===1?'maat':'maten'}</span><span class="spacer"></span><div class="line-actions"><button class="small secondary" onclick="moveChordLine(${si},${li},-1)" ${li===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordLine(${si},${li},1)" ${li===(get().sections[si].lines.length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="duplicateChordLine(${si},${li})">Dupliceer regel</button><button class="small danger" onclick="removeChordLine(${si},${li})">Verwijder regel</button></div></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="field"><label for="chord-line-start-${si}-${li}">Begin regel</label><select id="chord-line-start-${si}-${li}" onchange="chordLineStart(${si},${li},this.value)">${barOpts(line.startBar)}</select></div>${measures.length>4?'<div class="warning">Veel maten op één regel kunnen moeilijk leesbaar worden. Controleer de Live View.</div>':''}${measures.map((m,mi)=>chordMeasureEditor(si,li,mi,m)).join('')}<button class="small" onclick="addChordMeasure(${si},${li})">+ Maat</button></div></div>`;
+  return `<div class="subbox editor-collapse-node editor-line ${collapsed?'is-collapsed':''}" data-collapse-level="line" data-si="${si}" data-li="${li}"><div class="block-head">${collapseToggleHtml('line',si,li,-1,line)}<b>Regel ${li+1}</b><span class="collapse-meta">${measures.length} ${measures.length===1?'maat':'maten'}</span><span class="spacer"></span><div class="line-actions"><button class="small secondary" onclick="moveChordLine(${si},${li},-1)" ${li===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordLine(${si},${li},1)" ${li===(get().sections[si].lines.length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="equalChordMeasures(${si},${li})">Gelijkmatig verdelen</button><button class="small secondary" onclick="duplicateChordLine(${si},${li})">Dupliceer regel</button><button class="small danger" onclick="removeChordLine(${si},${li})">Verwijder regel</button></div></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="field"><label for="chord-line-start-${si}-${li}">Begin regel</label><select id="chord-line-start-${si}-${li}" onchange="chordLineStart(${si},${li},this.value)">${barOpts(line.startBar)}</select></div>${measures.length>4?'<div class="warning">Veel maten op één regel kunnen moeilijk leesbaar worden. Controleer de Live View.</div>':''}${measures.map((m,mi)=>chordMeasureEditor(si,li,mi,m)).join('')}<button class="small" onclick="addChordMeasure(${si},${li})">+ Maat</button></div></div>`;
 }
 const chordEditorState=new WeakMap();
 function chordEditorDraft(m){let state=chordEditorState.get(m);if(!state){state={pending:false,strum:false,below:false};chordEditorState.set(m,state)}return state}
@@ -6996,17 +7043,20 @@ function chordMeasureEditor(si,li,mi,m){
   const collapsed=editorCollapsed('measure',m),chords=m.chords||[],labels=chords.map(builderChordTokenLabel).filter(Boolean),helpId=`chord-strum-help-${si}-${li}-${mi}`,state=chordEditorDraft(m);
   const rows=chords.map((token,ci)=>`<div class="selected-chord measure-chord-editor-row"><select data-chord-index="${ci}" aria-label="Akkoord of teken ${ci+1}" onchange="if(this.value)setChordInMeasure(${si},${li},${mi},${ci},this.value)">${chordTokenPickerOptions(token)}</select><button class="small secondary" aria-label="Verplaats akkoord ${ci+1} omhoog" onclick="moveChordInMeasure(${si},${li},${mi},${ci},-1)" ${ci===0?'disabled':''}>↑</button><button class="small secondary" aria-label="Verplaats akkoord ${ci+1} omlaag" onclick="moveChordInMeasure(${si},${li},${mi},${ci},1)" ${ci===chords.length-1?'disabled':''}>↓</button><button class="small danger" aria-label="Verwijder akkoord of teken ${ci+1}" onclick="removeChordFromMeasure(${si},${li},${mi},${ci})">×</button></div>`).join('');
   const pending=state.pending?`<div class="selected-chord measure-chord-editor-row"><select data-chord-pending aria-label="Nieuw akkoord of teken" onkeydown="if(event.key==='Escape'){event.preventDefault();cancelPendingChord(${si},${li},${mi})}" onchange="if(this.value)addChordToMeasure(${si},${li},${mi},this.value)"><option value="" selected disabled>Kies uit bibliotheek…</option>${chordTokenPickerOptions(null)}</select><span></span><span></span><button class="small danger" aria-label="Annuleer nieuw akkoord" onclick="cancelPendingChord(${si},${li},${mi})">×</button></div>`:'';
-  const strum=state.strum||m.strum?`<div class="measure-editor-section"><div class="chord-optional-row"><div class="field"><label for="chord-strum-${si}-${li}-${mi}">Slagritme</label><input id="chord-strum-${si}-${li}-${mi}" data-chord-strum value="${esc(m.strum||'')}" placeholder="D D D D" spellcheck="false" oninput="updateStrumInput(this,${si},${li},${mi})" aria-describedby="${helpId}" aria-invalid="${FretFlow.parseStrumPattern(m.strum||'')===null?'true':'false'}"><div class="warning" data-strum-warning ${FretFlow.parseStrumPattern(m.strum||'')===null?'':'hidden'}>Ongeldig slagritme: gebruik D of U met hoogstens één direct aansluitende . of x.</div></div><button class="small danger" aria-label="Verwijder slagritme" onclick="removeChordOptional(${si},${li},${mi},'strum')">×</button></div><details class="chord-strum-help" id="${helpId}"><summary>Uitleg slagritme</summary>D of U; plaats . of x direct na de aanslag. Spaties geven ritmische posities aan, ook aan het begin en einde.</details></div>`:'';
-  const below=state.below||m.belowRight?`<div class="measure-editor-section chord-optional-row"><div class="field"><label for="chord-below-${si}-${li}-${mi}">Tekst onder — rechts</label><input id="chord-below-${si}-${li}-${mi}" data-chord-below value="${esc(m.belowRight||'')}" placeholder="3×, D.S., D.S.S., Fine…" oninput="chordEditorDraft(chordMeasureAt(${si},${li},${mi})).below=true;chordMeasure(${si},${li},${mi},'belowRight',this.value)"></div><button class="small danger" aria-label="Verwijder tekst onder" onclick="removeChordOptional(${si},${li},${mi},'below')">×</button></div>`:'';
+  const strum=state.strum||m.strum?`<div class="measure-editor-section"><div class="chord-optional-row"><div class="field"><label for="chord-strum-${si}-${li}-${mi}">Slagritme</label><input id="chord-strum-${si}-${li}-${mi}" data-chord-strum onfocus="beginChordFieldEdit(${si},'Slagritme')" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()" value="${esc(m.strum||'')}" placeholder="D D D D" spellcheck="false" oninput="updateStrumInput(this,${si},${li},${mi})" aria-describedby="${helpId}" aria-invalid="${FretFlow.parseStrumPattern(m.strum||'')===null?'true':'false'}"><div class="warning" data-strum-warning ${FretFlow.parseStrumPattern(m.strum||'')===null?'':'hidden'}>Ongeldig slagritme: gebruik D of U met hoogstens één direct aansluitende . of x.</div></div><button class="small danger" aria-label="Verwijder slagritme" onclick="removeChordOptional(${si},${li},${mi},'strum')">×</button></div><details class="chord-strum-help" id="${helpId}"><summary>Uitleg slagritme</summary>D of U; plaats . of x direct na de aanslag. Spaties geven ritmische posities aan, ook aan het begin en einde.</details></div>`:'';
+  const below=state.below||m.belowRight?`<div class="measure-editor-section chord-optional-row"><div class="field"><label for="chord-below-${si}-${li}-${mi}">Tekst onder — rechts</label><input id="chord-below-${si}-${li}-${mi}" data-chord-below onfocus="beginChordFieldEdit(${si},'Tekst onder')" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()" value="${esc(m.belowRight||'')}" placeholder="3×, D.S., D.S.S., Fine…" oninput="chordEditorDraft(chordMeasureAt(${si},${li},${mi})).below=true;chordMeasure(${si},${li},${mi},'belowRight',this.value)"></div><button class="small danger" aria-label="Verwijder tekst onder" onclick="removeChordOptional(${si},${li},${mi},'below')">×</button></div>`:'';
   return `<div class="subbox editor-collapse-node editor-measure chord-measure-editor ${collapsed?'is-collapsed':''}" data-collapse-level="measure" data-si="${si}" data-li="${li}" data-mi="${mi}"><div class="block-head chord-toolbar">${collapseToggleHtml('measure',si,li,mi,m)}<b>Maat ${mi+1}</b><span class="collapse-meta chord-summary" title="${esc(labels.join(' / '))}">${esc(labels.join(' / '))}</span><button class="small danger" onclick="removeChordMeasure(${si},${li},${mi})">Verwijder maat</button><div class="riff-toolbar-content"><div class="riff-toolbar-row"><button class="small" data-chord-add onclick="beginPendingChord(${si},${li},${mi})">+ Akkoord</button><button class="small secondary" data-chord-add-strum onclick="showChordOptional(${si},${li},${mi},'strum')">+ Slagritme</button><button class="small secondary" onclick="addChordMarker(${si},${li},${mi})">+ Navigatieteken</button><button class="small secondary" data-chord-add-below onclick="showChordOptional(${si},${li},${mi},'below')">+ Tekst onder</button></div></div></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="measure-editor-section"><div class="selected-chords">${rows}${pending}</div></div>${strum}${chordMarkerEditor(si,li,mi,m)}${below}${chordBarFields(si,li,mi,m)}</div></div>`;
 }
-function chordMarkerEditor(si,li,mi,m){return (m.markers||[]).length?`<div class="measure-editor-section"><h4>Navigatietekens</h4>${m.markers.map((item,ii)=>`<div class="chord-marker-row"><div class="field"><label for="chord-marker-position-${si}-${li}-${mi}-${ii}">Positie (%)</label><input id="chord-marker-position-${si}-${li}-${mi}-${ii}" data-chord-marker-position value="${esc(percentDisplay(item.position,'0'))}" oninput="chordMarker(${si},${li},${mi},${ii},'position',this.value)"></div><div class="field"><label for="chord-marker-type-${si}-${li}-${mi}-${ii}">Teken</label><select id="chord-marker-type-${si}-${li}-${mi}-${ii}" onchange="chordMarker(${si},${li},${mi},${ii},'type',this.value)">${markOpts(item.type)}</select></div><button class="small danger" onclick="removeChordMarker(${si},${li},${mi},${ii})" aria-label="Verwijder navigatieteken">×</button></div>`).join('')}</div>`:''}
-function addChordMarker(si,li,mi){const m=get().sections[si].lines[li].measures[mi];(m.markers||(m.markers=[])).push({type:'segno',position:'0%'});render();focusChordEditor(si,li,mi,'[data-chord-marker-position]',true)}
-function chordMarker(si,li,mi,ii,key,value){const item=get().sections[si].lines[li].measures[mi].markers[ii];item[key]=key==='position'?percentPosition(value,0):value;schedulePreview()}
-function removeChordMarker(si,li,mi,ii){get().sections[si].lines[li].measures[mi].markers.splice(ii,1);render()}
+function chordMarkerEditor(si,li,mi,m){return (m.markers||[]).length?`<div class="measure-editor-section"><h4>Navigatietekens</h4>${m.markers.map((item,ii)=>`<div class="chord-marker-row"><div class="field"><label for="chord-marker-position-${si}-${li}-${mi}-${ii}">Positie (%)</label><input id="chord-marker-position-${si}-${li}-${mi}-${ii}" data-chord-marker-position onfocus="beginChordFieldEdit(${si},'Markerpositie')" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()" value="${esc(percentDisplay(item.position,'0'))}" oninput="chordMarker(${si},${li},${mi},${ii},'position',this.value)"></div><div class="field"><label for="chord-marker-type-${si}-${li}-${mi}-${ii}">Teken</label><select id="chord-marker-type-${si}-${li}-${mi}-${ii}" onchange="chordMarker(${si},${li},${mi},${ii},'type',this.value)">${markOpts(item.type)}</select></div><button class="small danger" onclick="removeChordMarker(${si},${li},${mi},${ii})" aria-label="Verwijder navigatieteken">×</button></div>`).join('')}</div>`:''}
+function addChordMarkerImpl(si,li,mi){const m=get().sections[si].lines[li].measures[mi];(m.markers||(m.markers=[])).push({type:'segno',position:'0%'});render();focusChordEditor(si,li,mi,'[data-chord-marker-position]',true)}
+function chordMarker(si,li,mi,ii,key,value){mutateRiffWithOptionalTransaction(si,'Navigatieteken bewerken',section=>{const item=section.lines[li].measures[mi].markers[ii];item[key]=key==='position'?percentPosition(value,0):value});schedulePreview()}
+function removeChordMarkerImpl(si,li,mi,ii){get().sections[si].lines[li].measures[mi].markers.splice(ii,1);render()}
 function sanitizeStrumPattern(value){return String(value??'').replace(/[du]/g,c=>c.toUpperCase()).replace(/X/g,'x')}
 function updateStrumInput(input,si,li,mi){chordEditorDraft(chordMeasureAt(si,li,mi)).strum=true;const value=sanitizeStrumPattern(input.value);if(value!==input.value){const start=input.selectionStart,end=input.selectionEnd;input.value=value;input.setSelectionRange(start,end)}const valid=FretFlow.parseStrumPattern(value)!==null;input.setAttribute('aria-invalid',String(!valid));input.parentElement.querySelector('[data-strum-warning]').hidden=valid;chordMeasure(si,li,mi,'strum',value)}
-function chordBarFields(si,li,mi,m){return `<div class="measure-editor-section"><h4>Maatstrepen en herhalingen</h4><div class="field"><label for="chord-end-${si}-${li}-${mi}">Einde maat</label><select id="chord-end-${si}-${li}-${mi}" onchange="chordMeasure(${si},${li},${mi},'endBar',this.value||'single')">${barOpts(m.endBar)}</select></div></div>`}
+function chordBarFields(si,li,mi,m){
+  const position=mi<get().sections[si].lines[li].measures.length-1?`<div class="field"><label for="chord-position-${si}-${li}-${mi}">Positie (%)</label><input id="chord-position-${si}-${li}-${mi}" onfocus="beginChordFieldEdit(${si},'Maatstreep verplaatsen')" value="${esc(String(m.end).replace(/%$/,''))}" oninput="chordMeasureEnd(${si},${li},${mi},this.value)" onchange="commitRiffFieldEdit();this.value=String(chordMeasureAt(${si},${li},${mi}).end).replace(/%$/,'')" onblur="commitRiffFieldEdit();this.value=String(chordMeasureAt(${si},${li},${mi}).end).replace(/%$/,'')"></div>`:'';
+  return `<div class="measure-editor-section"><h4>Maatstrepen en herhalingen</h4><div class="chord-bar-fields"><div class="field"><label for="chord-end-${si}-${li}-${mi}">Einde maat</label><select id="chord-end-${si}-${li}-${mi}" onchange="chordMeasure(${si},${li},${mi},'endBar',this.value||'single')">${barOpts(m.endBar)}</select></div>${position}</div></div>`;
+}
 function barFields(si,mi,o){const path=mi===null?'sec':'mea';return `<div class="grid"><div class="field"><label>Begin</label><select onchange="${path}Bar(${si},${mi},'startBar',this.value)">${barOpts(o.startBar)}</select></div><div class="field"><label>Einde</label><select onchange="${path}Bar(${si},${mi},'endBar',this.value)">${barOpts(o.endBar)}</select></div><div class="field"><label>Teken</label><select onchange="${path}Bar(${si},${mi},'marker',this.value)">${markOpts(o.marker)}</select></div><div class="field"><label>Tekst</label><input value="${esc(o.belowRight||'')}" oninput="${path}Bar(${si},${mi},'belowRight',this.value)"></div></div>`}
 function barOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function internalBarOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','begin herhaling'],['repeatEnd','einde herhaling'],['repeatBoth','einde + begin herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function markOpts(v){return [['','geen'],['segno','Segno'],['doubleSegno','Dubbel Segno'],['coda','Coda']].map(([x,label])=>`<option value="${x}" ${v===x?'selected':''}>${label}</option>`).join('')}
 function notesEditor(si,mi,notes){return notes.map((n,ni)=>`<div class="note-row"><div class="field"><label>Positie</label><input class="note-position" value="${esc(n.position??'1')}" oninput="note(${si},${mi},${ni},'position',this.value)"></div><div class="field"><label>Snaar</label><select onchange="note(${si},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${n.string===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" oninput="note(${si},${mi},${ni},'fret',this.value)"></div><div class="field"><label>Type</label><select onchange="note(${si},${mi},${ni},'type',this.value)">${[['standard','Standard'],['legato','Legato'],['slideUp','Slide up'],['slideDown','Slide down'],['slideOutUp','Slide out up'],['slideOutDown','Slide out down'],['bendUp','Bend up'],['bendUpDown','Bend up-down'],['downstroke','Downstroke'],['upstroke','Upstroke']].map(([x,l])=>`<option value="${x}" ${n.type===x?'selected':''}>${l}</option>`).join('')}</select></div><button class="small danger" onclick="removeNote(${si},${mi},${ni})">×</button></div>`).join('')}
@@ -7062,15 +7112,40 @@ function focusChordEditor(si,li,mi,selector,last=false){
 function chordMeasureAt(si,li,mi){return get().sections[si].lines[li].measures[mi]}
 function beginPendingChord(si,li,mi){chordEditorDraft(chordMeasureAt(si,li,mi)).pending=true;render();focusChordEditor(si,li,mi,'[data-chord-pending]')}
 function cancelPendingChord(si,li,mi){chordEditorDraft(chordMeasureAt(si,li,mi)).pending=false;render();focusChordEditor(si,li,mi,'[data-chord-add]')}
-function addChordToMeasure(si,li,mi,value){const token=chordTokenFromPicker(value);if(!token)return;const m=chordMeasureAt(si,li,mi);(m.chords||(m.chords=[])).push(token);chordEditorDraft(m).pending=false;render();focusChordEditor(si,li,mi,`[data-chord-index="${m.chords.length-1}"]`)}
+function addChordToMeasureImpl(si,li,mi,value){const token=chordTokenFromPicker(value);if(!token)return;const m=chordMeasureAt(si,li,mi);(m.chords||(m.chords=[])).push(token);chordEditorDraft(m).pending=false;render();focusChordEditor(si,li,mi,`[data-chord-index="${m.chords.length-1}"]`)}
 function showChordOptional(si,li,mi,key){chordEditorDraft(chordMeasureAt(si,li,mi))[key]=true;render();focusChordEditor(si,li,mi,`[data-chord-${key}]`)}
-function removeChordOptional(si,li,mi,key){const m=chordMeasureAt(si,li,mi);chordEditorDraft(m)[key]=false;delete m[key==='below'?'belowRight':'strum'];render();focusChordEditor(si,li,mi,`[data-chord-add-${key}]`)}
-function setChordInMeasure(si,li,mi,ci,value){const token=chordTokenFromPicker(value);if(!token)return;get().sections[si].lines[li].measures[mi].chords[ci]=token;render();focusChordEditor(si,li,mi,`[data-chord-index="${ci}"]`)}
-function removeChordFromMeasure(si,li,mi,ci){const chords=get().sections[si].lines[li].measures[mi].chords;chords.splice(ci,1);render();focusChordEditor(si,li,mi,chords.length?`[data-chord-index="${Math.min(ci,chords.length-1)}"]`:'[data-chord-add]')}
-function moveChordInMeasure(si,li,mi,ci,d){const a=get().sections[si].lines[li].measures[mi].chords,j=ci+d;if(j<0||j>=a.length)return;[a[ci],a[j]]=[a[j],a[ci]];render();focusChordEditor(si,li,mi,`[data-chord-index="${j}"]`)}
-function removeSection(i){get().sections.splice(i,1);render()}function sec(i,k,v){if(v===''&&['segno','marker','belowRight','startBar','endBar'].includes(k))delete get().sections[i][k];else get().sections[i][k]=v;schedulePreview()}function secBar(i,mi,k,v){sec(i,k,v);schedulePreview(0)}function mea(si,mi,k,v){const m=get().sections[si].measures[mi];if(v==='')delete m[k];else m[k]=v;schedulePreview()}function meaBar(si,mi,k,v){mea(si,mi,k,v);schedulePreview(0)}
-function chordLineStart(si,li,value){get().sections[si].lines[li].startBar=value||'single';schedulePreview(0)}
-function addChordLine(si){const lines=get().sections[si].lines;lines.push({startBar:'single',measures:[]});render();focusChordEditor(si,lines.length-1,null,':scope > .collapse-body > button')}function removeChordLine(si,li){get().sections[si].lines.splice(li,1);render()}function duplicateChordLine(si,li){const lines=get().sections[si].lines;lines.splice(li+1,0,structuredClone(lines[li]));render()}function moveChordLine(si,li,d){const lines=get().sections[si].lines,j=li+d;if(j<0||j>=lines.length)return;[lines[li],lines[j]]=[lines[j],lines[li]];render()}function addChordMeasure(si,li){const measures=get().sections[si].lines[li].measures;measures.push({chords:[],endBar:'single'});render();focusChordEditor(si,li,measures.length-1,'[data-chord-add]')}function removeChordMeasure(si,li,mi){const measures=get().sections[si].lines[li].measures;measures.splice(mi,1);render()}function chordMeasure(si,li,mi,k,v){const m=get().sections[si].lines[li].measures[mi];if(v===''||(Array.isArray(v)&&!v.length))delete m[k];else m[k]=v;schedulePreview(Array.isArray(v)?320:0)}
+function removeChordOptionalImpl(si,li,mi,key){const m=chordMeasureAt(si,li,mi);chordEditorDraft(m)[key]=false;delete m[key==='below'?'belowRight':'strum'];render();focusChordEditor(si,li,mi,`[data-chord-add-${key}]`)}
+function setChordInMeasureImpl(si,li,mi,ci,value){const token=chordTokenFromPicker(value);if(!token)return;get().sections[si].lines[li].measures[mi].chords[ci]=token;render();focusChordEditor(si,li,mi,`[data-chord-index="${ci}"]`)}
+function removeChordFromMeasureImpl(si,li,mi,ci){const chords=get().sections[si].lines[li].measures[mi].chords;chords.splice(ci,1);render();focusChordEditor(si,li,mi,chords.length?`[data-chord-index="${Math.min(ci,chords.length-1)}"]`:'[data-chord-add]')}
+function moveChordInMeasureImpl(si,li,mi,ci,d){const a=get().sections[si].lines[li].measures[mi].chords,j=ci+d;if(j<0||j>=a.length)return;[a[ci],a[j]]=[a[j],a[ci]];render();focusChordEditor(si,li,mi,`[data-chord-index="${j}"]`)}
+function removeSection(i){commitRiffHistory();get().sections.splice(i,1);render()}function sec(i,k,v){if(v===''&&['segno','marker','belowRight','startBar','endBar'].includes(k))delete get().sections[i][k];else get().sections[i][k]=v;schedulePreview()}function secBar(i,mi,k,v){sec(i,k,v);schedulePreview(0)}function mea(si,mi,k,v){const m=get().sections[si].measures[mi];if(v==='')delete m[k];else m[k]=v;schedulePreview()}function meaBar(si,mi,k,v){mea(si,mi,k,v);schedulePreview(0)}
+function chordLineStartImpl(si,li,value){get().sections[si].lines[li].startBar=value||'single';schedulePreview(0)}
+function addChordLineImpl(si){const lines=get().sections[si].lines;lines.push({startBar:'single',measures:[]});render();focusChordEditor(si,lines.length-1,null,':scope > .collapse-body > button')}function removeChordLineImpl(si,li){get().sections[si].lines.splice(li,1);render()}function duplicateChordLineImpl(si,li){const lines=get().sections[si].lines;lines.splice(li+1,0,structuredClone(lines[li]));render()}function moveChordLineImpl(si,li,d){const lines=get().sections[si].lines,j=li+d;if(j<0||j>=lines.length)return;[lines[li],lines[j]]=[lines[j],lines[li]];render()}function equalChordMeasuresImpl(si,li){FretFlow.equalChordBoundaries(get().sections[si].lines[li].measures);render()}
+function chordMeasureEnd(si,li,mi,value){const measures=get().sections[si].lines[li].measures;if(mi<0||mi>=measures.length-1||!String(value).trim())return;const requested=Number(value);if(!Number.isFinite(requested))return;const left=mi?parseFloat(measures[mi-1].end):0,right=parseFloat(measures[mi+1].end),gap=Math.min(.001,(right-left)/4),position=Math.max(left+gap,Math.min(right-gap,requested));mutateRiffWithOptionalTransaction(si,'Maatstreep verplaatsen',()=>{measures[mi].end=FretFlow.chordBoundary(position,left,right)});schedulePreview(320)}
+function addChordMeasureImpl(si,li){const measures=get().sections[si].lines[li].measures;if(measures.length){const left=measures.length>1?parseFloat(measures[measures.length-2].end):0;measures.at(-1).end=FretFlow.chordBoundary((left+100)/2,left,100)}measures.push({chords:[],endBar:'single',end:'100%'});render();focusChordEditor(si,li,measures.length-1,'[data-chord-add]')}function removeChordMeasureImpl(si,li,mi){const measures=get().sections[si].lines[li].measures;measures.splice(mi,1);if(measures.length)measures.at(-1).end='100%';render()}function chordMeasure(si,li,mi,k,v){mutateRiffWithOptionalTransaction(si,'Maat bewerken',section=>{const m=section.lines[li].measures[mi];if(v===''||(Array.isArray(v)&&!v.length))delete m[k];else m[k]=v});schedulePreview(Array.isArray(v)?320:0)}
+
+// Chord actions participate in the same section history as Tab/Riff edits.
+function chordHistoryAction(si,label,action,structureChanged=false){
+  const section=riffSection(si);if(!section||section.type!=='chordsection')return;
+  if(riffGroupDrag)commitRiffGroupSlider();
+  commitRiffHistory();const before=riffSnapshot(section);
+  action();pushRiffHistory(section,before,riffSnapshot(section),label,structureChanged);
+}
+function addChordMarker(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>addChordMarkerImpl(si,...args),false)}
+function removeChordMarker(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>removeChordMarkerImpl(si,...args),false)}
+function addChordToMeasure(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>addChordToMeasureImpl(si,...args),false)}
+function removeChordOptional(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>removeChordOptionalImpl(si,...args),false)}
+function setChordInMeasure(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>setChordInMeasureImpl(si,...args),false)}
+function removeChordFromMeasure(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>removeChordFromMeasureImpl(si,...args),false)}
+function moveChordInMeasure(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>moveChordInMeasureImpl(si,...args),false)}
+function chordLineStart(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>chordLineStartImpl(si,...args),false)}
+function addChordLine(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>addChordLineImpl(si,...args),true)}
+function removeChordLine(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>removeChordLineImpl(si,...args),true)}
+function duplicateChordLine(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>duplicateChordLineImpl(si,...args),true)}
+function moveChordLine(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>moveChordLineImpl(si,...args),true)}
+function equalChordMeasures(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>equalChordMeasuresImpl(si,...args),false)}
+function addChordMeasure(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>addChordMeasureImpl(si,...args),true)}
+function removeChordMeasure(si,...args){return chordHistoryAction(si,'Akkoorden bewerken',()=>removeChordMeasureImpl(si,...args),true)}
 let riffMeasureClipboard=null;
 const RIFF_HISTORY_LIMIT=100;
 const riffHistory={record:null,undo:[],redo:[],transaction:null};
@@ -7083,13 +7158,31 @@ function ensureRiffEditorContext(){
   if(riffSelection.record!==record){riffSelection.record=record;riffSelection.measure=null;riffSelection.notes=new Set()}
   return record;
 }
-function riffSection(si){const section=ensureRiffEditorContext()?.sections?.[si];return section?.type==='simpleriff'?section:null}
-function riffSnapshot(section){return {lines:structuredClone(ensureSimpleRiffLines(section))}}
+function riffSection(si){const section=ensureRiffEditorContext()?.sections?.[si];return section?.type==='simpleriff'||section?.type==='chordsection'?section:null}
+function riffSnapshot(section){return {lines:structuredClone(section.type==='simpleriff'?ensureSimpleRiffLines(section):(section.lines||[]))}}
 function riffStateEqual(a,b){return JSON.stringify(a)===JSON.stringify(b)}
 function riffExpansionState(section){
   return ensureSimpleRiffLines(section).map(line=>({collapsed:editorCollapsed('line',line),measures:ensureRiffMeasures(line).map(measure=>editorCollapsed('measure',measure))}));
 }
 function restoreRiffSnapshot(section,snapshot,preserveExpansion=false){
+  if(section.type==='chordsection'){
+    const old=section.lines||[], next=structuredClone(snapshot.lines||[]), used=new Set();
+    // Reuse uniquely matching measures, including across structural edits, to retain drafts.
+    const oldMeasures=old.flatMap(line=>line.measures||[]);
+    next.forEach((line,li)=>{
+      const previous=old[li];
+      const compatible=preserveExpansion&&previous&&(previous.measures||[]).length===(line.measures||[]).length;
+      if(compatible)editorCollapseState.line.set(line,editorCollapsed('line',previous));
+      (line.measures||[]).forEach((measure,mi)=>{
+        const prior=compatible?previous.measures[mi]:null;
+        const matches=oldMeasures.filter(item=>!used.has(item)&&riffStateEqual(item,measure));
+        const retained=prior&&!used.has(prior)&&riffStateEqual(prior,measure)?prior:(matches.length===1?matches[0]:null);
+        if(retained){line.measures[mi]=retained;used.add(retained)}
+        else if(prior)editorCollapseState.measure.set(measure,editorCollapsed('measure',prior));
+      });
+    });
+    section.lines=next;return;
+  }
   const expansion=preserveExpansion?riffExpansionState(section):null;
   section.lines=structuredClone(snapshot.lines||[]);
   const lines=ensureSimpleRiffLines(section);
@@ -7117,7 +7210,7 @@ function pushRiffHistory(section,before,after,label,structureChanged=false){
 function beginRiffHistory(si,label){
   const section=riffSection(si);if(!section)return false;
   if(riffHistory.transaction){
-    if(riffHistory.transaction.section===section)return true;
+    if(riffHistory.transaction.section===section&&riffHistory.transaction.label===label)return true;
     commitRiffHistory();
   }
   riffHistory.transaction={record:get(),section,before:riffSnapshot(section),label};return true;
@@ -7144,17 +7237,18 @@ function mutateRiffWithOptionalTransaction(si,label,mutate){
   return runRiffEdit(si,label,mutate,{renderAfter:false});
 }
 function beginRiffFieldEdit(si,label){beginRiffHistory(si,label)}
+function beginChordFieldEdit(si,key){if(riffHistory.transaction)commitRiffHistory();beginRiffHistory(si,key)}
 function commitRiffFieldEdit(){commitRiffHistory();updateRiffHistoryControls()}
 function clearRiffSelection(){riffSelection.measure=null;riffSelection.notes=new Set();riffGroupDrag=null}
 function undoRiffEdit(){
   ensureRiffEditorContext();commitRiffHistory();pruneRiffHistory(riffHistory.undo);
   const entry=riffHistory.undo.pop();if(!entry){updateRiffHistoryControls();return}
-  restoreRiffSnapshot(entry.section,entry.before,!entry.structureChanged);riffHistory.redo.push(entry);clearRiffSelection();render();
+  captureMetadataForm();restoreRiffSnapshot(entry.section,entry.before,!entry.structureChanged);riffHistory.redo.push(entry);if(entry.section.type==='simpleriff')clearRiffSelection();render();
 }
 function redoRiffEdit(){
   ensureRiffEditorContext();commitRiffHistory();pruneRiffHistory(riffHistory.redo);
   const entry=riffHistory.redo.pop();if(!entry){updateRiffHistoryControls();return}
-  restoreRiffSnapshot(entry.section,entry.after,!entry.structureChanged);riffHistory.undo.push(entry);clearRiffSelection();render();
+  captureMetadataForm();restoreRiffSnapshot(entry.section,entry.after,!entry.structureChanged);riffHistory.undo.push(entry);if(entry.section.type==='simpleriff')clearRiffSelection();render();
 }
 function riffMeasureAt(si,li,mi){const section=riffSection(si),line=section&&ensureSimpleRiffLines(section)[li];return line&&ensureRiffMeasures(line)[mi]}
 function selectedRiffNotes(measure){
@@ -7872,7 +7966,7 @@ function defaultFretFilename(){
   return `${stem||'FretFlow'}.fret`;
 }
 function defaultStandaloneFilename(){return defaultProjectFilename('html')}
-function fretSerialization(){projectData=normalizeCurrentProject(projectData);return JSON.stringify(projectData,null,2)+'\n'}
+function fretSerialization(){commitRiffHistory();return JSON.stringify(normalizeCurrentProject(projectData),null,2)+'\n'}
 function saveFretDownload(serialized,name){downloadBlob(new Blob([serialized],{type:'application/octet-stream'}),name);projectDocument={sourceType:'fret',fileHandle:null,fileName:name};activeProjectSourceName=name;rememberProjectBaseline();updateLauncherProjectStatus()}
 async function writeFretHandle(handle,serialized){const writable=await handle.createWritable();await writable.write(serialized);await writable.close()}
 function isPickerCancellation(error){return error?.name==='AbortError'}
