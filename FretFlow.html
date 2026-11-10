@@ -799,9 +799,10 @@
 }
 .chord-measure-shared-frame{position:relative;overflow:visible}
 .chord-measure-marker{position:absolute;top:0;font-family:var(--music-font);font-size:18px;line-height:1;white-space:nowrap;background:#fff;z-index:5}
-/* A single component can use the page inset; paired components keep markers inside. */
-.component-row.single>.chordsection.has-start-marker{overflow:visible}
-.component-row.single>.chordsection .song-measure-row>.measure-box:first-child .chord-measure-marker.at-start{left:-4px!important;top:1px;transform:translateX(-100%)!important}
+.component-row>.chordsection.has-start-marker{overflow:visible}
+.chordsection .song-measure-row{position:relative}
+.chordsection .song-measure-row>.tab-boundary{top:8px;height:56px}
+.chordsection .song-measure-row>.tab-boundary .tab-boundary-dot{transform:translateY(-2px)}
 .chord-measure-shared-frame .tab-boundary{top:8px;height:56px}
 .chord-measure-shared-frame .tab-boundary-dot{transform:translateY(-2px)}
 .chord-below{right:12px;bottom:-10px;max-width:calc(100% - 18px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
@@ -948,6 +949,20 @@
 <style id="fretflow-builder-css">
 
 *{box-sizing:border-box}body{height:100vh;overflow:hidden;background:#e9e2d8}header{height:58px;background:#21170f;color:#fff;display:flex;align-items:center;gap:8px;padding:0 14px}header h1{font-size:17px}.spacer{flex:1}button,input,select,textarea{font:inherit}button{border:0;border-radius:7px;padding:8px 10px;background:#8f4f1b;color:#fff;font-weight:700;cursor:pointer}.layout{height:calc(100vh - 58px);display:grid;grid-template-columns:minmax(430px,1fr) minmax(430px,1fr);gap:12px;padding:12px}.panel{background:#fffaf1;border:1px solid #cdbfae;border-radius:12px;min-height:0;display:flex;flex-direction:column;overflow:hidden}.panel>h2{font-size:15px;margin:0;padding:11px 14px;background:#f0e5d6}.scroll{overflow-y:auto;padding:12px;min-height:0}.field{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.field label{font-size:12px;font-weight:700}.label-hint{font-weight:400;color:#6b5e52}.field input,.field select,.field textarea{padding:7px;border:1px solid #b9aa98;border-radius:6px}#editor .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.full{grid-column:1/-1}.toolbar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.block{border:1px solid #cbbdab;border-radius:9px;padding:9px;margin:9px 0;background:#fff}.block-head{display:flex;gap:7px;align-items:center}.small{padding:5px 7px;font-size:12px}.secondary{background:#5c5148}.danger{background:#9a3434}.note-row{display:grid;grid-template-columns:80px 70px 1fr 115px 34px;gap:5px;align-items:end;margin:5px 0}.note-row .field{margin-bottom:0}.note-row>button{height:34px;align-self:end;display:flex;align-items:center;justify-content:center}.shape-marker-row{display:grid;grid-template-columns:120px 72px minmax(90px,1fr) 110px 78px 34px;gap:5px;align-items:end;margin:5px 0}.shape-marker-row .field,.shape-guide-row .field{margin-bottom:0}.shape-marker-row>button,.shape-guide-row>button{height:34px;align-self:end;display:flex;align-items:center;justify-content:center}.shape-guide-row{display:grid;grid-template-columns:120px 90px minmax(120px,1fr) 34px;gap:5px;align-items:end;margin:5px 0}.shape-ghost-toggle{height:34px;display:flex;align-items:center;gap:5px;font-size:12px}.shape-ghost-toggle input{margin:0}.riff-bar-row{display:grid;grid-template-columns:minmax(180px,1fr) minmax(210px,270px);gap:7px;align-items:end;margin:7px 0}.riff-bar-row .field{margin-bottom:0}.riff-bar-row select{width:100%;min-width:210px}.subbox{border-left:4px solid #8f4f1b;padding:7px;margin:8px 0;background:#fffdf9}.riff-measure-box{border:1px solid #d8cabc;border-radius:8px;padding:8px;margin:10px 0;background:#fff}.riff-measure-box .block-head{margin-bottom:6px}.riff-boundary-editor{margin:8px 10px;padding:8px;border:1px dashed #b9aa98;border-radius:7px;background:#f8f1e7}.riff-boundary-editor .block-head{margin-bottom:4px}.riff-boundary-editor b{font-size:12px;color:#5c5148}.riff-measure-actions{display:flex;gap:5px;flex-wrap:wrap}.preview{overflow:auto;background:#d7cec1;min-height:0;flex:1;padding:16px}.library-picker{display:grid;grid-template-columns:minmax(160px,1fr) minmax(220px,2fr);gap:8px;margin-bottom:10px}.library-picker input,.library-picker select{width:100%;padding:8px;border:1px solid #b9aa98;border-radius:6px;background:#fff}.line-actions{display:flex;gap:5px;flex-wrap:wrap}.line-actions button{background:#5c5148}.line-actions .danger{background:#9a3434}.hint{font-size:12px;color:#6b5e52}.status{font-size:12px;color:#6b5e52;margin:0 0 10px}.empty{padding:16px;border:1px dashed #b9aa98;border-radius:8px;background:#fffdf9}.back-row{margin-bottom:10px}.builder-record-preview{display:flex;flex-direction:column;align-items:center;gap:24px}.builder-record-preview .page-shell{flex:0 0 auto}.preview .page-shell{margin-bottom:0}.component-toolbar{position:sticky;z-index:4;background:#fffaf1;padding:8px 0}.component-toolbar.top{top:-12px;border-bottom:1px solid #d8cabc}.component-toolbar.bottom{bottom:-12px;border-top:1px solid #d8cabc}.chord-ref-list{display:flex;flex-direction:column;gap:5px;margin:7px 0}.chord-ref{display:flex;align-items:center;gap:5px;padding:5px 7px;border:1px solid #d8cabc;border-radius:6px;background:#fff}.chord-ref b{flex:1}.inline-add{display:grid;grid-template-columns:1fr auto;gap:6px}.insert-select{max-width:150px;padding:5px;border:1px solid #b9aa98;border-radius:6px;background:#fff}.chord-library-layout{display:grid;grid-template-columns:minmax(180px,240px) 1fr;gap:12px}.chord-library-list{display:flex;flex-direction:column;gap:8px}.chord-library-list input,.chord-library-list select{width:100%;padding:8px;border:1px solid #b9aa98;border-radius:6px}.string-editor{display:grid;grid-template-columns:90px 1fr 1fr;gap:7px;align-items:end;padding:6px 0;border-bottom:1px solid #eadfce}.string-editor:last-child{border-bottom:0}.chord-editor-preview{min-height:260px;background:#f5eee4;border:1px solid #d8cabc;border-radius:9px;padding:10px;display:flex;justify-content:center;align-items:flex-start}.warning{padding:7px 9px;border-radius:6px;background:#fff0c7;color:#6e4a00;font-size:12px;margin-top:6px}.success{padding:7px 9px;border-radius:6px;background:#e4f4e6;color:#205b2b;font-size:12px;margin-top:6px}.project-section{border-top:1px solid #d8cabc;margin-top:18px;padding-top:14px}.project-section h3{margin:0 0 6px;font-size:14px}.project-list{display:flex;flex-direction:column;gap:8px}.project-row{border:1px solid #d8cabc;border-radius:8px;padding:8px;background:#fff}.project-row-head{display:flex;align-items:center;gap:6px;margin-bottom:7px}.project-row-head b{flex:1}.project-row-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:7px}.project-row-grid .field{margin:0}.group-assignment{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;padding:8px;border:1px solid #d8cabc;border-radius:7px;background:#fff}.group-check{display:flex;align-items:center;gap:7px;font-size:12px}.group-check input{margin:0}.project-id{font-size:11px;color:#7b6d61;font-family:monospace}
+/* Chord toolbar and optional properties remain in the normal scroll flow. */
+.chord-measure-editor{container-type:inline-size;min-width:0}
+.chord-toolbar.block-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;margin:8px 0;padding:7px;border:1px solid #d8cabc;border-radius:7px;background:#fffaf4}
+.chord-toolbar>b{font-size:12px;white-space:nowrap}
+.is-collapsed>.chord-toolbar .riff-toolbar-content{display:none}
+.chord-summary{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.chord-measure-editor .measure-editor-section{margin:9px 0}
+.chord-measure-editor .selected-chord{grid-template-columns:minmax(0,1fr) repeat(3,auto)}
+.chord-measure-editor .collapse-body :is(input,select,button){scroll-margin-top:calc(var(--component-toolbar-height, 0px) + 8px)}
+.chord-marker-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;gap:5px;align-items:end;margin:5px 0}
+.chord-marker-row .field{margin:0;min-width:0}
+.chord-marker-row :is(input,select){width:100%;min-width:0}
+.chord-marker-row button{height:34px}
+.chord-optional-row{display:flex;gap:5px;align-items:end}.chord-optional-row .field{flex:1;min-width:0;margin:0}.chord-optional-row input{width:100%;min-width:0}.chord-optional-row button{height:34px}.chord-strum-help{font-size:12px;color:#6b5e52}
 .measure-editor-section{margin:12px 0}.measure-editor-section h4{margin:0 0 6px;font-size:12px;color:#5c5148}.riff-group-editor{position:sticky;top:calc(var(--component-toolbar-height, 0px) - 12px);z-index:3}.riff-group-editor.sticky-unavailable{position:static}.riff-measure-box .collapse-body :is(input,select,button){scroll-margin-top:calc(var(--component-toolbar-height, 0px) + var(--riff-group-height, 0px) + 8px)}
 .riff-group-editor.block-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0;padding:7px}.riff-group-editor>b{font-size:12px}.riff-toolbar-content{flex-basis:100%;display:flex;flex-direction:column;align-items:stretch;gap:7px;min-width:0}.is-collapsed>.riff-group-editor .riff-toolbar-content{display:none}.riff-toolbar-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}.riff-group-editor .riff-group-control{width:100%;margin:0;grid-template-columns:58px 30px minmax(0,1fr) 30px;gap:6px}.riff-group-editor .riff-group-feedback{margin:0}.riff-note-row .field:first-of-type label{white-space:nowrap}
 .riff-note-row{grid-template-columns:28px 80px 70px minmax(80px,1fr) 115px 34px}.riff-note-select{height:34px;display:flex;align-items:center;justify-content:center}.riff-note-select input{width:18px;height:18px;margin:0}.riff-group-editor{margin:8px 0;padding:7px;border:1px solid #d8cabc;border-radius:7px;background:#fffaf4}.riff-group-head{display:flex;align-items:center;gap:8px;min-height:28px}.riff-select-all{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700}.riff-select-all input{width:17px;height:17px;margin:0}.riff-selected-count{font-size:11px;color:#6b5e52}.riff-group-control{display:grid;grid-template-columns:58px 30px minmax(100px,1fr) 30px;gap:5px;align-items:center;margin-top:6px}.riff-group-control>span{font-size:12px;font-weight:700}.riff-group-control button{height:30px;padding:3px;display:flex;align-items:center;justify-content:center}.riff-group-control input[type="range"]{width:100%;min-width:0}.riff-group-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px}.riff-group-feedback{margin-top:7px}.riff-group-editor button:disabled{opacity:.38;cursor:not-allowed}
@@ -1563,6 +1578,8 @@ FretFlow.normalizeNativeData = function(data = {}) {
         section.lines = Array.isArray(section.lines) ? section.lines : [];
         for (const line of section.lines) {
           const measures = Array.isArray(line.measures) ? line.measures : [];
+          const first = measures[0];
+          if (line.startBar == null || line.startBar === "") line.startBar = first && !Array.isArray(first) && typeof first === "object" && first.startBar != null && first.startBar !== "" ? first.startBar : "single";
           line.measures = measures.map(measure => {
             const obj = Array.isArray(measure)
               ? {chords:measure}
@@ -1570,6 +1587,8 @@ FretFlow.normalizeNativeData = function(data = {}) {
                 ? {...measure}
                 : {chords:String(measure ?? "").split(/\s*\+\s*/)};
             obj.chords = FretFlow.normalizeChordTokens(obj.chords || [], data.library, {allowSymbols:true});
+            if (obj.endBar == null || obj.endBar === "") obj.endBar = "single";
+            delete obj.startBar;
             return obj;
           });
         }
@@ -1618,7 +1637,7 @@ FretFlow.starterChordData = () => {
   library.chords = FretFlow.starterChords();
   return FretFlow.normalizeChordLibrary(library);
 };
-FretFlow.CURRENT_SCHEMA = "19";
+FretFlow.CURRENT_SCHEMA = "20";
 FretFlow.BUILDER_VERSION = "4.8.0";
 FretFlow.youtubeVideoId = function(value) {
   try {
@@ -5237,30 +5256,13 @@ class MusicSectionComponent extends Component {
     g.appendChild(head);
 
     this.lines.forEach(line => g.appendChild(this.renderMeasureRow(line)));
-    if (g.querySelector(".song-measure-row > .measure-box:first-child .chord-measure-marker.at-start")) {
+    if (g.querySelector(".song-measure-row > .measure-box:first-child .chord-measure-marker")) {
       g.classList.add("has-start-marker");
     }
     return this.applyLayoutUnits(g);
   }
 
-  normalizedMeasures(line) {
-    const raw = line.measures || [];
 
-    return raw.map((m, i) => {
-      const isLast = i === raw.length - 1;
-      const obj = Array.isArray(m)
-        ? { chords: m }
-        : (typeof m === "object" && m !== null)
-          ? { ...m }
-          : { chords: String(m).split(/\s*\+\s*/) };
-
-      if (obj.startBar == null || obj.startBar === "") obj.startBar = i === 0 ? "single" : "none";
-      if (obj.endBar == null || obj.endBar === "") obj.endBar = "single";
-      if (isLast && line.ending && !obj.endBar) obj.endBar = line.ending;
-      if (isLast && line.belowRight && !obj.belowRight) obj.belowRight = line.belowRight;
-      return obj;
-    });
-  }
 }
 
 /* COMPONENT: ChordSectionComponent */
@@ -5269,12 +5271,14 @@ class ChordSectionComponent extends MusicSectionComponent {
     const row = document.createElement("div");
     row.className = "song-measure-row";
 
-    const measures = this.normalizedMeasures(line);
+    const measures = line.measures || [];
     row.style.setProperty("--measure-count", Math.max(1, measures.length));
     measures.forEach((measure, index) => {
-      row.appendChild(new ChordMeasure(measure, index === measures.length - 1, this.app).render());
+      const data = index === measures.length - 1 && line.belowRight && !measure.belowRight ? {...measure, belowRight:line.belowRight} : measure;
+      row.appendChild(new ChordMeasure(data, index === measures.length - 1, this.app).render());
     });
 
+    if (measures.length && line.startBar !== "none") row.appendChild(new TabCanvas({width:168, top:15, gap:11, leftPad:0, rightPad:0}).barElement("start", line.startBar));
     return row;
   }
 }
@@ -5410,9 +5414,12 @@ class ChordMeasure extends MusicMeasure {
       if (!item || !markerLabels[item.type]) return;
       const marker = document.createElement("span");
       marker.className = "chord-measure-marker";
-      if (parseFloat(item.position) === 0 && this.data.startBar !== "none") marker.classList.add("at-start");
       marker.textContent = markerLabels[item.type];
-      MusicMeasure.positionDestinationMarker(marker, item.position, 0, 100, "%");
+      const position = parseFloat(item.position);
+      const percent = Math.max(0, Math.min(100, Number.isFinite(position) ? position : 0));
+      marker.style.left = `${percent}%`;
+      // The marker's right edge follows the measure-relative anchor at every position.
+      marker.style.transform = "translateX(calc(-100% - 3px))";
       box.appendChild(marker);
     });
     this.renderSharedFrame(box);
@@ -5420,8 +5427,6 @@ class ChordMeasure extends MusicMeasure {
   }
 
   renderSharedFrame(box) {
-    const start = this.data.startBar || "none";
-    if (start !== "none") box.appendChild(this.canvas.barElement("start", start));
     const end = this.data.endBar || "single";
     if (end !== "none") box.appendChild(this.canvas.barElement("end", end));
     if (this.data.belowRight) {
@@ -6983,20 +6988,25 @@ function chordSectionEditor(s,si){
 }
 function chordLineEditor(si,li,line){
   const measures=line.measures||[],collapsed=editorCollapsed('line',line);
-  return `<div class="subbox editor-collapse-node editor-line ${collapsed?'is-collapsed':''}" data-collapse-level="line" data-si="${si}" data-li="${li}"><div class="block-head">${collapseToggleHtml('line',si,li,-1,line)}<b>Regel ${li+1}</b><span class="collapse-meta">${measures.length} ${measures.length===1?'maat':'maten'}</span><span class="spacer"></span><div class="line-actions"><button class="small secondary" onclick="moveChordLine(${si},${li},-1)" ${li===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordLine(${si},${li},1)" ${li===(get().sections[si].lines.length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="duplicateChordLine(${si},${li})">Dupliceer</button><button class="small danger" onclick="removeChordLine(${si},${li})">Verwijder regel</button></div></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="hint">Maten worden gelijk over de regel verdeeld.</div>${measures.length>4?'<div class="warning">Veel maten op één regel kunnen moeilijk leesbaar worden. Controleer de Live View.</div>':''}${measures.map((m,mi)=>chordMeasureEditor(si,li,mi,m)).join('')}<button class="small" onclick="addChordMeasure(${si},${li})">+ Maat</button></div></div>`;
+  return `<div class="subbox editor-collapse-node editor-line ${collapsed?'is-collapsed':''}" data-collapse-level="line" data-si="${si}" data-li="${li}"><div class="block-head">${collapseToggleHtml('line',si,li,-1,line)}<b>Regel ${li+1}</b><span class="collapse-meta">${measures.length} ${measures.length===1?'maat':'maten'}</span><span class="spacer"></span><div class="line-actions"><button class="small secondary" onclick="moveChordLine(${si},${li},-1)" ${li===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordLine(${si},${li},1)" ${li===(get().sections[si].lines.length-1)?'disabled':''}>↓</button><button class="small secondary" onclick="duplicateChordLine(${si},${li})">Dupliceer regel</button><button class="small danger" onclick="removeChordLine(${si},${li})">Verwijder regel</button></div></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="field"><label for="chord-line-start-${si}-${li}">Begin regel</label><select id="chord-line-start-${si}-${li}" onchange="chordLineStart(${si},${li},this.value)">${barOpts(line.startBar)}</select></div>${measures.length>4?'<div class="warning">Veel maten op één regel kunnen moeilijk leesbaar worden. Controleer de Live View.</div>':''}${measures.map((m,mi)=>chordMeasureEditor(si,li,mi,m)).join('')}<button class="small" onclick="addChordMeasure(${si},${li})">+ Maat</button></div></div>`;
 }
+const chordEditorState=new WeakMap();
+function chordEditorDraft(m){let state=chordEditorState.get(m);if(!state){state={pending:false,strum:false,below:false};chordEditorState.set(m,state)}return state}
 function chordMeasureEditor(si,li,mi,m){
-  const collapsed=editorCollapsed('measure',m),chords=(m.chords||[]),labels=chords.map(builderChordTokenLabel).filter(Boolean);
-  const rows=chords.map((token,ci)=>`<div class="selected-chord measure-chord-editor-row"><select aria-label="Akkoord of teken ${ci+1}" onchange="if(this.value)setChordInMeasure(${si},${li},${mi},${ci},this.value)">${chordTokenPickerOptions(token)}</select><button class="small secondary" onclick="moveChordInMeasure(${si},${li},${mi},${ci},-1)" ${ci===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordInMeasure(${si},${li},${mi},${ci},1)" ${ci===chords.length-1?'disabled':''}>↓</button><button class="small danger" onclick="removeChordFromMeasure(${si},${li},${mi},${ci})">×</button></div>`).join('');
-  return `<div class="subbox editor-collapse-node editor-measure ${collapsed?'is-collapsed':''}" data-collapse-level="measure" data-si="${si}" data-li="${li}" data-mi="${mi}"><div class="block-head">${collapseToggleHtml('measure',si,li,mi,m)}<b>Maat ${mi+1}</b>${labels.length?`<span class="collapse-meta">${esc(labels.join(' / '))}</span>`:''}<span class="spacer"></span><button class="small danger" onclick="removeChordMeasure(${si},${li},${mi})">Verwijder maat</button></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="measure-editor-section"><h4>Akkoorden en slagritme</h4><div class="selected-chords">${rows}</div><div class="field"><label>Akkoord of teken toevoegen</label><select onchange="if(this.value){addChordToMeasure(${si},${li},${mi},this.value);this.value=''}"><option value="">Kies uit bibliotheek…</option><option value="symbol:repeat">Herhaal vorige maat (%)</option>${chordOptionGroups().replaceAll('value="','value="chord:')}</select><div class="hint" style="text-align:left">Nieuwe akkoorden komen uitsluitend uit de akkoordenbibliotheek. Bestaande oude tekst die niet gekoppeld kon worden blijft zichtbaar als “Oud/onopgelost” totdat je hier een bibliotheekakkoord kiest.</div></div><div class="field"><label>Slagritme <span class="label-hint">(D of U, eventueel gevolgd door . of x; spaties zijn lege posities)</span></label><input value="${esc(m.strum||'')}" placeholder="D D D D" spellcheck="false" oninput="updateStrumInput(this,${si},${li},${mi})" aria-invalid="${FretFlow.parseStrumPattern(m.strum||'')===null?'true':'false'}"><div class="warning" data-strum-warning ${FretFlow.parseStrumPattern(m.strum||'')===null?'':'hidden'}>Ongeldig slagritme: gebruik D of U met hoogstens één direct aansluitende . of x.</div></div></div>${chordMarkerEditor(si,li,mi,m)}${chordBarFields(si,li,mi,m)}</div></div>`;
+  const collapsed=editorCollapsed('measure',m),chords=m.chords||[],labels=chords.map(builderChordTokenLabel).filter(Boolean),helpId=`chord-strum-help-${si}-${li}-${mi}`,state=chordEditorDraft(m);
+  const rows=chords.map((token,ci)=>`<div class="selected-chord measure-chord-editor-row"><select data-chord-index="${ci}" aria-label="Akkoord of teken ${ci+1}" onchange="if(this.value)setChordInMeasure(${si},${li},${mi},${ci},this.value)">${chordTokenPickerOptions(token)}</select><button class="small secondary" aria-label="Verplaats akkoord ${ci+1} omhoog" onclick="moveChordInMeasure(${si},${li},${mi},${ci},-1)" ${ci===0?'disabled':''}>↑</button><button class="small secondary" aria-label="Verplaats akkoord ${ci+1} omlaag" onclick="moveChordInMeasure(${si},${li},${mi},${ci},1)" ${ci===chords.length-1?'disabled':''}>↓</button><button class="small danger" aria-label="Verwijder akkoord of teken ${ci+1}" onclick="removeChordFromMeasure(${si},${li},${mi},${ci})">×</button></div>`).join('');
+  const pending=state.pending?`<div class="selected-chord measure-chord-editor-row"><select data-chord-pending aria-label="Nieuw akkoord of teken" onkeydown="if(event.key==='Escape'){event.preventDefault();cancelPendingChord(${si},${li},${mi})}" onchange="if(this.value)addChordToMeasure(${si},${li},${mi},this.value)"><option value="" selected disabled>Kies uit bibliotheek…</option>${chordTokenPickerOptions(null)}</select><span></span><span></span><button class="small danger" aria-label="Annuleer nieuw akkoord" onclick="cancelPendingChord(${si},${li},${mi})">×</button></div>`:'';
+  const strum=state.strum||m.strum?`<div class="measure-editor-section"><div class="chord-optional-row"><div class="field"><label for="chord-strum-${si}-${li}-${mi}">Slagritme</label><input id="chord-strum-${si}-${li}-${mi}" data-chord-strum value="${esc(m.strum||'')}" placeholder="D D D D" spellcheck="false" oninput="updateStrumInput(this,${si},${li},${mi})" aria-describedby="${helpId}" aria-invalid="${FretFlow.parseStrumPattern(m.strum||'')===null?'true':'false'}"><div class="warning" data-strum-warning ${FretFlow.parseStrumPattern(m.strum||'')===null?'':'hidden'}>Ongeldig slagritme: gebruik D of U met hoogstens één direct aansluitende . of x.</div></div><button class="small danger" aria-label="Verwijder slagritme" onclick="removeChordOptional(${si},${li},${mi},'strum')">×</button></div><details class="chord-strum-help" id="${helpId}"><summary>Uitleg slagritme</summary>D of U; plaats . of x direct na de aanslag. Spaties geven ritmische posities aan, ook aan het begin en einde.</details></div>`:'';
+  const below=state.below||m.belowRight?`<div class="measure-editor-section chord-optional-row"><div class="field"><label for="chord-below-${si}-${li}-${mi}">Tekst onder — rechts</label><input id="chord-below-${si}-${li}-${mi}" data-chord-below value="${esc(m.belowRight||'')}" placeholder="3×, D.S., D.S.S., Fine…" oninput="chordEditorDraft(chordMeasureAt(${si},${li},${mi})).below=true;chordMeasure(${si},${li},${mi},'belowRight',this.value)"></div><button class="small danger" aria-label="Verwijder tekst onder" onclick="removeChordOptional(${si},${li},${mi},'below')">×</button></div>`:'';
+  return `<div class="subbox editor-collapse-node editor-measure chord-measure-editor ${collapsed?'is-collapsed':''}" data-collapse-level="measure" data-si="${si}" data-li="${li}" data-mi="${mi}"><div class="block-head chord-toolbar">${collapseToggleHtml('measure',si,li,mi,m)}<b>Maat ${mi+1}</b><span class="collapse-meta chord-summary" title="${esc(labels.join(' / '))}">${esc(labels.join(' / '))}</span><button class="small danger" onclick="removeChordMeasure(${si},${li},${mi})">Verwijder maat</button><div class="riff-toolbar-content"><div class="riff-toolbar-row"><button class="small" data-chord-add onclick="beginPendingChord(${si},${li},${mi})">+ Akkoord</button><button class="small secondary" data-chord-add-strum onclick="showChordOptional(${si},${li},${mi},'strum')">+ Slagritme</button><button class="small secondary" onclick="addChordMarker(${si},${li},${mi})">+ Navigatieteken</button><button class="small secondary" data-chord-add-below onclick="showChordOptional(${si},${li},${mi},'below')">+ Tekst onder</button></div></div></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="measure-editor-section"><div class="selected-chords">${rows}${pending}</div></div>${strum}${chordMarkerEditor(si,li,mi,m)}${below}${chordBarFields(si,li,mi,m)}</div></div>`;
 }
-function chordMarkerEditor(si,li,mi,m){return `<div class="measure-editor-section"><h4>Navigatietekens</h4>${(m.markers||[]).map((item,ii)=>`<div class="note-row"><div class="field"><label>Positie (%)</label><input value="${esc(percentDisplay(item.position,'0'))}" oninput="chordMarker(${si},${li},${mi},${ii},'position',this.value)"></div><div class="field"><label>Teken</label><select onchange="chordMarker(${si},${li},${mi},${ii},'type',this.value)">${markOpts(item.type)}</select></div><button class="small danger" onclick="removeChordMarker(${si},${li},${mi},${ii})" aria-label="Verwijder navigatieteken">×</button></div>`).join('')}<button class="small" onclick="addChordMarker(${si},${li},${mi})">+ Navigatieteken</button></div>`}
-function addChordMarker(si,li,mi){const m=get().sections[si].lines[li].measures[mi];(m.markers||(m.markers=[])).push({type:'segno',position:'0%'});render()}
+function chordMarkerEditor(si,li,mi,m){return (m.markers||[]).length?`<div class="measure-editor-section"><h4>Navigatietekens</h4>${m.markers.map((item,ii)=>`<div class="chord-marker-row"><div class="field"><label for="chord-marker-position-${si}-${li}-${mi}-${ii}">Positie (%)</label><input id="chord-marker-position-${si}-${li}-${mi}-${ii}" data-chord-marker-position value="${esc(percentDisplay(item.position,'0'))}" oninput="chordMarker(${si},${li},${mi},${ii},'position',this.value)"></div><div class="field"><label for="chord-marker-type-${si}-${li}-${mi}-${ii}">Teken</label><select id="chord-marker-type-${si}-${li}-${mi}-${ii}" onchange="chordMarker(${si},${li},${mi},${ii},'type',this.value)">${markOpts(item.type)}</select></div><button class="small danger" onclick="removeChordMarker(${si},${li},${mi},${ii})" aria-label="Verwijder navigatieteken">×</button></div>`).join('')}</div>`:''}
+function addChordMarker(si,li,mi){const m=get().sections[si].lines[li].measures[mi];(m.markers||(m.markers=[])).push({type:'segno',position:'0%'});render();focusChordEditor(si,li,mi,'[data-chord-marker-position]',true)}
 function chordMarker(si,li,mi,ii,key,value){const item=get().sections[si].lines[li].measures[mi].markers[ii];item[key]=key==='position'?percentPosition(value,0):value;schedulePreview()}
 function removeChordMarker(si,li,mi,ii){get().sections[si].lines[li].measures[mi].markers.splice(ii,1);render()}
 function sanitizeStrumPattern(value){return String(value??'').replace(/[du]/g,c=>c.toUpperCase()).replace(/X/g,'x')}
-function updateStrumInput(input,si,li,mi){const value=sanitizeStrumPattern(input.value);if(value!==input.value){const start=input.selectionStart,end=input.selectionEnd;input.value=value;input.setSelectionRange(start,end)}const valid=FretFlow.parseStrumPattern(value)!==null;input.setAttribute('aria-invalid',String(!valid));input.parentElement.querySelector('[data-strum-warning]').hidden=valid;chordMeasure(si,li,mi,'strum',value)}
-function chordBarFields(si,li,mi,m){return `<div class="measure-editor-section"><h4>Tekst onder de maat</h4><div class="field"><label>Annotatie rechts onder</label><input value="${esc(m.belowRight||'')}" placeholder="3×, D.S., D.S.S., Fine…" oninput="chordMeasure(${si},${li},${mi},'belowRight',this.value)"></div></div><div class="measure-editor-section"><h4>Maatstrepen en herhalingen</h4><div class="grid"><div class="field"><label>Begin maat</label><select onchange="chordMeasure(${si},${li},${mi},'startBar',this.value)">${barOpts(m.startBar)}</select></div><div class="field"><label>Einde maat</label><select onchange="chordMeasure(${si},${li},${mi},'endBar',this.value)">${barOpts(m.endBar)}</select></div></div></div>`}
+function updateStrumInput(input,si,li,mi){chordEditorDraft(chordMeasureAt(si,li,mi)).strum=true;const value=sanitizeStrumPattern(input.value);if(value!==input.value){const start=input.selectionStart,end=input.selectionEnd;input.value=value;input.setSelectionRange(start,end)}const valid=FretFlow.parseStrumPattern(value)!==null;input.setAttribute('aria-invalid',String(!valid));input.parentElement.querySelector('[data-strum-warning]').hidden=valid;chordMeasure(si,li,mi,'strum',value)}
+function chordBarFields(si,li,mi,m){return `<div class="measure-editor-section"><h4>Maatstrepen en herhalingen</h4><div class="field"><label for="chord-end-${si}-${li}-${mi}">Einde maat</label><select id="chord-end-${si}-${li}-${mi}" onchange="chordMeasure(${si},${li},${mi},'endBar',this.value||'single')">${barOpts(m.endBar)}</select></div></div>`}
 function barFields(si,mi,o){const path=mi===null?'sec':'mea';return `<div class="grid"><div class="field"><label>Begin</label><select onchange="${path}Bar(${si},${mi},'startBar',this.value)">${barOpts(o.startBar)}</select></div><div class="field"><label>Einde</label><select onchange="${path}Bar(${si},${mi},'endBar',this.value)">${barOpts(o.endBar)}</select></div><div class="field"><label>Teken</label><select onchange="${path}Bar(${si},${mi},'marker',this.value)">${markOpts(o.marker)}</select></div><div class="field"><label>Tekst</label><input value="${esc(o.belowRight||'')}" oninput="${path}Bar(${si},${mi},'belowRight',this.value)"></div></div>`}
 function barOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function internalBarOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','begin herhaling'],['repeatEnd','einde herhaling'],['repeatBoth','einde + begin herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function markOpts(v){return [['','geen'],['segno','Segno'],['doubleSegno','Dubbel Segno'],['coda','Coda']].map(([x,label])=>`<option value="${x}" ${v===x?'selected':''}>${label}</option>`).join('')}
 function notesEditor(si,mi,notes){return notes.map((n,ni)=>`<div class="note-row"><div class="field"><label>Positie</label><input class="note-position" value="${esc(n.position??'1')}" oninput="note(${si},${mi},${ni},'position',this.value)"></div><div class="field"><label>Snaar</label><select onchange="note(${si},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${n.string===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" oninput="note(${si},${mi},${ni},'fret',this.value)"></div><div class="field"><label>Type</label><select onchange="note(${si},${mi},${ni},'type',this.value)">${[['standard','Standard'],['legato','Legato'],['slideUp','Slide up'],['slideDown','Slide down'],['slideOutUp','Slide out up'],['slideOutDown','Slide out down'],['bendUp','Bend up'],['bendUpDown','Bend up-down'],['downstroke','Downstroke'],['upstroke','Upstroke']].map(([x,l])=>`<option value="${x}" ${n.type===x?'selected':''}>${l}</option>`).join('')}</select></div><button class="small danger" onclick="removeNote(${si},${mi},${ni})">×</button></div>`).join('')}
@@ -7010,7 +7020,7 @@ function revealEditorSection(index){
     scroller.scrollTo({top:Math.max(0,top),behavior:'smooth'});
   }));
 }
-function addSection(type,index=null){const r=get(),s={type};if(type==='text')Object.assign(s,{title:'',text:'',width:'full'});if(type==='chordgrid')Object.assign(s,{title:'Akkoorden in dit nummer',chords:[],width:'full'});if(type==='chordsection')Object.assign(s,{title:'Akkoorden',lines:[{measures:[]}],width:'full'});if(type==='simpleriff')Object.assign(s,{title:'Tab / riff',lines:[{measures:[{end:'100%',notes:[],labels:[],markers:[],below:[]}],startBar:'single',endBar:'single'}],width:'full'});if(type==='shapebox')Object.assign(s,{title:'Shapebox',width:'full',firstFret:1,lastFret:17,markers:[],guides:[]});const addedIndex=index===null?r.sections.length:index;if(index===null)r.sections.push(s);else r.sections.splice(index,0,s);render();revealEditorSection(addedIndex)}
+function addSection(type,index=null){const r=get(),s={type};if(type==='text')Object.assign(s,{title:'',text:'',width:'full'});if(type==='chordgrid')Object.assign(s,{title:'Akkoorden in dit nummer',chords:[],width:'full'});if(type==='chordsection')Object.assign(s,{title:'Akkoorden',lines:[{startBar:'single',measures:[]}],width:'full'});if(type==='simpleriff')Object.assign(s,{title:'Tab / riff',lines:[{measures:[{end:'100%',notes:[],labels:[],markers:[],below:[]}],startBar:'single',endBar:'single'}],width:'full'});if(type==='shapebox')Object.assign(s,{title:'Shapebox',width:'full',firstFret:1,lastFret:17,markers:[],guides:[]});const addedIndex=index===null?r.sections.length:index;if(index===null)r.sections.push(s);else r.sections.splice(index,0,s);render();revealEditorSection(addedIndex)}
 function moveSection(i,d){const a=get().sections,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];render()}
 function duplicateSection(i){const a=get().sections;a.splice(i+1,0,structuredClone(a[i]));render()}
 function chordOptionGroups(selectedId=""){
@@ -7039,12 +7049,28 @@ function chordTokenFromPicker(value){
 function addChordRef(si,chordId){const chords=get().sections[si].chords||(get().sections[si].chords=[]);if(!chords.some(token=>FretFlow.normalizeChordToken(token,projectData.chords,{allowSymbols:false})?.chordId===chordId))chords.push({kind:'chord',chordId});render()}
 function removeChordRef(si,ci){get().sections[si].chords.splice(ci,1);render()}
 function moveChordRef(si,ci,d){const a=get().sections[si].chords,j=ci+d;if(j<0||j>=a.length)return;[a[ci],a[j]]=[a[j],a[ci]];render()}
-function addChordToMeasure(si,li,mi,value){const token=chordTokenFromPicker(value);if(!token)return;const m=get().sections[si].lines[li].measures[mi];m.chords=m.chords||[];m.chords.push(token);render()}
-function setChordInMeasure(si,li,mi,ci,value){const token=chordTokenFromPicker(value);if(!token)return;get().sections[si].lines[li].measures[mi].chords[ci]=token;render()}
-function removeChordFromMeasure(si,li,mi,ci){get().sections[si].lines[li].measures[mi].chords.splice(ci,1);render()}
-function moveChordInMeasure(si,li,mi,ci,d){const a=get().sections[si].lines[li].measures[mi].chords,j=ci+d;if(j<0||j>=a.length)return;[a[ci],a[j]]=[a[j],a[ci]];render()}
+function focusChordEditor(si,li,mi,selector,last=false){
+  requestAnimationFrame(()=>{
+    const scope=editor.querySelector(`[data-collapse-level="${mi===null?'line':'measure'}"][data-si="${si}"][data-li="${li}"]${mi===null?'':`[data-mi="${mi}"]`}`);
+    const fields=scope?.querySelectorAll(selector),field=last?fields?.[fields.length-1]:fields?.[0],scroller=editorWorkspaceScroller('editor');
+    if(!field||!scroller)return;
+    field.focus({preventScroll:true});
+    const rect=field.getBoundingClientRect(),view=scroller.getBoundingClientRect(),toolbar=editor.querySelector('.component-toolbar.top'),top=view.top+(toolbar?.offsetHeight||0)+8,bottom=view.bottom-8;
+    if(rect.top<top)scroller.scrollTop+=rect.top-top;else if(rect.bottom>bottom)scroller.scrollTop+=rect.bottom-bottom;
+  });
+}
+function chordMeasureAt(si,li,mi){return get().sections[si].lines[li].measures[mi]}
+function beginPendingChord(si,li,mi){chordEditorDraft(chordMeasureAt(si,li,mi)).pending=true;render();focusChordEditor(si,li,mi,'[data-chord-pending]')}
+function cancelPendingChord(si,li,mi){chordEditorDraft(chordMeasureAt(si,li,mi)).pending=false;render();focusChordEditor(si,li,mi,'[data-chord-add]')}
+function addChordToMeasure(si,li,mi,value){const token=chordTokenFromPicker(value);if(!token)return;const m=chordMeasureAt(si,li,mi);(m.chords||(m.chords=[])).push(token);chordEditorDraft(m).pending=false;render();focusChordEditor(si,li,mi,`[data-chord-index="${m.chords.length-1}"]`)}
+function showChordOptional(si,li,mi,key){chordEditorDraft(chordMeasureAt(si,li,mi))[key]=true;render();focusChordEditor(si,li,mi,`[data-chord-${key}]`)}
+function removeChordOptional(si,li,mi,key){const m=chordMeasureAt(si,li,mi);chordEditorDraft(m)[key]=false;delete m[key==='below'?'belowRight':'strum'];render();focusChordEditor(si,li,mi,`[data-chord-add-${key}]`)}
+function setChordInMeasure(si,li,mi,ci,value){const token=chordTokenFromPicker(value);if(!token)return;get().sections[si].lines[li].measures[mi].chords[ci]=token;render();focusChordEditor(si,li,mi,`[data-chord-index="${ci}"]`)}
+function removeChordFromMeasure(si,li,mi,ci){const chords=get().sections[si].lines[li].measures[mi].chords;chords.splice(ci,1);render();focusChordEditor(si,li,mi,chords.length?`[data-chord-index="${Math.min(ci,chords.length-1)}"]`:'[data-chord-add]')}
+function moveChordInMeasure(si,li,mi,ci,d){const a=get().sections[si].lines[li].measures[mi].chords,j=ci+d;if(j<0||j>=a.length)return;[a[ci],a[j]]=[a[j],a[ci]];render();focusChordEditor(si,li,mi,`[data-chord-index="${j}"]`)}
 function removeSection(i){get().sections.splice(i,1);render()}function sec(i,k,v){if(v===''&&['segno','marker','belowRight','startBar','endBar'].includes(k))delete get().sections[i][k];else get().sections[i][k]=v;schedulePreview()}function secBar(i,mi,k,v){sec(i,k,v);schedulePreview(0)}function mea(si,mi,k,v){const m=get().sections[si].measures[mi];if(v==='')delete m[k];else m[k]=v;schedulePreview()}function meaBar(si,mi,k,v){mea(si,mi,k,v);schedulePreview(0)}
-function addChordLine(si){get().sections[si].lines.push({measures:[]});render()}function removeChordLine(si,li){get().sections[si].lines.splice(li,1);render()}function duplicateChordLine(si,li){const lines=get().sections[si].lines;lines.splice(li+1,0,structuredClone(lines[li]));render()}function moveChordLine(si,li,d){const lines=get().sections[si].lines,j=li+d;if(j<0||j>=lines.length)return;[lines[li],lines[j]]=[lines[j],lines[li]];render()}function addChordMeasure(si,li){const measures=get().sections[si].lines[li].measures;measures.push({chords:[],startBar:measures.length===0?'single':'none',endBar:'single'});render()}function removeChordMeasure(si,li,mi){const measures=get().sections[si].lines[li].measures;measures.splice(mi,1);if(measures[0]&&(!measures[0].startBar||measures[0].startBar==='none'))measures[0].startBar='single';render()}function chordMeasure(si,li,mi,k,v){const m=get().sections[si].lines[li].measures[mi];if(v===''||(Array.isArray(v)&&!v.length))delete m[k];else m[k]=v;schedulePreview(Array.isArray(v)?320:0)}
+function chordLineStart(si,li,value){get().sections[si].lines[li].startBar=value||'single';schedulePreview(0)}
+function addChordLine(si){const lines=get().sections[si].lines;lines.push({startBar:'single',measures:[]});render();focusChordEditor(si,lines.length-1,null,':scope > .collapse-body > button')}function removeChordLine(si,li){get().sections[si].lines.splice(li,1);render()}function duplicateChordLine(si,li){const lines=get().sections[si].lines;lines.splice(li+1,0,structuredClone(lines[li]));render()}function moveChordLine(si,li,d){const lines=get().sections[si].lines,j=li+d;if(j<0||j>=lines.length)return;[lines[li],lines[j]]=[lines[j],lines[li]];render()}function addChordMeasure(si,li){const measures=get().sections[si].lines[li].measures;measures.push({chords:[],endBar:'single'});render();focusChordEditor(si,li,measures.length-1,'[data-chord-add]')}function removeChordMeasure(si,li,mi){const measures=get().sections[si].lines[li].measures;measures.splice(mi,1);render()}function chordMeasure(si,li,mi,k,v){const m=get().sections[si].lines[li].measures[mi];if(v===''||(Array.isArray(v)&&!v.length))delete m[k];else m[k]=v;schedulePreview(Array.isArray(v)?320:0)}
 let riffMeasureClipboard=null;
 const RIFF_HISTORY_LIMIT=100;
 const riffHistory={record:null,undo:[],redo:[],transaction:null};
@@ -7753,10 +7779,16 @@ async function buildStandalone(){
 function jsonFromNode(doc,id){const node=doc.getElementById(id);if(!node)return null;return JSON.parse(node.textContent)}
 const CURRENT_SCHEMA=FretFlow.CURRENT_SCHEMA;
 function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
+function projectSchemaWarning(raw){
+  const schema=projectSchema(raw);
+  if(schema==='10B'||(/^\d+$/.test(schema)&&Number(schema)<=18))return `Dit databestand gebruikt schema ${schema}. Bij native tabs kunnen Segno/Dal Segno-markeringen afwijken.`;
+  if(/^\d+$/.test(schema)&&Number(schema)>Number(CURRENT_SCHEMA))return `Dit databestand gebruikt het nieuwere schema ${schema}. Sommige functies of weergaven zijn mogelijk niet compatibel.`;
+  return '';
+}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B','11','12','13','14','15','16','17','18',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.8.0 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17, 18 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
+  if(!['10B','11','12','13','14','15','16','17','18','19',CURRENT_SCHEMA].includes(schema) && !(/^\d+$/.test(schema) && Number(schema)>Number(CURRENT_SCHEMA)))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.8.0 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17, 18, 19 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);
@@ -7825,7 +7857,8 @@ async function openProjectFile(file,fileHandle=null){
   const raw=kind==='fret'?readProjectFromFret(await file.text()):readProjectFromStandalone(await file.text());
   // Validation and migration happen before this assignment, so an invalid file leaves the current map intact.
   setProject(raw,'project',{sourceType:kind==='fret'?'fret':'legacy-html',fileHandle:kind==='fret'?fileHandle:null,fileName:file.name||''});
-  if(kind==='fret' && /^\d+$/.test(projectSchema(raw)) && Number(projectSchema(raw))!==Number(CURRENT_SCHEMA)) alert(`Dit databestand gebruikt schema ${raw.schemaVersion}. Deze versie van FretFlow gebruikt schema ${CURRENT_SCHEMA}.\n\nHet bestand wordt geladen, maar bij native ingevoerde tabs kunnen compatibiliteitsproblemen optreden met Segno/Dal Segno-markeringen.`);
+  const warning=projectSchemaWarning(raw);
+  if(kind==='fret' && warning)alert(warning);
   builderReturnState=null;
 }
 function defaultProjectFilename(extension){
