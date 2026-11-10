@@ -698,6 +698,7 @@
 .simple-riff-string{position:absolute;left:0;right:0;height:1px;background:#222}
 .simple-riff-note{position:absolute;transform:translate(-50%,-50%);font-size:12px;background:#fff;padding:0 2px;line-height:14px;z-index:3}
 .simple-riff-technique{position:absolute;font-size:13px;font-weight:700;z-index:4}
+.tab-technique.staccato{width:4px;height:4px;padding:0;border-radius:50%;background:#111;transform:translateX(-50%)}
 .tab-technique.pick-stroke{
   width:15px;height:15px;padding:0;background:transparent;
   transform:translateX(-50%);display:flex;align-items:center;justify-content:center;
@@ -711,7 +712,7 @@
 .simple-riff-bar.end.double:after,.simple-riff-bar.end.repeat:after{right:5px}
 .simple-riff-below{position:absolute;right:0;top:78px;font-size:10px}
 .simple-riff-label{position:absolute;top:0;transform:translateX(-50%);font-size:12px;font-weight:700;line-height:1;white-space:nowrap;z-index:9;background:#fff;padding:0 2px}
-.simple-riff-marker{position:absolute;top:-7px;transform:translateX(-50%);font-family:var(--music-font);font-size:20px;line-height:1;z-index:10;background:#fff;padding:0 2px}
+.simple-riff-marker{position:absolute;top:-7px;font-family:var(--music-font);font-size:20px;line-height:1;white-space:nowrap;z-index:10;background:#fff;padding:0 2px}
 .simple-riff-below-item{position:absolute;top:79px;transform:translateX(-100%);font-size:10px;font-weight:700;color:#444;white-space:nowrap;z-index:9}
 .tab-boundary.internal{transform:translateX(-50%)}
 .tab-boundary.internal .tab-boundary-dot{left:9px}
@@ -795,6 +796,10 @@
   margin-left:0!important;padding-left:0!important;font-family:inherit;font-size:14px;font-weight:700;line-height:1.25;
 }
 .chord-measure-shared-frame{position:relative;overflow:visible}
+.chord-measure-marker{position:absolute;top:0;font-family:var(--music-font);font-size:18px;line-height:1;white-space:nowrap;background:#fff;z-index:5}
+/* A single component can use the page inset; paired components keep markers inside. */
+.component-row.single>.chordsection.has-start-marker{overflow:visible}
+.component-row.single>.chordsection .song-measure-row>.measure-box:first-child .chord-measure-marker.at-start{left:-4px!important;top:1px;transform:translateX(-100%)!important}
 .chord-measure-shared-frame .tab-boundary{top:8px;height:56px}
 .chord-measure-shared-frame .tab-boundary-dot{transform:translateY(-2px)}
 .chord-below{right:12px;bottom:-10px;max-width:calc(100% - 18px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
@@ -1611,7 +1616,7 @@ FretFlow.starterChordData = () => {
   library.chords = FretFlow.starterChords();
   return FretFlow.normalizeChordLibrary(library);
 };
-FretFlow.CURRENT_SCHEMA = "18";
+FretFlow.CURRENT_SCHEMA = "19";
 FretFlow.BUILDER_VERSION = "4.8.0";
 FretFlow.youtubeVideoId = function(value) {
   try {
@@ -5226,17 +5231,14 @@ class MusicSectionComponent extends Component {
 
     const head = document.createElement("div");
     head.className = "songsection-head";
-    head.innerHTML = `${this.segno(this.data.segno)}<div class="songsection-title">${this.data.title ?? this.data.name ?? ""}</div>`;
+    head.innerHTML = `<div class="songsection-title">${this.data.title ?? this.data.name ?? ""}</div>`;
     g.appendChild(head);
 
     this.lines.forEach(line => g.appendChild(this.renderMeasureRow(line)));
+    if (g.querySelector(".song-measure-row > .measure-box:first-child .chord-measure-marker.at-start")) {
+      g.classList.add("has-start-marker");
+    }
     return this.applyLayoutUnits(g);
-  }
-
-  segno(type) {
-    if (type === "single") return `<span class="segno">&#x1D10B;</span>`;
-    if (type === "double") return `<span class="segno double">&#x1D10B; &#x1D10B;</span>`;
-    return ``;
   }
 
   normalizedMeasures(line) {
@@ -5292,6 +5294,14 @@ class MusicMeasure {
       repeatedFigure: "𝄎",
       dalSegno: "𝄉"
     };
+  }
+
+  static positionDestinationMarker(marker, position, start, end, unit) {
+    const value = parseFloat(position);
+    const percent = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
+    marker.style.left = `${start + (end - start) * percent / 100}${unit}`;
+    // The same fraction of the marker width moves left of the anchor.
+    marker.style.transform = `translateX(-${percent}%)`;
   }
 
   setStrum(pattern) {
@@ -5381,6 +5391,16 @@ class ChordMeasure extends MusicMeasure {
     box.appendChild(chordWrap);
 
     this.renderStrum(box);
+    const markerLabels = {segno:"𝄋", doubleSegno:"𝄋 𝄋", coda:"𝄌"};
+    (this.data.markers || []).forEach(item => {
+      if (!item || !markerLabels[item.type]) return;
+      const marker = document.createElement("span");
+      marker.className = "chord-measure-marker";
+      if (parseFloat(item.position) === 0 && this.data.startBar !== "none") marker.classList.add("at-start");
+      marker.textContent = markerLabels[item.type];
+      MusicMeasure.positionDestinationMarker(marker, item.position, 0, 100, "%");
+      box.appendChild(marker);
+    });
     this.renderSharedFrame(box);
     return box;
   }
@@ -5591,7 +5611,8 @@ class SimpleRiffMeasure extends MusicMeasure {
         const marker = document.createElement("span");
         marker.className = "simple-riff-marker";
         marker.textContent = markerLabels[markerData.type];
-        marker.style.left = `${this.xForMeasurePercent(markerData.position, range)}px`;
+        MusicMeasure.positionDestinationMarker(marker, markerData.position,
+        this.xForLinePercent(range.start), this.xForLinePercent(range.end), "px");
         box.appendChild(marker);
       });
 
@@ -5627,6 +5648,16 @@ class SimpleRiffMeasure extends MusicMeasure {
     if (!note.type || note.type === "standard") return;
     const x = note._x;
     const y = note._y;
+
+    if (note.type === "staccato") {
+      const mark = document.createElement("span");
+      mark.className = "tab-technique simple-riff-technique staccato";
+      mark.style.left = `${x}px`;
+      mark.style.top = `${y - 10}px`;
+      mark.setAttribute("aria-label", "Staccato");
+      box.appendChild(mark);
+      return;
+    }
 
     if (note.type === "downstroke" || note.type === "upstroke") {
       const mark = document.createElement("span");
@@ -6845,8 +6876,6 @@ function setAllEditorCollapse(expandAll=false){
 }
 function sectionSummary(s){
   const type=sectionLabel(s.type),title=String(s.title||'').trim();
-  const genericChordTitle=!title||['akkoordenschema','akkoorden'].includes(title.toLowerCase());
-  if(s.type==='chordsection'&&s.segno&&genericChordTitle)return `<span class="editor-heading"><b>Vervolg</b><span class="collapse-kind">${esc(type)}</span></span>`;
   return `<span class="editor-heading"><b>${esc(title||type)}</b><span class="collapse-kind">${esc(type)}</span></span>`;
 }
 
@@ -6933,11 +6962,10 @@ function riffBoundaryEditor(measure,si,li,mi,measures){
 function riffLabelsEditor(si,li,mi,items){return items.map((item,ii)=>`<div class="note-row"><div class="field"><label>Positie (%)</label><input value="${esc(percentDisplay(item.position,'50'))}" onfocus="beginRiffFieldEdit(${si},'Maatannotatie bewerken')" oninput="riffAnnotation(${si},${li},${mi},'labels',${ii},'position',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><div class="field"><label>Tekst</label><input value="${esc(item.text||'')}" placeholder="Am, G, D/F#…" onfocus="beginRiffFieldEdit(${si},'Maatannotatie bewerken')" oninput="riffAnnotation(${si},${li},${mi},'labels',${ii},'text',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><button class="small danger" onclick="removeRiffAnnotation(${si},${li},${mi},'labels',${ii})">×</button></div>`).join('')}
 function riffMarkersEditor(si,li,mi,items){return items.map((item,ii)=>`<div class="note-row"><div class="field"><label>Positie (%)</label><input value="${esc(percentDisplay(item.position,'50'))}" onfocus="beginRiffFieldEdit(${si},'Maatannotatie bewerken')" oninput="riffAnnotation(${si},${li},${mi},'markers',${ii},'position',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><div class="field"><label>Teken</label><select onchange="riffAnnotation(${si},${li},${mi},'markers',${ii},'type',this.value)">${markOpts(item.type||'')}</select></div><button class="small danger" onclick="removeRiffAnnotation(${si},${li},${mi},'markers',${ii})">×</button></div>`).join('')}
 function riffBelowEditor(si,li,mi,items){return items.map((item,ii)=>`<div class="note-row"><div class="field"><label>Positie (%)</label><input value="${esc(percentDisplay(item.position,'95'))}" onfocus="beginRiffFieldEdit(${si},'Maatannotatie bewerken')" oninput="riffAnnotation(${si},${li},${mi},'below',${ii},'position',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><div class="field"><label>Tekst</label><input value="${esc(item.text||'')}" placeholder="3×, D.S., Fine…" onfocus="beginRiffFieldEdit(${si},'Maatannotatie bewerken')" oninput="riffAnnotation(${si},${li},${mi},'below',${ii},'text',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><button class="small danger" onclick="removeRiffAnnotation(${si},${li},${mi},'below',${ii})">×</button></div>`).join('')}
-function riffNotesEditor(si,li,mi,notes){return notes.map((n,ni)=>`<div class="note-row riff-note-row" data-riff-note-index="${ni}"><label class="riff-note-select" title="Selecteer noot ${ni+1}"><input type="checkbox" data-riff-note-select="${ni}" ${riffSelection.measure===riffMeasureAt(si,li,mi)&&riffSelection.notes.has(n)?'checked':''} aria-label="Selecteer noot ${ni+1}" onchange="toggleRiffNoteSelection(${si},${li},${mi},${ni},this.checked)"></label><div class="field"><label>Positie (%)</label><input class="note-position" value="${esc(percentDisplay(n.position,'10'))}" onfocus="beginRiffFieldEdit(${si},'Noot bewerken')" oninput="riffNote(${si},${li},${mi},${ni},'position',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><div class="field"><label>Snaar</label><select onchange="riffNote(${si},${li},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${Number(n.string)===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" onfocus="beginRiffFieldEdit(${si},'Noot bewerken')" oninput="riffNote(${si},${li},${mi},${ni},'fret',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><div class="field"><label>Type</label><select onchange="riffNote(${si},${li},${mi},${ni},'type',this.value)">${[['standard','Standard'],['legato','Legato'],['slideUp','Slide up'],['slideDown','Slide down'],['slideOutUp','Slide out up'],['slideOutDown','Slide out down'],['bendUp','Bend up'],['bendUpDown','Bend up-down'],['downstroke','Downstroke'],['upstroke','Upstroke']].map(([x,l])=>`<option value="${x}" ${n.type===x?'selected':''}>${l}</option>`).join('')}</select></div><button class="small danger" onclick="removeRiffNote(${si},${li},${mi},${ni})" aria-label="Verwijder noot ${ni+1}">×</button></div>`).join('')}
+function riffNotesEditor(si,li,mi,notes){return notes.map((n,ni)=>`<div class="note-row riff-note-row" data-riff-note-index="${ni}"><label class="riff-note-select" title="Selecteer noot ${ni+1}"><input type="checkbox" data-riff-note-select="${ni}" ${riffSelection.measure===riffMeasureAt(si,li,mi)&&riffSelection.notes.has(n)?'checked':''} aria-label="Selecteer noot ${ni+1}" onchange="toggleRiffNoteSelection(${si},${li},${mi},${ni},this.checked)"></label><div class="field"><label>Positie (%)</label><input class="note-position" value="${esc(percentDisplay(n.position,'10'))}" onfocus="beginRiffFieldEdit(${si},'Noot bewerken')" oninput="riffNote(${si},${li},${mi},${ni},'position',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><div class="field"><label>Snaar</label><select onchange="riffNote(${si},${li},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${Number(n.string)===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" onfocus="beginRiffFieldEdit(${si},'Noot bewerken')" oninput="riffNote(${si},${li},${mi},${ni},'fret',this.value)" onchange="commitRiffFieldEdit()" onblur="commitRiffFieldEdit()"></div><div class="field"><label>Type</label><select onchange="riffNote(${si},${li},${mi},${ni},'type',this.value)">${[['standard','Standard'],['staccato','Staccato'],['legato','Legato'],['slideUp','Slide up'],['slideDown','Slide down'],['slideOutUp','Slide out up'],['slideOutDown','Slide out down'],['bendUp','Bend up'],['bendUpDown','Bend up-down'],['downstroke','Downstroke'],['upstroke','Upstroke']].map(([x,l])=>`<option value="${x}" ${n.type===x?'selected':''}>${l}</option>`).join('')}</select></div><button class="small danger" onclick="removeRiffNote(${si},${li},${mi},${ni})" aria-label="Verwijder noot ${ni+1}">×</button></div>`).join('')}
 
 function chordSectionEditor(s,si){
-  const segno=s.segno||'';
-  return `<div class="grid"><div class="field"><label>Titel</label><input value="${esc(s.title||'')}" oninput="sec(${si},'title',this.value)"></div>${componentWidthField(s,si)}<div class="field full"><label>Segno bij sectie</label><select onchange="sec(${si},'segno',this.value)">${['','single','double'].map(x=>`<option value="${x}" ${segno===x?'selected':''}>${x===''?'geen':x==='single'?'Segno':'Dubbel Segno'}</option>`).join('')}</select></div></div>${(s.lines||[]).map((line,li)=>chordLineEditor(si,li,line)).join('')}<button class="small" onclick="addChordLine(${si})">+ Regel</button>`;
+  return `<div class="grid"><div class="field"><label>Titel</label><input value="${esc(s.title||'')}" oninput="sec(${si},'title',this.value)"></div>${componentWidthField(s,si)}</div>${(s.lines||[]).map((line,li)=>chordLineEditor(si,li,line)).join('')}<button class="small" onclick="addChordLine(${si})">+ Regel</button>`;
 }
 function chordLineEditor(si,li,line){
   const measures=line.measures||[],collapsed=editorCollapsed('line',line);
@@ -6946,12 +6974,16 @@ function chordLineEditor(si,li,line){
 function chordMeasureEditor(si,li,mi,m){
   const collapsed=editorCollapsed('measure',m),chords=(m.chords||[]),labels=chords.map(builderChordTokenLabel).filter(Boolean);
   const rows=chords.map((token,ci)=>`<div class="selected-chord measure-chord-editor-row"><select aria-label="Akkoord of teken ${ci+1}" onchange="if(this.value)setChordInMeasure(${si},${li},${mi},${ci},this.value)">${chordTokenPickerOptions(token)}</select><button class="small secondary" onclick="moveChordInMeasure(${si},${li},${mi},${ci},-1)" ${ci===0?'disabled':''}>↑</button><button class="small secondary" onclick="moveChordInMeasure(${si},${li},${mi},${ci},1)" ${ci===chords.length-1?'disabled':''}>↓</button><button class="small danger" onclick="removeChordFromMeasure(${si},${li},${mi},${ci})">×</button></div>`).join('');
-  return `<div class="subbox editor-collapse-node editor-measure ${collapsed?'is-collapsed':''}" data-collapse-level="measure" data-si="${si}" data-li="${li}" data-mi="${mi}"><div class="block-head">${collapseToggleHtml('measure',si,li,mi,m)}<b>Maat ${mi+1}</b>${labels.length?`<span class="collapse-meta">${esc(labels.join(' / '))}</span>`:''}<span class="spacer"></span><button class="small danger" onclick="removeChordMeasure(${si},${li},${mi})">Verwijder maat</button></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="measure-editor-section"><h4>Akkoorden en slagritme</h4><div class="selected-chords">${rows}</div><div class="field"><label>Akkoord of teken toevoegen</label><select onchange="if(this.value){addChordToMeasure(${si},${li},${mi},this.value);this.value=''}"><option value="">Kies uit bibliotheek…</option><option value="symbol:repeat">Herhaal vorige maat (%)</option>${chordOptionGroups().replaceAll('value="','value="chord:')}</select><div class="hint" style="text-align:left">Nieuwe akkoorden komen uitsluitend uit de akkoordenbibliotheek. Bestaande oude tekst die niet gekoppeld kon worden blijft zichtbaar als “Oud/onopgelost” totdat je hier een bibliotheekakkoord kiest.</div></div><div class="field"><label>Slagritme <span class="label-hint">(ieder teken is één positie; D, U of spatie)</span></label><input value="${esc(m.strum||'')}" placeholder="D D D D" spellcheck="false" oninput="this.value=sanitizeStrumPattern(this.value);chordMeasure(${si},${li},${mi},'strum',this.value)"></div></div>${chordBarFields(si,li,mi,m)}</div></div>`;
+  return `<div class="subbox editor-collapse-node editor-measure ${collapsed?'is-collapsed':''}" data-collapse-level="measure" data-si="${si}" data-li="${li}" data-mi="${mi}"><div class="block-head">${collapseToggleHtml('measure',si,li,mi,m)}<b>Maat ${mi+1}</b>${labels.length?`<span class="collapse-meta">${esc(labels.join(' / '))}</span>`:''}<span class="spacer"></span><button class="small danger" onclick="removeChordMeasure(${si},${li},${mi})">Verwijder maat</button></div><div class="collapse-body" ${collapsed?'hidden':''}><div class="measure-editor-section"><h4>Akkoorden en slagritme</h4><div class="selected-chords">${rows}</div><div class="field"><label>Akkoord of teken toevoegen</label><select onchange="if(this.value){addChordToMeasure(${si},${li},${mi},this.value);this.value=''}"><option value="">Kies uit bibliotheek…</option><option value="symbol:repeat">Herhaal vorige maat (%)</option>${chordOptionGroups().replaceAll('value="','value="chord:')}</select><div class="hint" style="text-align:left">Nieuwe akkoorden komen uitsluitend uit de akkoordenbibliotheek. Bestaande oude tekst die niet gekoppeld kon worden blijft zichtbaar als “Oud/onopgelost” totdat je hier een bibliotheekakkoord kiest.</div></div><div class="field"><label>Slagritme <span class="label-hint">(ieder teken is één positie; D, U of spatie)</span></label><input value="${esc(m.strum||'')}" placeholder="D D D D" spellcheck="false" oninput="this.value=sanitizeStrumPattern(this.value);chordMeasure(${si},${li},${mi},'strum',this.value)"></div></div>${chordMarkerEditor(si,li,mi,m)}${chordBarFields(si,li,mi,m)}</div></div>`;
 }
+function chordMarkerEditor(si,li,mi,m){return `<div class="measure-editor-section"><h4>Navigatietekens</h4>${(m.markers||[]).map((item,ii)=>`<div class="note-row"><div class="field"><label>Positie (%)</label><input value="${esc(percentDisplay(item.position,'0'))}" oninput="chordMarker(${si},${li},${mi},${ii},'position',this.value)"></div><div class="field"><label>Teken</label><select onchange="chordMarker(${si},${li},${mi},${ii},'type',this.value)">${markOpts(item.type)}</select></div><button class="small danger" onclick="removeChordMarker(${si},${li},${mi},${ii})" aria-label="Verwijder navigatieteken">×</button></div>`).join('')}<button class="small" onclick="addChordMarker(${si},${li},${mi})">+ Navigatieteken</button></div>`}
+function addChordMarker(si,li,mi){const m=get().sections[si].lines[li].measures[mi];(m.markers||(m.markers=[])).push({type:'segno',position:'0%'});render()}
+function chordMarker(si,li,mi,ii,key,value){const item=get().sections[si].lines[li].measures[mi].markers[ii];item[key]=key==='position'?percentPosition(value,0):value;schedulePreview()}
+function removeChordMarker(si,li,mi,ii){get().sections[si].lines[li].measures[mi].markers.splice(ii,1);render()}
 function sanitizeStrumPattern(value){return String(value??'').toUpperCase().replace(/[^DU ]/g,'')}
 function chordBarFields(si,li,mi,m){return `<div class="measure-editor-section"><h4>Tekst onder de maat</h4><div class="field"><label>Annotatie rechts onder</label><input value="${esc(m.belowRight||'')}" placeholder="3×, D.S., D.S.S., Fine…" oninput="chordMeasure(${si},${li},${mi},'belowRight',this.value)"></div></div><div class="measure-editor-section"><h4>Maatstrepen en herhalingen</h4><div class="grid"><div class="field"><label>Begin maat</label><select onchange="chordMeasure(${si},${li},${mi},'startBar',this.value)">${barOpts(m.startBar)}</select></div><div class="field"><label>Einde maat</label><select onchange="chordMeasure(${si},${li},${mi},'endBar',this.value)">${barOpts(m.endBar)}</select></div></div></div>`}
 function barFields(si,mi,o){const path=mi===null?'sec':'mea';return `<div class="grid"><div class="field"><label>Begin</label><select onchange="${path}Bar(${si},${mi},'startBar',this.value)">${barOpts(o.startBar)}</select></div><div class="field"><label>Einde</label><select onchange="${path}Bar(${si},${mi},'endBar',this.value)">${barOpts(o.endBar)}</select></div><div class="field"><label>Teken</label><select onchange="${path}Bar(${si},${mi},'marker',this.value)">${markOpts(o.marker)}</select></div><div class="field"><label>Tekst</label><input value="${esc(o.belowRight||'')}" oninput="${path}Bar(${si},${mi},'belowRight',this.value)"></div></div>`}
-function barOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function internalBarOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','begin herhaling'],['repeatEnd','einde herhaling'],['repeatBoth','einde + begin herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function markOpts(v){return ['','segno','doubleSegno','coda'].map(x=>`<option value="${x}" ${v===x?'selected':''}>${x||'geen'}</option>`).join('')}
+function barOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function internalBarOpts(v){return [['','standaard'],['single','enkel'],['double','dubbel'],['repeat','begin herhaling'],['repeatEnd','einde herhaling'],['repeatBoth','einde + begin herhaling'],['final','eindstreep'],['none','geen']].map(([x,l])=>`<option value="${x}" ${v===x?'selected':''}>${l}</option>`).join('')}function markOpts(v){return [['','geen'],['segno','Segno'],['doubleSegno','Dubbel Segno'],['coda','Coda']].map(([x,label])=>`<option value="${x}" ${v===x?'selected':''}>${label}</option>`).join('')}
 function notesEditor(si,mi,notes){return notes.map((n,ni)=>`<div class="note-row"><div class="field"><label>Positie</label><input class="note-position" value="${esc(n.position??'1')}" oninput="note(${si},${mi},${ni},'position',this.value)"></div><div class="field"><label>Snaar</label><select onchange="note(${si},${mi},${ni},'string',+this.value)">${[1,2,3,4,5,6].map(x=>`<option ${n.string===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Fret/tekst</label><input value="${esc(n.fret)}" oninput="note(${si},${mi},${ni},'fret',this.value)"></div><div class="field"><label>Type</label><select onchange="note(${si},${mi},${ni},'type',this.value)">${[['standard','Standard'],['legato','Legato'],['slideUp','Slide up'],['slideDown','Slide down'],['slideOutUp','Slide out up'],['slideOutDown','Slide out down'],['bendUp','Bend up'],['bendUpDown','Bend up-down'],['downstroke','Downstroke'],['upstroke','Upstroke']].map(([x,l])=>`<option value="${x}" ${n.type===x?'selected':''}>${l}</option>`).join('')}</select></div><button class="small danger" onclick="removeNote(${si},${mi},${ni})">×</button></div>`).join('')}
 function revealEditorSection(index){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -6963,7 +6995,7 @@ function revealEditorSection(index){
     scroller.scrollTo({top:Math.max(0,top),behavior:'smooth'});
   }));
 }
-function addSection(type,index=null){const r=get(),s={type};if(type==='text')Object.assign(s,{title:'',text:'',width:'full'});if(type==='chordgrid')Object.assign(s,{title:'Akkoorden in dit nummer',chords:[],width:'full'});if(type==='chordsection')Object.assign(s,{title:'Akkoorden',segno:'',lines:[{measures:[]}],width:'full'});if(type==='simpleriff')Object.assign(s,{title:'Tab / riff',lines:[{measures:[{end:'100%',notes:[],labels:[],markers:[],below:[]}],startBar:'single',endBar:'single'}],width:'full'});if(type==='shapebox')Object.assign(s,{title:'Shapebox',width:'full',firstFret:1,lastFret:17,markers:[],guides:[]});const addedIndex=index===null?r.sections.length:index;if(index===null)r.sections.push(s);else r.sections.splice(index,0,s);render();revealEditorSection(addedIndex)}
+function addSection(type,index=null){const r=get(),s={type};if(type==='text')Object.assign(s,{title:'',text:'',width:'full'});if(type==='chordgrid')Object.assign(s,{title:'Akkoorden in dit nummer',chords:[],width:'full'});if(type==='chordsection')Object.assign(s,{title:'Akkoorden',lines:[{measures:[]}],width:'full'});if(type==='simpleriff')Object.assign(s,{title:'Tab / riff',lines:[{measures:[{end:'100%',notes:[],labels:[],markers:[],below:[]}],startBar:'single',endBar:'single'}],width:'full'});if(type==='shapebox')Object.assign(s,{title:'Shapebox',width:'full',firstFret:1,lastFret:17,markers:[],guides:[]});const addedIndex=index===null?r.sections.length:index;if(index===null)r.sections.push(s);else r.sections.splice(index,0,s);render();revealEditorSection(addedIndex)}
 function moveSection(i,d){const a=get().sections,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];render()}
 function duplicateSection(i){const a=get().sections;a.splice(i+1,0,structuredClone(a[i]));render()}
 function chordOptionGroups(selectedId=""){
@@ -7294,7 +7326,7 @@ function mergeRiffMeasures(si,li,mi){
 function riffAnnotation(si,li,mi,key,ii,field,v){mutateRiffWithOptionalTransaction(si,'Maatannotatie bewerken',section=>{const measure=ensureRiffMeasures(ensureSimpleRiffLines(section)[li])[mi];measure[key]=measure[key]||[];if(!measure[key][ii])return false;if(field==='position')measure[key][ii][field]=percentPosition(v,key==='below'?95:50);else measure[key][ii][field]=v});schedulePreview(field==='position'||field==='text'?320:0)}
 function focusNewRiffAnnotation(si,li,mi,kind){requestAnimationFrame(()=>{const measure=editor.querySelector(`[data-collapse-level="measure"][data-si="${si}"][data-li="${li}"][data-mi="${mi}"]`);const field=kind==='boundary'?measure?.querySelector('.riff-boundary-editor input'):measure?.querySelector(`[data-riff-annotations="${kind}"] .note-row:last-child input, [data-riff-annotations="${kind}"] .note-row:last-child select`);field?.focus()})}
 function addRiffLabel(si,li,mi){runRiffEdit(si,'Tekst boven toevoegen',section=>{const measure=ensureRiffMeasures(ensureSimpleRiffLines(section)[li])[mi];(measure.labels||(measure.labels=[])).push({position:'50%',text:''})});focusNewRiffAnnotation(si,li,mi,'labels')}
-function addRiffMarker(si,li,mi){runRiffEdit(si,'Navigatieteken toevoegen',section=>{const measure=ensureRiffMeasures(ensureSimpleRiffLines(section)[li])[mi];(measure.markers||(measure.markers=[])).push({position:'50%',type:'segno'})});focusNewRiffAnnotation(si,li,mi,'markers')}
+function addRiffMarker(si,li,mi){runRiffEdit(si,'Navigatieteken toevoegen',section=>{const measure=ensureRiffMeasures(ensureSimpleRiffLines(section)[li])[mi];(measure.markers||(measure.markers=[])).push({position:'0%',type:'segno'})});focusNewRiffAnnotation(si,li,mi,'markers')}
 function addRiffBelow(si,li,mi){runRiffEdit(si,'Tekst onder toevoegen',section=>{const measure=ensureRiffMeasures(ensureSimpleRiffLines(section)[li])[mi];(measure.below||(measure.below=[])).push({position:'95%',text:''})});focusNewRiffAnnotation(si,li,mi,'below')}
 function removeRiffAnnotation(si,li,mi,key,ii){runRiffEdit(si,'Maatannotatie verwijderen',section=>{const measure=ensureRiffMeasures(ensureSimpleRiffLines(section)[li])[mi];if(!measure[key]?.[ii])return false;measure[key].splice(ii,1)})}
 function riffNote(si,li,mi,ni,k,v){mutateRiffWithOptionalTransaction(si,'Noot bewerken',section=>{const note=ensureRiffMeasures(ensureSimpleRiffLines(section)[li])[mi].notes[ni];if(!note)return false;note[k]=k==='position'?percentPosition(v,10):v});schedulePreview(k==='string'||k==='type'?0:320)}
@@ -7743,7 +7775,7 @@ function projectSchema(raw){return String(raw?.schemaVersion||'').trim()}
 function assertSupportedSchema(raw){
   const schema=projectSchema(raw);
   if(!schema)throw new Error('Deze gitaarmap bevat geen herkenbare schemaVersion.');
-  if(!['10B','11','12','13','14','15','16','17',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.8.0 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
+  if(!['10B','11','12','13','14','15','16','17','18',CURRENT_SCHEMA].includes(schema))throw new Error(`Deze gitaarmap gebruikt schema ${schema}. FretFlow 4.8.0 ondersteunt schema 10B, 11, 12, 13, 14, 15, 16, 17, 18 en ${CURRENT_SCHEMA}. Open een nieuwer schema met een nieuwere FretFlow-versie.`);
 }
 function migrateProjectToCurrent(raw){
   assertSupportedSchema(raw);
@@ -7812,6 +7844,7 @@ async function openProjectFile(file,fileHandle=null){
   const raw=kind==='fret'?readProjectFromFret(await file.text()):readProjectFromStandalone(await file.text());
   // Validation and migration happen before this assignment, so an invalid file leaves the current map intact.
   setProject(raw,'project',{sourceType:kind==='fret'?'fret':'legacy-html',fileHandle:kind==='fret'?fileHandle:null,fileName:file.name||''});
+  if(kind==='fret' && /^\d+$/.test(projectSchema(raw)) && Number(projectSchema(raw))!==Number(CURRENT_SCHEMA)) alert(`Dit databestand gebruikt schema ${raw.schemaVersion}. Deze versie van FretFlow gebruikt schema ${CURRENT_SCHEMA}.\n\nHet bestand wordt geladen, maar bij native ingevoerde tabs kunnen compatibiliteitsproblemen optreden met Segno/Dal Segno-markeringen.`);
   builderReturnState=null;
 }
 function defaultProjectFilename(extension){
