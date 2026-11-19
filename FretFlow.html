@@ -1969,6 +1969,70 @@ FretFlow.initApp = function(){
 /* =============================================================================
    VIEW: Spotify Practice Controls
    ============================================================================= */
+// Opt-in, memory-only playback diagnostics. Only explicitly selected fields enter the report.
+const SpotifyPracticeDiagnostics = (() => {
+  let enabled = false, sequence = 0, requestSequence = 0, latestStateRequest = 0;
+  let events = [], tracks = new Map(), devices = new Map(), states = new WeakMap();
+  const alias = (map, value, prefix) => {
+    if (!enabled || !value) return null;
+    if (!map.has(value)) map.set(value, `${prefix}${map.size + 1}`);
+    return map.get(value);
+  };
+  const record = (action, fields = {}) => {
+    if (!enabled) return;
+    events.push({seq:++sequence, time:new Date().toISOString(), action, ...fields});
+    if (events.length > 250) events.shift();
+  };
+  const clear = () => { events = []; tracks = new Map(); devices = new Map(); states = new WeakMap(); sequence = 0; requestSequence = 0; latestStateRequest = 0; };
+  window.FretFlowSpotifyDiagnostics = Object.freeze({
+    enable() { enabled = true; },
+    report() { return events.map(event => JSON.stringify(event)).join("\n"); },
+    disable() { enabled = false; },
+    clear
+  });
+  return {
+    record, enabled:() => enabled,
+    track:id => alias(tracks, id, "track-"), device:id => alias(devices, id, "device-"),
+    request(isState) { const id = ++requestSequence; if (isState) latestStateRequest = id; return id; },
+    older:id => id < latestStateRequest,
+    remember(state, info) { if (state && typeof state === "object") states.set(state, info); },
+    state:state => state && typeof state === "object" ? states.get(state) : null
+  };
+})();
+
+// Separate from diagnostics and project data; generations invalidate older experiments.
+const SpotifySeekExperiment = (() => {
+  let enabled = false, generation = 0;
+  const change = value => {
+    enabled = value;
+    generation++;
+    SpotifyPracticeDiagnostics.record("seekExperiment.mode", {enabled});
+  };
+  window.FretFlowSpotifySeekExperiment = Object.freeze({
+    enable() { change(true); }, disable() { change(false); }, status() { return enabled; }
+  });
+  return {
+    enabled:() => enabled,
+    intent:() => ++generation,
+    current:id => enabled && id === generation,
+    isLatest:id => id === generation
+  };
+})();
+
+const SpotifyDirectSeekExperiment = (() => {
+  let enabled = false, revision = 0;
+  const change = value => {
+    enabled = value;
+    revision++;
+    SpotifyPracticeDiagnostics.record("directSeek.mode", {enabled});
+  };
+  window.FretFlowSpotifyDirectSeekExperiment = Object.freeze({
+    enable() { change(true); }, disable() { change(false); }, status() { return enabled; }
+  });
+  return {enabled:() => enabled, revision:() => revision,
+    current:value => enabled && value === revision};
+})();
+
 class SpotifyPractice {
   constructor(viewer) {
     this.viewer = viewer;
@@ -2018,6 +2082,13 @@ class SpotifyPractice {
     this.bind();
     this.renderIcons();
     this.observeMusicArea();
+  }
+
+  diagnosticIntent(action, targetMs = null, control = null) {
+    if (!SpotifyPracticeDiagnostics.enabled()) return;
+    const session = this.sessionFor();
+    SpotifyPracticeDiagnostics.record(action, {source:"user", control, aMs:session.aMs, bMs:session.bMs,
+      playheadMs:session.playheadMs, targetMs, playing:this.isPlaying, loopActive:session.loopActive});
   }
 
   storageGet(key) {
@@ -2075,12 +2146,14 @@ class SpotifyPractice {
     this.markerB?.addEventListener("pointerdown", event => this.beginMarkerDrag(event, "b"));
 
     this.play?.addEventListener("click", () => {
-      if (this.busy) { this.cancelCountdown(); return; }
+      if (this.busy) { SpotifySeekExperiment.intent(); this.cancelCountdown(); return; }
+      this.diagnosticIntent(this.isPlaying ? "pause" : "play", this.sessionFor().playheadMs, "play");
       this.togglePlayback().catch(error => this.showError(error));
     });
 
     this.replay?.addEventListener("click", () => {
-      if (this.busy) { this.cancelCountdown(); return; }
+      if (this.busy) { SpotifySeekExperiment.intent(); this.cancelCountdown(); return; }
+      this.diagnosticIntent("replay", this.sessionFor().aMs, "replay");
       this.replayFromA().catch(error => this.showError(error));
     });
 
@@ -2146,6 +2219,7 @@ class SpotifyPractice {
   }
 
   open(tab) {
+    SpotifySeekExperiment.intent();
     this.cancelCountdown();
     this.stopMonitor();
     this.tab = tab;
@@ -2195,6 +2269,7 @@ class SpotifyPractice {
   }
 
   hide() {
+    SpotifySeekExperiment.intent();
     this.cancelCountdown();
     this.stopMonitor();
     if (this.root) this.root.hidden = true;
@@ -2381,6 +2456,7 @@ class SpotifyPractice {
   }
 
   async refreshToken() {
+    if (SpotifyPracticeDiagnostics.enabled()) SpotifyPracticeDiagnostics.record("auth.refresh", {reason:"token-refresh"});
     const refreshToken = this.storageGet("refresh_token");
     const clientId = this.clientId();
     if (!refreshToken || !clientId || this.storageGet("auth_client_id") !== clientId) return "";
@@ -2423,23 +2499,57 @@ class SpotifyPractice {
   async api(path, options = {}, retry = true, interactive = true) {
     const token = await this.accessToken(interactive);
     if (!token) throw new Error("Spotify is niet gekoppeld.");
+    if (options.guard && !options.guard()) throw new Error("Experimental request cancelled");
 
-    const response = await fetch(`https://api.spotify.com/v1${path}`, {
-      method:options.method || "GET",
-      headers:{
-        "Authorization":`Bearer ${token}`,
-        ...(options.body ? {"Content-Type":"application/json"} : {})
-      },
-      body:options.body ? JSON.stringify(options.body) : undefined
-    });
+    const diagnostics = SpotifyPracticeDiagnostics;
+    const tracing = diagnostics.enabled();
+    const endpoint = path.split("?")[0];
+    const category = /^\/tracks\/[^/]+$/.test(endpoint) ? "/tracks/:id" :
+      (["/me/player", "/me/player/devices", "/me/player/play", "/me/player/pause", "/me/player/seek"].includes(endpoint) ? endpoint : "other");
+    const stateRequest = category === "/me/player" && (options.method || "GET") === "GET";
+    const requestId = tracing ? diagnostics.request(stateRequest) : null;
+    const started = tracing ? performance.now() : 0;
+    if (tracing) {
+      const deviceId = new URLSearchParams(path.split("?")[1] || "").get("device_id") || options.body?.device_ids?.[0];
+      diagnostics.record("request.start", {requestId, method:options.method || "GET", category,
+        device:diagnostics.device(deviceId), track:diagnostics.track(options.body?.uris?.[0] ? this.trackId : (category === "/tracks/:id" ? this.trackId : null)),
+        positionMs:options.body?.position_ms ?? (category === "/me/player/seek" ? Number(new URLSearchParams(path.split("?")[1] || "").get("position_ms")) : null), retry:!retry});
+    }
+    let response;
+    try {
+      response = await fetch(`https://api.spotify.com/v1${path}`, {
+        method:options.method || "GET",
+        headers:{
+          "Authorization":`Bearer ${token}`,
+          ...(options.body ? {"Content-Type":"application/json"} : {})
+        },
+        body:options.body ? JSON.stringify(options.body) : undefined
+      });
+    } catch (error) {
+      if (tracing) diagnostics.record("request.end", {requestId, durationMs:Math.round(performance.now()-started), error:"network"});
+      throw error;
+    }
+    if (tracing) diagnostics.record("request.end", {requestId, status:response.status,
+      durationMs:Math.round(performance.now()-started), error:response.ok ? null : `http-${response.status}`,
+      olderThanNewerStateRequest:stateRequest ? diagnostics.older(requestId) : null});
 
     if (response.status === 401 && retry) {
+      if (tracing) diagnostics.record("auth.refresh", {requestId, reason:"http-401"});
       this.storageSet("access_token","");
       const refreshed = await this.refreshToken();
       if (refreshed) return this.api(path, options, false, interactive);
     }
 
     const data = await this.readResponse(response);
+    if (tracing && stateRequest) {
+      const receivedAt = performance.now();
+      diagnostics.remember(data, {requestId, receivedAt, started, older:diagnostics.older(requestId)});
+      diagnostics.record("state.received", {requestId, progressMs:Number.isFinite(data?.progress_ms) ? data.progress_ms : null,
+        playing:typeof data?.is_playing === "boolean" ? data.is_playing : null,
+        spotifyTimestampAgeMs:Number.isFinite(data?.timestamp) ? Date.now() - data.timestamp : null, device:diagnostics.device(data?.device?.id),
+        trackMatches:Boolean(data?.item?.id && data.item.id === this.trackId),
+        olderThanNewerStateRequest:diagnostics.older(requestId), requestAgeMs:Math.round(receivedAt-started)});
+    }
     if (response.ok) return data;
 
     const details =
@@ -2459,12 +2569,13 @@ class SpotifyPractice {
     throw new Error(details || `Spotify-fout ${response.status}.`);
   }
 
-  async prepareTrack(interactive = true) {
+  async prepareTrack(interactive = true, guard = null) {
     if (!this.trackId) return false;
     const token = await this.accessToken(interactive);
-    if (!token) return false;
+    if (!token || (guard && !guard())) return false;
 
     const info = await this.api(`/tracks/${encodeURIComponent(this.trackId)}`, {}, true, interactive);
+    if (guard && !guard()) return false;
     this.durationMs = Math.max(1000, Number(info?.duration_ms) || 1);
 
     const session = this.sessionFor();
@@ -2475,16 +2586,47 @@ class SpotifyPractice {
     this.updateLoopActive();
     this.renderTimeline();
 
-    await this.syncPlaybackState(interactive).catch(() => {});
+    await this.syncPlaybackState(interactive, "prepareTrack", guard).catch(() => {});
+    if (guard && !guard()) return false;
     this.clearStatus();
     return true;
   }
 
-  async syncPlaybackState(interactive = true) {
+  async syncPlaybackState(interactive = true, source = "prepareTrack", guard = null) {
+    const requestStarted = performance.now();
     const state = await this.api("/me/player", {}, true, interactive);
+    if (guard && !guard()) return state;
+    const fence = this.directSeekFence;
+    if (fence && fence.tab === this.tab && SpotifyDirectSeekExperiment.current(fence.revision) &&
+        performance.now() < fence.expires && requestStarted < fence.started) {
+      SpotifyPracticeDiagnostics.record("directSeek.protection.suppress", {operation:fence.operation, source, reason:"older-request"});
+      return state;
+    }
     const linked = Boolean(state?.item?.id === this.trackId);
     const session = this.sessionFor();
+    const direct = this.directSeekPending;
+    if (direct) {
+      const live = SpotifySeekExperiment.isLatest(direct.operation) && SpotifyDirectSeekExperiment.current(direct.revision) && performance.now() < direct.expires;
+      const matches = state?.item?.id === direct.trackId && state?.device?.id === direct.deviceId && state?.device?.is_active === true;
+      if (!live || !matches) {
+        direct.invalidated = true;
+        this.directSeekPending = null;
+        SpotifyPracticeDiagnostics.record("directSeek.protection.release", {operation:direct.operation, reason:live ? "device-or-track-change" : "cancelled-or-timeout"});
+      } else if (matches && direct.phase !== "select") {
+        const confirmed = direct.phase === "confirm" && state.is_playing === true && Number.isFinite(state.timestamp) &&
+          state.timestamp >= direct.seekAt && Number.isFinite(state.progress_ms) && state.progress_ms >= direct.target-1500 &&
+          state.progress_ms <= direct.target + Math.max(6000, performance.now()-(direct.expires-6000)+3000);
+        if (confirmed) {
+          this.directSeekPending = null;
+          SpotifyPracticeDiagnostics.record("directSeek.protection.release", {operation:direct.operation, reason:"confirmed"});
+        } else {
+          SpotifyPracticeDiagnostics.record("directSeek.protection.suppress", {operation:direct.operation, source});
+          return state;
+        }
+      }
+    }
 
+    const before = session.playheadMs;
     if (linked) {
       if (state?.is_playing) {
         session.playheadDirty = false;
@@ -2505,7 +2647,17 @@ class SpotifyPractice {
       this.renderIcons();
       this.renderTimeline();
     }
+    this.diagnosticStateApplied(`syncPlaybackState:${source}`, state, before, session.playheadMs, linked && (Boolean(state?.is_playing) || !session.playheadDirty));
     return state;
+  }
+
+  diagnosticStateApplied(source, state, before, after, updated) {
+    if (!SpotifyPracticeDiagnostics.enabled()) return;
+    const info = SpotifyPracticeDiagnostics.state(state);
+    SpotifyPracticeDiagnostics.record("state.applied", {source, requestId:info?.requestId ?? null,
+      stateAgeMs:info ? Math.round(performance.now()-info.receivedAt) : null,
+      olderThanNewerStateRequest:info ? SpotifyPracticeDiagnostics.older(info.requestId) : null,
+      updated, beforeMs:before, afterMs:after});
   }
 
   async devices() {
@@ -2552,8 +2704,10 @@ class SpotifyPractice {
 
   applyPlaybackState(state) {
     const linked = Boolean(state?.item?.id === this.trackId);
+    const before = this.sessionFor().playheadMs;
     if (linked) this.setPlaying(Boolean(state?.is_playing), Number(state?.progress_ms) || 0);
     else this.setPlaying(false);
+    this.diagnosticStateApplied("applyPlaybackState", state, before, this.sessionFor().playheadMs, linked || before !== this.sessionFor().playheadMs);
     return state;
   }
 
@@ -2580,14 +2734,21 @@ class SpotifyPractice {
     this.setPlaying(false, position);
   }
 
-  async playTrackAt(positionMs = 0) {
+  async playTrackAt(positionMs = 0, operation = SpotifySeekExperiment.intent()) {
     const deviceId = await this.ensureDevice();
     const position = this.clampMs(positionMs);
+    const experiment = SpotifySeekExperiment.current(operation) && position > 0;
+    const trackId = this.trackId;
+    const playStartedAt = experiment ? Date.now() : 0;
+    const playStartedMono = experiment ? performance.now() : 0;
+    let playAccepted = false;
+    SpotifyPracticeDiagnostics.record("seekExperiment.play", {operation, enabled:SpotifySeekExperiment.enabled(), eligible:experiment, targetMs:position});
     try {
       await this.api(this.devicePath("/me/player/play", deviceId), {
         method:"PUT",
         body:{uris:[this.trackUri],position_ms:Math.max(0,Math.round(position))}
       });
+      playAccepted = true;
     } catch (error) {
       if (error?.code !== "RESTRICTION" || !await this.verifyRestriction(state => {
         const linked = state?.item?.id === this.trackId;
@@ -2603,22 +2764,97 @@ class SpotifyPractice {
       }
     }
     this.sessionFor().playheadDirty = false;
+    const before = this.sessionFor().playheadMs;
     this.setPlaying(true, position);
+    if (SpotifyPracticeDiagnostics.enabled()) SpotifyPracticeDiagnostics.record("playhead.command", {source:"playTrackAt", beforeMs:before, afterMs:this.sessionFor().playheadMs, targetMs:position});
+    if (experiment && playAccepted) void this.verifySeekExperiment({operation, deviceId, trackId, position, playStartedAt, playStartedMono});
   }
 
-  async seekToPositionAndPlay(positionMs) {
+  async verifySeekExperiment(experiment) {
+    const {operation, deviceId, trackId, position, playStartedAt, playStartedMono} = experiment;
+    const log = (action, fields = {}) => SpotifyPracticeDiagnostics.record(action, {operation, ...fields});
+    const cancelled = () => {
+      if (SpotifySeekExperiment.current(operation) && this.trackId === trackId) return false;
+      log("seekExperiment.skipped", {reason:"newer-intent-or-disabled"});
+      return true;
+    };
+    const observe = async phase => {
+      const started = performance.now();
+      log("seekExperiment.verify.start", {phase});
+      const state = await this.api("/me/player", {}, false, false);
+      const elapsed = Math.round(performance.now() - playStartedMono);
+      const expected = Math.min(this.durationMs, position + elapsed);
+      const progress = Number.isFinite(state?.progress_ms) ? state.progress_ms : null;
+      log("seekExperiment.verify.result", {phase, durationMs:Math.round(performance.now()-started),
+        track:SpotifyPracticeDiagnostics.track(state?.item?.id), device:SpotifyPracticeDiagnostics.device(state?.device?.id),
+        trackMatches:state?.item?.id === trackId, deviceMatches:state?.device?.id === deviceId, deviceActive:state?.device?.is_active === true,
+        playing:state?.is_playing === true, progressMs:progress, expectedMs:expected,
+        mismatchMs:progress === null ? null : Math.round(progress-expected),
+        timestampFresh:Number.isFinite(state?.timestamp) && state.timestamp >= playStartedAt});
+      return state;
+    };
+    let phase = "before-seek";
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      if (cancelled()) return;
+      const state = await observe("before-seek");
+      if (cancelled()) return;
+      if (state?.item?.id !== trackId || state?.device?.id !== deviceId || state?.device?.is_active !== true || state?.is_playing !== true) {
+        log("seekExperiment.skipped", {reason:"track-device-or-playback-mismatch"}); return;
+      }
+      // Spotify's timestamp is the last state change, not a guaranteed device sample time.
+      // An absent or pre-Play timestamp cannot establish a sufficiently fresh observation.
+      if (!Number.isFinite(state.timestamp) || state.timestamp < playStartedAt || state.timestamp > Date.now() + 1000 ||
+          !Number.isFinite(state.progress_ms) || performance.now() - playStartedMono > 5000) {
+        log("seekExperiment.skipped", {reason:"state-freshness-uncertain"}); return;
+      }
+      const elapsed = performance.now() - playStartedMono;
+      // Account for sampling anywhere between Play start and receipt, plus normal latency.
+      if (state.progress_ms >= position - 3000 && state.progress_ms <= position + elapsed + 3000) {
+        log("seekExperiment.skipped", {reason:"position-within-tolerance"}); return;
+      }
+      if (cancelled()) return;
+      log("seekExperiment.seek", {decision:"triggered", targetMs:Math.round(position), device:SpotifyPracticeDiagnostics.device(deviceId)});
+      const seekStartedAt = Date.now();
+      phase = "seek";
+      await this.api(`/me/player/seek?position_ms=${Math.round(position)}&device_id=${encodeURIComponent(deviceId)}`,
+        {method:"PUT", guard:() => SpotifySeekExperiment.current(operation) && this.trackId === trackId}, false, false);
+      log("seekExperiment.seek.result", {status:"accepted"});
+      phase = "after-seek";
+      await new Promise(resolve => setTimeout(resolve, 600));
+      if (cancelled()) return;
+      const after = await observe("after-seek");
+      if (cancelled()) return;
+      log("seekExperiment.observed", {progressMs:Number.isFinite(after?.progress_ms) ? after.progress_ms : null,
+        trackMatches:after?.item?.id === trackId, deviceMatches:after?.device?.id === deviceId,
+        timestampFresh:Number.isFinite(after?.timestamp) && after.timestamp >= seekStartedAt});
+    } catch (_) {
+      if (!cancelled()) log("seekExperiment.failure", {phase, category:"request-failed"});
+    }
+  }
+
+  async seekToPositionAndPlay(positionMs, operation) {
     // One Spotify Player command is more reliable than a rapid seek -> play sequence.
-    return this.playTrackAt(positionMs);
+    return this.playTrackAt(positionMs, operation);
   }
 
   async togglePlayback() {
+    const operation = SpotifySeekExperiment.intent();
     const session = this.sessionFor();
     const requestedPlayhead = this.clampMs(session.playheadMs || 0);
     const localPlayheadIsAuthoritative = Boolean(session.playheadDirty);
+    const enabled = SpotifyDirectSeekExperiment.enabled(), revision = SpotifyDirectSeekExperiment.revision();
+    const trackId = this.trackId, tab = this.tab;
+    const current = () => SpotifySeekExperiment.isLatest(operation) && SpotifyDirectSeekExperiment.current(revision) && this.trackId === trackId && this.tab === tab;
 
-    if (!await this.prepareTrack(true)) return;
-
+    if (!await this.prepareTrack(true, enabled ? current : null)) return;
+    if (enabled && !current()) { SpotifyPracticeDiagnostics.record("directSeek.cancelled", {operation, kind:"resume", stage:"prepare"}); return; }
+    const readStarted = performance.now();
     const state = await this.api("/me/player").catch(() => null);
+    if (enabled && !current()) { SpotifyPracticeDiagnostics.record("directSeek.cancelled", {operation, kind:"resume", stage:"state"}); return; }
+    if (enabled && (this.directSeekCommandInFlight || this.directSeekPending)) {
+      SpotifyPracticeDiagnostics.record("directSeek.cancelled", {operation, kind:"resume", stage:"operation-in-flight"}); return;
+    }
     const linkedPlaying = Boolean(state?.is_playing && state?.item?.id === this.trackId);
     if (linkedPlaying) {
       this.setPlaying(true, Number(state?.progress_ms) || this.estimatedProgressMs());
@@ -2629,32 +2865,214 @@ class SpotifyPractice {
 
     if (state?.is_playing) await this.pausePlayback(state);
 
+    if (enabled && !state?.is_playing) {
+      let reason = null;
+      if (localPlayheadIsAuthoritative) reason = "playhead-moved";
+      else if (!state || state.is_playing !== false || !Number.isFinite(state.timestamp) || state.timestamp > Date.now()+1000 ||
+               !Number.isFinite(state.progress_ms) || performance.now()-readStarted > 2000) reason = "uncertain-state";
+      else if (state.item?.id !== trackId) reason = "different-track";
+      else if (!state.device?.id || state.device.is_active !== true || state.device.is_restricted !== false) reason = "unverified-device";
+      else if (Math.abs(requestedPlayhead-state.progress_ms) > 1500) reason = "position-mismatch";
+      SpotifyPracticeDiagnostics.record("directSeek.resume.eligibility", {operation, eligible:!reason, reason,
+        requestedMs:requestedPlayhead, pausedMs:Number.isFinite(state?.progress_ms) ? state.progress_ms : null,
+        track:SpotifyPracticeDiagnostics.track(state?.item?.id), device:SpotifyPracticeDiagnostics.device(state?.device?.id)});
+      if (!reason && await this.experimentalPosition(state, state.progress_ms, operation, revision, "resume", 0, readStarted)) return;
+    }
+
     // Play must honour the black playhead the user can actually see.
     const startAt = localPlayheadIsAuthoritative
       ? requestedPlayhead
       : this.clampMs(session.playheadMs || 0);
     session.playheadMs = startAt;
     session.playheadDirty = false;
-    await this.seekToPositionAndPlay(startAt);
+    await this.seekToPositionAndPlay(startAt, operation);
     this.clearStatus();
   }
 
+  async experimentalPosition(state, target, operation, revision, kind, delay, readStarted) {
+    if (!SpotifyDirectSeekExperiment.current(revision)) return false;
+    const trackId = this.trackId, tab = this.tab, device = state?.device;
+    const log = (action, fields = {}) => SpotifyPracticeDiagnostics.record(action, {operation, kind, ...fields});
+    const current = () => SpotifySeekExperiment.isLatest(operation) && SpotifyDirectSeekExperiment.current(revision) &&
+      this.trackId === trackId && this.tab === tab;
+    if (!current()) { log("directSeek.cancelled", {stage:"state"}); return true; }
+    if (this.directSeekCommandInFlight || (this.directSeekPending && this.directSeekPending.phase !== "confirm")) {
+      log("directSeek.cancelled", {stage:"operation-in-flight"}); return true;
+    }
+    let reason = null;
+    if (!Number.isFinite(target) || target < 0 || !Number.isFinite(this.durationMs) || Math.round(target) >= this.durationMs) reason = "invalid-position";
+    else if (!state || performance.now()-readStarted > 2000 || !Number.isFinite(state.timestamp) ||
+             state.timestamp > Date.now()+1000 || !Number.isFinite(state.progress_ms)) reason = "uncertain-state";
+    else if (kind === "resume" ? state.is_playing !== false : state.is_playing !== true) reason = kind === "resume" ? "not-paused" : "not-playing";
+    else if (state.item?.id !== trackId) reason = "different-track";
+    else if (!device?.id || device.is_active !== true || device.is_restricted !== false) reason = "unverified-device";
+    log("directSeek.eligibility", {eligible:!reason, reason, targetMs:target, pathway:kind === "resume" ? "resume" : (delay ? "pause-seek-resume" : "seek"),
+      track:SpotifyPracticeDiagnostics.track(state?.item?.id), device:SpotifyPracticeDiagnostics.device(device?.id)});
+    if (reason) return false;
+    // Do not overlap experimental commands, including an invalidated command still in flight.
+    if (this.directSeekPending?.phase === "confirm") {
+      SpotifyPracticeDiagnostics.record("directSeek.protection.release", {operation:this.directSeekPending.operation, reason:"superseded"});
+      this.directSeekPending = null;
+    }
+    if (this.directSeekPending || this.directSeekCommandInFlight) { log("directSeek.cancelled", {stage:"operation-in-flight"}); return true; }
+    const pending = {operation, revision, trackId, deviceId:device.id, invalidated:false, target, phase:"select",
+      expires:performance.now()+Math.max(12000, delay*1000+10000)};
+    this.directSeekPending = pending;
+    const valid = () => current() && !pending.invalidated && this.directSeekPending === pending && performance.now() < pending.expires;
+    const release = reason => {
+      if (this.directSeekPending === pending) this.directSeekPending = null;
+      log("directSeek.protection.release", {reason});
+    };
+    // A hung network call cannot leave a command sequence or visual protection running indefinitely.
+    const bounded = promise => new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("Experimental request timed out")), 3000);
+      promise.then(value => { clearTimeout(timer); resolve(value); }, error => { clearTimeout(timer); reject(error); });
+    });
+    const command = async (phase, path) => {
+      if (!valid()) throw new Error("Experimental operation cancelled");
+      pending.phase = phase;
+      log("directSeek."+phase+".request", {targetMs:target, device:SpotifyPracticeDiagnostics.device(device.id)});
+      const issued = Date.now();
+      const request = this.api(path, {method:"PUT", guard:valid}, false, false);
+      this.directSeekCommandInFlight = request;
+      request.then(() => { if (this.directSeekCommandInFlight === request) this.directSeekCommandInFlight = null; },
+        () => { if (this.directSeekCommandInFlight === request) this.directSeekCommandInFlight = null; });
+      await bounded(request);
+      if (!valid()) throw new Error("Experimental operation cancelled");
+      log("directSeek."+phase+".response", {outcome:"accepted"});
+      return issued;
+    };
+    const verify = async (phase, issued, predicate) => {
+      let previous = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 250));
+        if (!valid()) throw new Error("Experimental operation cancelled");
+        const started = performance.now();
+        const observed = await bounded(this.api("/me/player", {}, false, false));
+        if (!valid()) throw new Error("Experimental operation cancelled");
+        const matching = observed?.item?.id === trackId && observed?.device?.id === device.id &&
+          observed?.device?.is_active === true && observed?.device?.is_restricted === false;
+        if (!matching) { pending.invalidated = true; throw new Error("Playback device or track changed"); }
+        const received = performance.now();
+        const timestampValid = Number.isFinite(observed.timestamp) && observed.timestamp <= Date.now()+1000;
+        const fresh = timestampValid && observed.timestamp >= issued && received-started <= 2000;
+        const plausible = predicate(observed) && received-started <= 2000;
+        const progressDelta = previous && Number.isFinite(observed.progress_ms) ? observed.progress_ms - previous.progress : null;
+        const advancing = phase === "resume" && plausible && timestampValid && previous &&
+          observed.timestamp >= previous.timestamp && progressDelta >= 100 && progressDelta <= received-previous.received+1500;
+        const confirmed = plausible && (fresh || Boolean(advancing));
+        log("directSeek."+phase+".verify", {attempt:attempt+1, confirmed, fresh, advancing:Boolean(advancing), progressDeltaMs:progressDelta,
+          progressMs:Number.isFinite(observed.progress_ms) ? observed.progress_ms : null, playing:observed.is_playing === true,
+          device:SpotifyPracticeDiagnostics.device(observed.device.id), track:SpotifyPracticeDiagnostics.track(observed.item.id)});
+        if (confirmed) return observed;
+        previous = phase === "resume" && plausible && timestampValid ? {progress:observed.progress_ms, timestamp:observed.timestamp, received} : null;
+      }
+      throw new Error("Experimental state verification failed");
+    };
+    try {
+      const deviceId = await bounded(this.ensureDevice(state));
+      if (!valid()) throw new Error("Experimental operation cancelled");
+      if (deviceId !== device.id || performance.now()-readStarted > 2000) { release("ineligible-device"); return false; }
+      pending.phase = "protected";
+      this.directSeekFence = {operation, revision, tab, started:performance.now(), expires:pending.expires};
+      log("directSeek.protection.start", {targetMs:target, device:SpotifyPracticeDiagnostics.device(deviceId)});
+      if (kind === "resume") {
+        this.setPlaying(false, target);
+        const resumeAt = await command("resume", this.devicePath("/me/player/play", deviceId));
+        this.setPlaying(true, target);
+        const resumed = await verify("resume", resumeAt, observed => observed.is_playing === true && Number.isFinite(observed.progress_ms) &&
+          observed.progress_ms >= target-1500 && observed.progress_ms <= target+6000);
+        if (!valid()) throw new Error("Experimental operation cancelled");
+        this.setPlaying(true, resumed.progress_ms);
+        release("confirmed");
+        this.clearStatus();
+        return true;
+      }
+      if (delay > 0) {
+        const pausedAt = await command("pause", this.devicePath("/me/player/pause", deviceId));
+        await verify("pause", pausedAt, observed => observed.is_playing === false);
+        this.setPlaying(false, target);
+      } else {
+        this.setPlaying(true, target);
+      }
+      const seekAt = await command("seek", `/me/player/seek?position_ms=${Math.round(target)}&device_id=${encodeURIComponent(deviceId)}`);
+      log("directSeek.response", {outcome:"accepted"});
+      log("directSeek.playhead", {afterMs:this.sessionFor().playheadMs, provisional:true});
+      if (delay > 0) {
+        await verify("seek", seekAt, observed => observed.is_playing === false && Number.isFinite(observed.progress_ms) && Math.abs(observed.progress_ms-target) <= 1500);
+        pending.phase = "delay";
+        this.setPlaying(false, target);
+        log("directSeek.delay.start", {seconds:delay});
+        let resumed = false;
+        await this.withDelay(async () => {
+          if (!valid()) return;
+          log("directSeek.delay.complete", {seconds:delay});
+          await verify("delay", seekAt, observed => observed.is_playing === false && Number.isFinite(observed.progress_ms) && Math.abs(observed.progress_ms-target) <= 1500);
+          if (!valid()) return;
+          const resumeAt = await command("resume", this.devicePath("/me/player/play", deviceId));
+          resumed = true;
+          this.setPlaying(true, target);
+          await verify("resume", resumeAt, observed => observed.is_playing === true && Number.isFinite(observed.progress_ms) &&
+            observed.progress_ms >= target-1500 && observed.progress_ms <= target+6000);
+        });
+        if (!resumed || !valid()) throw new Error("Experimental operation cancelled");
+      } else {
+        // Normal monitoring confirms the target; protection remains bounded after this method returns.
+        pending.phase = "confirm";
+        pending.seekAt = seekAt;
+        pending.expires = performance.now()+6000;
+        this.clearStatus();
+        return true;
+      }
+      release("confirmed");
+      this.clearStatus();
+    } catch (error) {
+      const cancelled = !current() || pending.invalidated || this.directSeekPending !== pending;
+      log(cancelled ? "directSeek.cancelled" : "directSeek.error", {stage:pending.phase, category:cancelled ? "superseded" : "request-or-verification-failed"});
+      release(cancelled ? "cancelled" : "failure");
+      if (!cancelled) {
+        this.setPlaying(kind === "resume" || (delay > 0 && pending.phase !== "pause") ? false : Boolean(state.is_playing), state.progress_ms);
+        throw error;
+      }
+    }
+    return true;
+  }
+
   async replayFromA() {
-    if (!await this.prepareTrack(true)) return;
+    const operation = SpotifySeekExperiment.intent();
+    const enabled = SpotifyDirectSeekExperiment.enabled(), revision = SpotifyDirectSeekExperiment.revision();
+    const trackId = this.trackId, tab = this.tab;
+    const current = () => SpotifySeekExperiment.isLatest(operation) && SpotifyDirectSeekExperiment.current(revision) && this.trackId === trackId && this.tab === tab;
+    if (enabled) SpotifyPracticeDiagnostics.record("directSeek.replay", {operation, targetMs:this.sessionFor().aMs, track:SpotifyPracticeDiagnostics.track(trackId)});
+    if (!await this.prepareTrack(true, enabled ? current : null)) return;
+    if (enabled && !current()) { SpotifyPracticeDiagnostics.record("directSeek.cancelled", {operation, stage:"prepare"}); return; }
+    const started = performance.now();
     const state = await this.api("/me/player").catch(() => null);
+    if (enabled && !current()) { SpotifyPracticeDiagnostics.record("directSeek.cancelled", {operation, stage:"state"}); return; }
+    if (enabled && await this.experimentalPosition(state, this.sessionFor().aMs, operation, revision, "replay", Number(this.sessionFor().delay) || 0, started)) return;
     if (state?.is_playing) await this.pausePlayback(state);
     else this.setPlaying(false);
-    await this.withDelay(() => this.seekToPositionAndPlay(this.sessionFor().aMs || 0));
+    await this.withDelay(() => this.seekToPositionAndPlay(this.sessionFor().aMs || 0, operation));
   }
 
   async autoReplay() {
     if (this.loopRunning || this.busy || !this.sessionFor().loopActive) return;
+    const operation = SpotifySeekExperiment.intent();
+    const enabled = SpotifyDirectSeekExperiment.enabled(), revision = SpotifyDirectSeekExperiment.revision();
+    if (SpotifyPracticeDiagnostics.enabled()) {
+      const session = this.sessionFor();
+      SpotifyPracticeDiagnostics.record("autoReplay", {source:"loop", control:"b", aMs:session.aMs, bMs:session.bMs,
+        playheadMs:session.playheadMs, targetMs:session.aMs, playing:this.isPlaying, loopActive:session.loopActive});
+    }
     this.loopRunning = true;
     try {
+      const started = performance.now();
       const state = await this.api("/me/player").catch(() => null);
+      if (enabled && (!SpotifySeekExperiment.isLatest(operation) || !SpotifyDirectSeekExperiment.current(revision))) return;
+      if (enabled && await this.experimentalPosition(state, this.sessionFor().aMs, operation, revision, "loop", Number(this.sessionFor().delay) || 0, started)) return;
       if (state?.is_playing) await this.pausePlayback(state);
       else this.setPlaying(false);
-      await this.withDelay(() => this.seekToPositionAndPlay(this.sessionFor().aMs || 0));
+      await this.withDelay(() => this.seekToPositionAndPlay(this.sessionFor().aMs || 0, operation));
     } catch (error) {
       this.showError(error);
     } finally {
@@ -2772,10 +3190,12 @@ class SpotifyPractice {
     event.stopPropagation();
 
     if (kind === "playhead") {
+      this.scrubOperation = SpotifySeekExperiment.intent();
       this.scrubbing = true;
       this.scrubWasPlaying = this.isPlaying;
     }
 
+    this.diagnosticIntent("drag.start", kind === "playhead" ? this.sessionFor().playheadMs : null, kind);
     this.markerDrag = {pointerId:event.pointerId,kind,target:event.currentTarget};
     event.currentTarget?.setPointerCapture?.(event.pointerId);
     this.updateMarkerFromPointer(event.clientX, kind);
@@ -2794,6 +3214,7 @@ class SpotifyPractice {
     const target = this.markerDrag.target;
     target?.releasePointerCapture?.(event.pointerId);
     this.markerDrag = null;
+    this.diagnosticIntent("drag.end", kind === "playhead" ? this.sessionFor().playheadMs : null, kind);
 
     if (kind === "playhead") {
       this.finishPlayheadScrub().catch(error => this.showError(error));
@@ -2839,7 +3260,14 @@ class SpotifyPractice {
     this.syncAt = performance.now();
     if (resume) {
       this.sessionFor().playheadDirty = false;
-      await this.seekToPositionAndPlay(position);
+      if (SpotifyDirectSeekExperiment.enabled()) {
+        const operation = this.scrubOperation, revision = SpotifyDirectSeekExperiment.revision(), trackId = this.trackId, tab = this.tab;
+        const started = performance.now();
+        const state = await this.api("/me/player").catch(() => null);
+        if (!SpotifySeekExperiment.isLatest(operation) || !SpotifyDirectSeekExperiment.current(revision) || this.trackId !== trackId || this.tab !== tab) return;
+        if (await this.experimentalPosition(state, position, operation, revision, "scrub", 0, started)) return;
+      }
+      await this.seekToPositionAndPlay(position, this.scrubOperation);
     } else {
       const session = this.sessionFor();
       session.playheadMs = position;
@@ -2857,7 +3285,7 @@ class SpotifyPractice {
     this.animationTimer = setInterval(() => this.tickPlayback(), 100);
     this.monitorTimer = setInterval(() => {
       if (!this.tab || !this.trackId || !this.hasReusableAuth() || this.busy || this.scrubbing) return;
-      this.syncPlaybackState(false).catch(() => {});
+      this.syncPlaybackState(false, "monitor").catch(() => {});
     }, 4000);
   }
 
@@ -2869,13 +3297,19 @@ class SpotifyPractice {
   }
 
   tickPlayback() {
+    const direct = this.directSeekPending;
+    if (direct && (!SpotifySeekExperiment.isLatest(direct.operation) || !SpotifyDirectSeekExperiment.current(direct.revision) || performance.now() >= direct.expires)) {
+      direct.invalidated = true;
+      this.directSeekPending = null;
+      SpotifyPracticeDiagnostics.record("directSeek.protection.release", {operation:direct.operation, reason:"cancelled-or-timeout"});
+    }
     if (!this.durationMs || this.scrubbing) return;
     if (this.isPlaying) {
       const session = this.sessionFor();
       session.playheadMs = this.estimatedProgressMs();
       this.renderTimeline();
       const b = this.clampMs(session.bMs ?? this.durationMs);
-      if (session.loopActive && !this.loopRunning && !this.busy && session.playheadMs >= b) {
+      if (session.loopActive && !this.loopRunning && !this.busy && !this.directSeekPending && session.playheadMs >= b) {
         void this.autoReplay();
       }
     }
