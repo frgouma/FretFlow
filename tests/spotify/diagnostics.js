@@ -1,51 +1,30 @@
-// Account-free test of the actual SpotifyPractice implementation; run with node.
+'use strict';
+// Exercise the live diagnostics facade together with the real controller.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const html = fs.readFileSync('FretFlow.html', 'utf8');
-const source = html.slice(html.indexOf('// Opt-in, memory-only playback diagnostics.'), html.indexOf('class AmpPresetTool'));
-const context = {window:{}, performance, URLSearchParams, Date, setTimeout, clearTimeout, console};
-vm.createContext(context);
-vm.runInContext(source + '\nwindow.PracticeForTest = SpotifyPractice;', context);
-const diag = context.window.FretFlowSpotifyDiagnostics;
-const practice = Object.create(context.window.PracticeForTest.prototype);
-Object.assign(practice, {trackId:'SyntheticTrackSecret', trackUri:'spotify:track:SyntheticTrackSecret', durationMs:200000,
-  isPlaying:false, syncBaseMs:0, syncAt:performance.now(), tab:{id:'test'}, sessions:new Map()});
-practice.renderIcons = practice.renderTimeline = practice.clearStatus = () => {};
-practice.accessToken = async () => 'SyntheticAccessSecret';
-const session = practice.sessionFor();
-Object.assign(session, {aMs:42000, bMs:90000, playheadMs:0, loopActive:true, delay:0});
-let requests = [];
-context.fetch = async (url, options) => {
-  requests.push({url, method:options.method, body:options.body});
-  const state = {item:{id:'SyntheticTrackSecret'}, device:{id:'SyntheticDeviceSecret', name:'Private Device'}, is_playing:true, progress_ms:0};
-  return {ok:true, status: options.method === 'GET' ? 200 : 204, text:async () => options.method === 'GET' ? JSON.stringify(state) : ''};
-};
-practice.prepareTrack = async () => true;
-practice.withDelay = async action => action();
-(async () => {
-  await practice.replayFromA();
-  assert.equal(diag.report(), '');
-  const baseline = JSON.stringify(requests);
-  requests = [];
-  diag.enable();
-  await practice.replayFromA();
-  assert.equal(JSON.stringify(requests), baseline, 'instrumentation must preserve requests');
-  await practice.syncPlaybackState(false, 'test');
-  const report = diag.report();
-  assert.match(report, /"positionMs":42000/);
-  assert.match(report, /"progressMs":0/);
-  assert.match(report, /"beforeMs":42000,"afterMs":0/);
-  assert.doesNotMatch(report, /SyntheticTrackSecret|SyntheticDeviceSecret|SyntheticAccessSecret|Private Device|spotify:track/);
-  diag.disable();
-  const stopped = diag.report();
-  await practice.syncPlaybackState(false);
-  assert.equal(diag.report(), stopped);
-  diag.enable();
-  for (let i = 0; i < 300; i++) practice.diagnosticIntent('test');
-  assert.equal(diag.report().split('\n').length, 250);
-  diag.clear();
-  assert.equal(diag.report(), '');
-  diag.disable();
-  console.log('Spotify diagnostics mock tests passed');
-})().catch(error => { console.error(error); process.exitCode = 1; });
+const Controller = require('../../assets/js/spotify-playback-controller.js');
+const {Clock, SpotifySimulator} = require('./simulator.js');
+const html = fs.readFileSync('FretFlow.html','utf8');
+const source = html.slice(html.indexOf('// Opt-in, memory-only playback diagnostics.'), html.indexOf('class SpotifyPractice'));
+const context = {window:{}, Date}; vm.createContext(context);
+vm.runInContext(source+'\nwindow.recorder = SpotifyPracticeDiagnostics;', context);
+const facade = context.window.FretFlowSpotifyDiagnostics, recorder = context.window.recorder;
+const clock = new Clock(), api = new SpotifySimulator(clock);
+api.change({trackId:'PrivateTrack', deviceId:'PrivateDevice', playing:true, positionMs:10000});
+const controller = new Controller({api, clock, timeoutMs:1000, verifyIntervalMs:100, toleranceMs:100});
+controller.selectContext({contextId:'PrivateTab',trackId:'PrivateTrack',trackUri:'spotify:track:PrivateTrack',durationMs:120000});
+recorder.attach(controller);
+const intent = () => controller.requestPlayback({contextId:'PrivateTab',trackId:'PrivateTrack',trackUri:'spotify:track:PrivateTrack',playing:true,position:{mode:'absolute',ms:30000},reason:'replay'});
+(async()=>{
+  intent(); await clock.advance(20); assert.equal(facade.report(),'');
+  facade.enable(); intent(); await clock.advance(20);
+  const report = facade.report(); assert.match(report,/"type":"intent"/); assert.match(report,/"type":"dispatch"/); assert.match(report,/"type":"reconciled"/);
+  assert.doesNotMatch(report,/PrivateTrack|PrivateDevice|PrivateTab|spotify:track/);
+  assert.deepEqual(api.commands.map(c=>c.name),['seek','seek']);
+  facade.disable(); const stopped=facade.report(); intent(); await clock.advance(20); assert.equal(facade.report(),stopped);
+  facade.enable(); for(let i=0;i<300;i++) recorder.record('test',{positionMs:i});
+  assert.equal(facade.report().split('\n').filter(line=>JSON.parse(line).action === 'test').length,250);
+  facade.clear(); assert.equal(facade.report(),''); facade.disable();
+  console.log('Spotify diagnostics: 5 privacy and lifecycle checks passed');
+})().catch(error=>{console.error(error);process.exitCode=1;});

@@ -5,7 +5,7 @@
 })(typeof globalThis === 'object' ? globalThis : this, function () {
   'use strict';
   class SpotifyPlaybackController {
-    constructor({api, clock = {now: () => performance.now(), setTimeout, clearTimeout}, timeoutMs = 3000, verifyIntervalMs = 250, verifyAttempts = 3, toleranceMs = 1500, diagnosticLimit = 250}) {
+    constructor({api, clock = {now: () => performance.now(), setTimeout: (...args) => globalThis.setTimeout(...args), clearTimeout: (...args) => globalThis.clearTimeout(...args)}, timeoutMs = 3000, verifyIntervalMs = 250, verifyAttempts = 3, toleranceMs = 1500, diagnosticLimit = 250}) {
       if (!api || typeof api.command !== 'function' || typeof api.observe !== 'function') throw new TypeError('An API adapter is required');
       Object.assign(this, {api, clock, timeoutMs, verifyIntervalMs, verifyAttempts, toleranceMs, diagnosticLimit});
       this.context = null; this.desired = null; this.observed = null; this.command = null;
@@ -28,6 +28,12 @@
     disableDiagnostics() { this.recording = false; }
     clearDiagnostics() { this.events = []; }
     diagnostics() { return this.events.map(event => ({...event})); }
+    clearContext() {
+      ++this.generation; ++this.selectionRevision;
+      this.context = null; this.pending = null; this.desired = null; this.observed = null;
+      this.drag = null; this.protection = null; this.positionFence = null; this.failure = null;
+      this.anchor = {ms:0, at:this.clock.now(), playing:false}; this.state = 'idle';
+    }
     selectContext({contextId, trackId, trackUri, durationMs = 0}) {
       if (contextId == null || !trackId || !trackUri) throw new TypeError('Context and track required');
       ++this.sequence; ++this.generation; ++this.selectionRevision; this.context = {contextId, trackId, trackUri, durationMs: Math.max(0, Number(durationMs) || 0)};
@@ -51,6 +57,7 @@
       const op = {id: ++this.sequence, generation: this.generation, context: {...this.context}, playing: intent.playing,
         position: intent.position.mode === 'absolute' ? {mode: 'absolute', ms: this.clamp(intent.position.ms)} : {mode: 'retain'},
         source: intent.source === 'loop' ? 'loop' : 'user', reason: ['play','pause','replay','loop','scrub'].includes(intent.reason) ? intent.reason : 'other', devicePolicy: 'active'};
+      if (op.source === 'loop') op.loopDeviceId = this.observed?.deviceId;
       if (this.pending || this.running) this.log('superseded', {operation: op.id});
       this.desired = op; this.pending = op; this.drag = null; this.failure = null;
       if (op.position.mode === 'absolute') {
@@ -160,12 +167,13 @@
         if (response?.status === 401 && typeof this.api.refreshAuth === 'function') {
           let refreshed;
           try { refreshed = await this.bounded(this.api.refreshAuth()); }
-          catch (_) { throw Object.assign(new Error('authentication failed'), {kind:'auth', status:401}); }
+          catch (error) { if (error.kind && error.kind !== 'auth') throw error; throw Object.assign(new Error('authentication failed'), {kind:'auth', status:401}); }
           if (!this.current(op)) return false;
           if (!refreshed) throw Object.assign(new Error('authentication failed'), {kind:'auth', status:401});
           const state = await this.observe();
           if (!this.current(op)) return false;
           if (!state || state.deviceId !== args.deviceId || state.restricted) throw Object.assign(new Error('device changed'), {kind:'device'});
+          if (op.source === 'loop' && (state.trackId !== op.context.trackId || !state.playing || this.clock.now() - state.requestedAt > this.verifyIntervalMs)) throw Object.assign(new Error('playback changed'), {kind:'uncertain'});
           this.command.dispatchedAt = this.clock.now();
           this.log('dispatch', {operation:op.id, command:name});
           response = await this.bounded(this.api.command(name, args));
@@ -184,7 +192,9 @@
       for (let i = 0; i < this.verifyAttempts && this.current(op); i++) {
         if (i) await this.sleep(this.verifyIntervalMs);
         if (!this.current(op)) { this.unknownEffect = true; return false; }
-        const obs = await this.observe();
+        let obs;
+        try { obs = await this.observe(); }
+        catch (error) { error.outcome = 'unknown'; throw error; }
         if (!this.current(op)) { this.unknownEffect = true; return false; }
         if (obs && obs.requestedAt >= dispatchedAt && expected(obs)) {
           this.log('verified', {operation:op.id, command:name}); return true;
@@ -196,7 +206,14 @@
     async execute(op) {
       let obs = await this.observe();
       if (!this.current(op)) return;
-      if (!obs || !obs.deviceId || obs.restricted) throw Object.assign(new Error('device unavailable'), {kind:'device'});
+      if (op.source === 'loop' && (!obs || !op.loopDeviceId || obs.deviceId !== op.loopDeviceId || obs.trackId !== op.context.trackId || !obs.playing || obs.restricted || this.clock.now() - obs.requestedAt > this.verifyIntervalMs)) {
+        this.protection = null;
+        this.anchor = {ms:obs?.trackId === op.context.trackId ? this.clamp(obs.positionMs) : 0, at:this.clock.now(), playing:!!(obs?.trackId === op.context.trackId && obs.playing)};
+        this.state = !obs || this.clock.now() - obs.requestedAt > this.verifyIntervalMs ? 'uncertain' : obs.trackId === op.context.trackId ? (obs.playing ? 'playing' : 'paused') : 'idle';
+        if (this.state === 'uncertain') this.anchor.playing = false;
+        return;
+      }
+      if (!obs || !obs.deviceId || obs.restricted) throw Object.assign(new Error('device unavailable'), {kind:obs?.restricted ? 'restricted' : 'device', outcome:'not-sent'});
       const deviceId = obs.deviceId;
       // Pause addresses the current external playback, even when another tab is selected.
       if (obs.trackId !== op.context.trackId && !op.playing && op.position.mode === 'retain') {
@@ -220,6 +237,7 @@
       if (op.position.mode === 'absolute') {
         if (!await this.mutate(op, 'seek', {deviceId, positionMs:op.position.ms}, s => same() && positionMatches(s))) return;
       }
+      if (op.source === 'loop' && !this.observed.playing) throw Object.assign(new Error('playback changed'), {kind:'uncertain'});
       if (op.playing && !this.observed.playing) {
         if (!await this.mutate(op, 'resume', {deviceId}, s => same() && s.playing)) return;
       } else if (!op.playing && this.observed.playing) {

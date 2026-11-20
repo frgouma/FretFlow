@@ -1,0 +1,30 @@
+'use strict';
+const assert = require('node:assert/strict');
+const Controller = require('../../assets/js/spotify-playback-controller.js');
+const {Clock, SpotifySimulator} = require('./simulator.js');
+const tests=[];
+const test=(name,fn)=>tests.push({name,fn});
+function setup(remote={}) {
+  const clock=new Clock(), api=new SpotifySimulator(clock);
+  api.change({trackId:'song',playing:false,positionMs:5000,...remote});
+  const c=new Controller({api,clock});
+  let context={contextId:'tab',trackId:'song',trackUri:'spotify:track:song',durationMs:100000};
+  c.selectContext(context);
+  return {clock,api,c,send:(playing,ms,reason)=>c.requestPlayback({...context,playing,position:ms===null?{mode:'retain'}:{mode:'absolute',ms},reason}),select:()=>{context={contextId:'next',trackId:'next',trackUri:'spotify:track:next',durationMs:100000};c.selectContext(context);}};
+}
+const names=x=>x.api.commands.map(c=>c.name);
+const position=(x,ms)=>assert.ok(Math.abs(x.api.progress()-ms)<1600, `remote position ${x.api.progress()} expected ${ms}`);
+test('immediate play',async x=>{x.send(false,30000,'scrub');x.send(true,null,'play');await x.clock.advance(800);assert.deepEqual(names(x),['seek','resume']);position(x,30000);assert.equal(x.api.remote.playing,true);});
+test('play during initial observation',async x=>{x.api.observationOptions.push({deliveryDelay:200});x.send(false,30000,'scrub');await x.clock.advance(10);x.send(true,null,'play');await x.clock.advance(1000);assert.deepEqual(names(x),['seek','resume']);position(x,30000);assert.equal(x.api.remote.playing,true);});
+test('play during seek observation',async x=>{x.api.observationOptions.push({}, {deliveryDelay:200});x.send(false,30000,'scrub');await x.clock.advance(10);x.send(true,null,'play');await x.clock.advance(800);assert.deepEqual(names(x),['seek','resume']);position(x,30000);assert.equal(x.api.remote.playing,true);});
+test('pause retains scrub',async x=>{x.send(false,30000,'scrub');x.send(false,null,'pause');await x.clock.advance(800);assert.deepEqual(names(x),['seek']);position(x,30000);assert.equal(x.api.remote.playing,false);});
+test('latest of two scrubs wins',async x=>{x.send(false,20000,'scrub');x.send(false,30000,'scrub');x.send(true,null,'play');await x.clock.advance(800);assert.deepEqual(names(x),['seek','resume']);position(x,30000);assert.equal(x.api.remote.playing,true);});
+test('unloaded paused track',async x=>{x.api.change({trackId:'other',playing:false});x.send(false,30000,'scrub');await x.clock.advance(100);assert.deepEqual(names(x),[]);assert.equal(x.c.snapshot().displayed.positionMs,30000);x.send(true,null,'play');await x.clock.advance(800);assert.deepEqual(names(x),['playTrack','seek']);assert.equal(x.api.remote.trackId,'song');position(x,30000);assert.equal(x.api.remote.playing,true);});
+test('unrelated playing track remains unchanged on scrub',async x=>{x.api.change({trackId:'other',playing:true});x.send(false,30000,'scrub');await x.clock.advance(800);assert.deepEqual(names(x),[]);assert.equal(x.api.remote.trackId,'other');assert.equal(x.api.remote.playing,true);assert.equal(x.c.snapshot().displayed.positionMs,30000);});
+test('tab change fences pending scrub',async x=>{x.api.observationOptions.push({deliveryDelay:200});x.send(false,30000,'scrub');await x.clock.advance(10);x.select();x.send(true,null,'play');await x.clock.advance(800);assert.deepEqual(names(x),['playTrack']);assert.equal(x.api.remote.trackId,'next');assert.ok(x.api.progress()<2000);});
+test('scrub play pause',async x=>{x.send(false,30000,'scrub');x.send(true,null,'play');x.send(false,null,'pause');await x.clock.advance(800);assert.deepEqual(names(x),['seek']);position(x,30000);assert.equal(x.api.remote.playing,false);});
+test('accepted seek applied late',async x=>{x.api.commandOptions.push({executeDelay:200});x.send(false,30000,'scrub');await x.clock.advance(20);x.send(true,null,'play');await x.clock.advance(1000);assert.deepEqual(names(x),['seek','resume']);position(x,30000);assert.equal(x.api.remote.playing,true);});
+test('accepted seek never applied',async x=>{x.api.commandOptions.push({neverApply:true});x.send(false,30000,'scrub');await x.clock.advance(20);x.send(true,null,'play');await x.clock.advance(1000);assert.deepEqual(names(x),['seek']);assert.equal(x.api.remote.playing,false);assert.equal(x.api.remote.positionMs,5000);assert.equal(x.c.snapshot().state,'uncertain');});
+test('resume waits for retained target',async x=>{x.api.commandOptions.push({executeDelay:200});x.send(false,30000,'scrub');await x.clock.advance(20);x.send(true,null,'play');await x.clock.advance(100);assert.deepEqual(names(x),['seek']);assert.equal(x.api.remote.playing,false);await x.clock.advance(800);assert.deepEqual(names(x),['seek','resume']);assert.ok(x.api.commands[1].at>=200);position(x,30000);});
+test('confirmed scrub followed by play has no duplicate seek',async x=>{x.send(false,30000,'scrub');await x.clock.advance(100);x.send(true,null,'play');await x.clock.advance(800);assert.deepEqual(names(x),['seek','resume']);position(x,30000);assert.equal(x.api.remote.playing,true);});
+(async()=>{let failed=0;for(const t of tests){try{await t.fn(setup());console.log('ok - '+t.name);}catch(e){failed++;console.error('not ok - '+t.name+': '+e.message);}}console.log(`${tests.length-failed}/${tests.length} B2 scenarios passed`);if(failed)process.exitCode=1;})();

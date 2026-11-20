@@ -1,0 +1,35 @@
+'use strict';
+// Exercise the real export function and the browser global without loading PDF.js.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const Controller = require('../../assets/js/spotify-playback-controller.js');
+const html = fs.readFileSync('FretFlow.html','utf8');
+const moduleSource = fs.readFileSync('assets/js/spotify-playback-controller.js','utf8');
+const browser = {}; vm.createContext(browser); vm.runInContext(moduleSource,browser);
+assert.equal(typeof browser.FretFlowSpotifyPlaybackController,'function');
+const start=html.indexOf('function exportStandalone('), end=html.indexOf('\n};',start)+3;
+assert(start>=0 && end>start);
+const environment={FretFlowSpotifyPlaybackController:Controller,FretFlow:{normalizeProjectModel:x=>x,escape:x=>x}};
+vm.createContext(environment); vm.runInContext(html.slice(start,end)+'\nthis.exportStandalone=exportStandalone;',environment);
+const output=environment.exportStandalone({appBody:'',js:'globalThis.runtimeAfterController = typeof FretFlowSpotifyPlaybackController;',css:'',projectData:{project:{title:'Test'}},pdfJs:'',pdfWorker:''});
+assert.doesNotMatch(output, /src="assets\/js\/spotify-playback-controller\.js"/);
+const runtime=output.match(/<script id="fretflow-runtime">([\s\S]*?)<\/script>/)[1];
+const standalone={performance,setTimeout,clearTimeout}; vm.createContext(standalone); vm.runInContext(runtime,standalone);
+assert.equal(standalone.runtimeAfterController,'function');
+const c=new standalone.FretFlowSpotifyPlaybackController({api:{observe:async()=>({}),command:async()=>({status:204})}});
+c.selectContext({contextId:'tab',trackId:'track',trackUri:'spotify:track:track'});
+assert.equal(c.snapshot().state,'idle');
+assert.doesNotMatch(output,/FretFlowSpotifySeekExperiment|FretFlowSpotifyDirectSeekExperiment|practiceDelay/);
+// Normalize an older document carrying a historical field using the actual model code.
+const modelStart=html.indexOf('(function(global){',html.indexOf('<script id="fretflow-runtime">'));
+const modelEnd=html.indexOf('FretFlow.initApp = function(){',modelStart);
+const modelContext={window:{},URL,console}; vm.createContext(modelContext);
+vm.runInContext(html.slice(modelStart,modelEnd)+'})(window);',modelContext);
+const original=modelContext.window.FretFlow.createEmptyProject();
+original.schemaVersion='19'; original.replayDelay=5;
+original.nativeTabs.push({id:'old',title:'Old',spotifyUrl:'spotify:track:track',replayDelay:2,sections:[]});
+const normalized=modelContext.window.FretFlow.normalizeProjectModel(original);
+assert.equal(normalized.schemaVersion,'20'); assert.equal(normalized.nativeTabs[0].spotifyUrl,'spotify:track:track');
+assert.equal(normalized.replayDelay,5); assert.equal(normalized.nativeTabs[0].replayDelay,2); assert.equal(original.schemaVersion,'19');
+console.log('Spotify standalone: 6 source, initialization and compatibility checks passed');

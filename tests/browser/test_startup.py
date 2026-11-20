@@ -43,3 +43,39 @@ def test_local_launcher(browser):
         print(f"Blocked external HTTP(S) requests: {external_requests}")
         print(f"JavaScript page errors: {page_errors}")
         context.close()
+
+
+def test_primary_html_opens_project_without_neighboring_files(browser):
+    """Exercise the actual document and .fret import with all other requests blocked."""
+    context = browser.new_context(service_workers="block")
+    blocked = []
+    errors = []
+    dialogs = []
+    document_url = (ROOT / "FretFlow.html").as_uri()
+
+    def restrict_requests(route):
+        if route.request.url == document_url:
+            route.continue_()
+        else:
+            blocked.append(route.request.url)
+            route.abort()
+
+    context.route("**/*", restrict_requests)
+    page = context.new_page()
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.on("dialog", lambda dialog: (dialogs.append(dialog.message), dialog.dismiss()))
+    try:
+        page.goto(document_url, wait_until="load")
+        assert page.evaluate("typeof FretFlowSpotifyPlaybackController") == "function"
+        page.locator("#projectFile").set_input_files({
+            "name": "demo.fret", "mimeType": "application/json",
+            "buffer": (ROOT / "demo.fret").read_bytes(),
+        })
+        expect(page.locator("#applicationViewer")).to_be_visible()
+        assert page.evaluate("typeof FretFlowSpotifyPlaybackController") == "function"
+        assert not dialogs, f"Unexpected dialogs: {dialogs}"
+        assert not errors, f"JavaScript page errors: {errors}"
+        assert not any("spotify-playback-controller.js" in url for url in blocked)
+    finally:
+        print(f"Blocked requests: {blocked}; errors: {errors}; dialogs: {dialogs}")
+        context.close()

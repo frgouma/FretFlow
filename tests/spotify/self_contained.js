@@ -1,0 +1,18 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const html = fs.readFileSync('FretFlow.html', 'utf8');
+const canonical = fs.readFileSync('assets/js/spotify-playback-controller.js', 'utf8');
+const scripts = [...html.matchAll(/<script id="fretflow-spotify-controller">\n([\s\S]*?)<\/script>/g)];
+assert.equal(scripts.length, 1);
+assert.equal(scripts[0][1], canonical);
+assert(scripts[0].index < html.indexOf('new FretFlowSpotifyPlaybackController('));
+assert.doesNotMatch(html, /<script[^>]+src=["'][^"']*spotify-playback-controller\.js/i);
+assert.equal((html.match(/class SpotifyPlaybackController\s*\{/g) || []).length, 1);
+const context = {performance, setTimeout, clearTimeout};
+vm.createContext(context);
+vm.runInContext(scripts[0][1], context);
+const controller = vm.runInContext('new FretFlowSpotifyPlaybackController({api:{observe:async()=>({}),command:async()=>({status:204})}})', context);
+assert.equal(controller.snapshot().state, 'idle');
+console.log('Self-contained HTML: source equality, ordering, single definition and initialization passed');
